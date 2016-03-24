@@ -1,24 +1,29 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 # import common gateway interface
 import cgi
+import RestaurantManager
 
 # handler -- specify what to do based on type of request
 class webserverHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         try:
-            if self.path.endswith("/hello"):
+            if self.path.endswith("/restaurants"):
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
 
                 output = ""
                 output += "<html><body>"
-                output += "Hello!"
-                output += "<form method='POST' enctype='multipart/form-data' "\
-                          "action='/hello'><h2>What would you like me to say?"\
-                          "</h2><input name='message' type='text' ><input "\
-                          "type='submit' value='Submit'></form>"
+                output += "<h1>List of All Restaurants</h1>"
+
+                restaurants = RestaurantManager.getRestaurants()
+
+                for restaurant in restaurants:
+                    output += "<p>"
+                    output += restaurant.name+" (ID "+str(restaurant.id)+")"
+                    output += "</p>"
+                
                 output += "</body></html>"
                 self.wfile.write(output)
                 print output
@@ -67,8 +72,8 @@ class webserverHandler(BaseHTTPRequestHandler):
 
                 self.wfile.write(output)
                 print output
-            except:
-                pass
+        except:
+            pass
 
 # instantiate server and specify port
 def main():
