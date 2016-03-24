@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, func
 from sqlalchemy.orm import sessionmaker
 
 from database_setup import Base, Restaurant, MenuItem
@@ -32,3 +32,22 @@ def getMenuItems():
 
     session.close()
     return menuItems
+
+def getPopularCuisines():
+    """Return a list of all cuisines offered by at least three restaurants
+    """
+    session = getRestaurantDBSession()
+
+    numPerCuisine = session.query(Restaurant.foodType,
+                                  func.count(Restaurant.foodType).label('No')).\
+                                  group_by(Restaurant.foodType)
+    popCuisines = []
+
+    for cuisine in numPerCuisine:
+        if cuisine.No >= 3:
+            popCuisines.append(cuisine)
+
+    session.close()
+    return popCuisines
+
+    
