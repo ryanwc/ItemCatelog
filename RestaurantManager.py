@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
-from database_setup.py import Base, Restaurant, MenuItem
+from database_setup import Base, Restaurant, MenuItem
 
 
 def getRestaurantDBSession():
@@ -23,3 +23,12 @@ def getRestaurants():
     session.close()
     return restaurants
 
+def getMenuItems():
+    """Return a list of all menu items ordered by restaurant ID
+    """
+    session = getRestaurantDBSession()
+
+    menuItems = session.query(MenuItem).order_by(MenuItem.restaurant_id)
+
+    session.close()
+    return menuItems
