@@ -7,7 +7,7 @@ from database_setup.py import Base, Restaurant, MenuItem
 
 
 def getRestaurantDBSession():
-    """Return an interactive session with the puppy adoption database
+    """Return an interactive session with the restaurant menu database
     """
     engine = create_engine('sqlite:///restaurantmenu.db')
     Base.metadata.bind = engine
