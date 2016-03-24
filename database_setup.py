@@ -13,7 +13,7 @@ Base = declarative_base()
 
 
 # define tables for the database in Python classes
-class Restaraunt(Base):
+class Restaurant(Base):
 	__tablename__ = 'restaurant'
 
 	id = Column(Integer, primary_key=True)
@@ -29,7 +29,7 @@ class MenuItem(Base):
 	price = Column(String(8))
 	course = Column(String(250))
 	restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
-	restaurant = relationship(Restaraunt)
+	restaurant = relationship(Restaurant)
 
 
 # connect to database engine
