@@ -1,4 +1,4 @@
-from BaseHTTPServer import BaseHTTPRequestHandeler, HTTPServer
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 # handler -- specify what to do based on type of request
 class webserverHandler(BaseHTTPRequestHandler):
