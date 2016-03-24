@@ -1,5 +1,3 @@
-from database_setup.py import Base, Restaruant, MenuItem
-
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
