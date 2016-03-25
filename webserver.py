@@ -124,6 +124,28 @@ class webserverHandler(BaseHTTPRequestHandler):
                 output += "</body></html>"
                 self.wfile.write(output)
                 print output
+            if self.path.endswith("restDelete"):
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+
+                localPath = re.search('/[0-9]+restDelete',\
+                                      str(self.path)).group(0)
+                rest_id = re.search('[0-9]+',localPath).group(0)
+                restaurant = RestaurantManager.getRestaurant(int(rest_id))
+
+                output = ""
+                output += "<html><body>"
+                output += "<h1>Do you really want to delete "
+                output += "restaurant %s?</h1>" % rest_id
+                output += "<form name='deleteRest' method='POST' "
+                output += "enctype='multipart/form-data'>"
+                output += "<br><input type='submit' "
+                output += "value='Yes, remove it from the database'>"
+                output += "</form>"
+                output += "</body></html>"
+                self.wfile.write(output)
+                print output
         except IOError:
             self.send_error(404, "File Not Found %s" % self.path)
 
@@ -138,18 +160,26 @@ class webserverHandler(BaseHTTPRequestHandler):
 
             # check if the data is form data, do the post if so
             if ctype == 'multipart/form-data':
+
                 formInfo = cgi.parse_multipart(self.rfile, pdict)
 
                 localPath = ""
                 rest_id = ""
                 restaurant = []
-                output = ""
-                output += "<html><body>"
-                errorBlank = ""
-                errorBlank = "<h1>You did not enter a required input</h1>"
-                errorBlank += "<h3>To try again, press your browser's"
-                errorBlank += " 'back' button</h3>"
-                errorBlank += "</body></html>"
+                
+                outputBegin = "<html><body>"
+
+                messageBegin = "<h1>"
+                message = ""
+                messageEnd = "</h1>"
+
+                outputEnd = "<h3>To continue, navigate to another page"\
+                            "</h3></body><html>"
+                
+                errorOutput = "<h1>You did not enter a required input</h1>"\
+                              "<h3>To try again, press your browser's"\
+                              " 'back' button</h3>"\
+                              "</body></html>"
 
                 # assign relevant form variables based on path
                 if self.path.endswith("restEdit"):
@@ -167,105 +197,107 @@ class webserverHandler(BaseHTTPRequestHandler):
                 elif self.path.endswith("restAdd"):
                     formInfo['form'] = 'restAdd'
 
-                # check if proper combo of input is given
-                # could maybe improve by combining statements
-                # not sure what would improve readability
-                if formInfo['form'] == 'restAdd':
-                    if (len(formInfo['name'][0]) == 0 or
-                        'commOrCust' not in formInfo):
-                        self.wfile.write(errorBlank)
-                        print errorBlank
-                        return
-                    elif (formInfo['commOrCust'][0] == 'common' and
-                          'cuisine' not in formInfo):
-                        self.wfile.write(errorBlank)
-                        print errorBlank
-                        return
-                    elif (formInfo['commOrCust'][0] == 'custom' and
-                          len(formInfo['custCuisine'][0]) == 0):
-                        self.wfile.write(errorBlank)
-                        print errorBlank
-                        return
-                elif formInfo['form'] == 'restEdit':
-                    if (len(formInfo['name'][0]) == 0 and
-                        'commOrCust' not in formInfo):
-                        self.wfile.write(errorBlank)
-                        print errorBlank
-                        return
-                    elif 'commOrCust' in formInfo:
-                        if (formInfo['commOrCust'][0] == 'common' and
-                            'cuisine' not in formInfo):
-                            self.wfile.write(errorBlank)
-                            print errorBlank
-                            return
-                        elif (formInfo['commOrCust'][0] == 'custom' and
-                              len(formInfo['custCuisine'][0]) == 0):
-                            self.wfile.write(errorBlank)
-                            print errorBlank
-                            return
-                    else:
-                        if ('cuisine' in formInfo or
-                            len(formInfo['custCuisine'][0] > 0)):
-                            self.wfile.write(errorBlank)
-                            print errorBlank
-                            return                           
-
-                # use bleach on user provided text to defend SQL injection
-                name = bleach.clean(formInfo['name'][0])
-                cuisine = ""
-
-                if 'commOrCust' in formInfo:
-                    if formInfo['commOrCust'][0] == 'custom':
-                        cuisine = bleach.clean(formInfo['custCuisine'][0])
-                    else:
-                        cuisine = formInfo['cuisine'][0]
-                
                 session = RestaurantManager.getRestaurantDBSession()
-
-                message = ""
-
-                # do correct DB update
-                if formInfo['form'] == 'restAdd':
-                    newRestaurant = Restaurant(name=name,foodType=cuisine)
-                    session.add(newRestaurant)
-                    message += "Added %s " % name
-                    message += "with cuisine type %s" % cuisine
-                    message += " to the database"
-                elif formInfo['form'] == 'restEdit':
-                    message += "Made these changes to restaurant %s: " % rest_id
-                    if (name == restaurant.name and
-                        cuisine == restaurant.foodType):
-                        message += "<br>None because name and cuisine were not "
-                        message += "different"
-                    else:
-                        if (name != restaurant.name and
-                            len(name) > 0):
-                            session.query(Restaurant).\
-                            filter(Restaurant.id==rest_id).\
-                            update({'name':name})
-                            message += "<br>Name from %s " % restaurant.name
-                            message += "to %s" % name
-                        if (cuisine != restaurant.foodType and
-                            len(cuisine) > 0):
-                            session.query(Restaurant).\
-                            filter(Restaurant.id==rest_id).\
-                            update({'foodType':cuisine})
-                            message += "<br>Cuisine from %s " % restaurant.foodType
-                            message += "to %s" % cuisine
-                elif formInfo['form'] == 'restDelete':
+                print formInfo
+                # if it's a delete, just do the delete
+                if formInfo['form'] == 'restDelete':
                     session.query(Restaurant).\
                     filter(Restaurant.id==rest_id).\
                     delete()
-                    message += "Deleted %s " % name
-                    message += "(id %s )" % rest_id
+                    session.query(MenuItem).\
+                    filter(MenuItem.restaurant_id==rest_id).\
+                    delete()
+                    message += "Deleted restaurant with ID %s " % rest_id
                     message += " from the database"
+                    message += " (this also deleted related menu items)"
+                else:
+                    # now we have to work for it
+                    if formInfo['form'] == 'restAdd':
+                        # check if proper combo of input is given
+                        # could maybe improve by combining statements
+                        # not sure what would improve readability
+                        if (len(formInfo['name'][0]) == 0 or
+                            'commOrCust' not in formInfo):
+                            self.wfile.write(errorOutput)
+                            print errorOutput
+                            return
+                        elif (formInfo['commOrCust'][0] == 'common' and
+                              'cuisine' not in formInfo):
+                            self.wfile.write(errorOutput)
+                            print errorOutput
+                            return
+                        elif (formInfo['commOrCust'][0] == 'custom' and
+                              len(formInfo['custCuisine'][0]) == 0):
+                            self.wfile.write(errorOutput)
+                            print errorOutput
+                            return
+                    elif formInfo['form'] == 'restEdit':
+                        if (len(formInfo['name'][0]) == 0 and
+                            'commOrCust' not in formInfo):
+                            self.wfile.write(errorOutput)
+                            print errorOutput
+                            return
+                        elif 'commOrCust' in formInfo:
+                            if (formInfo['commOrCust'][0] == 'common' and
+                                'cuisine' not in formInfo):
+                                self.wfile.write(errorOutput)
+                                print errorOutput
+                                return
+                            elif (formInfo['commOrCust'][0] == 'custom' and
+                                  len(formInfo['custCuisine'][0]) == 0):
+                                self.wfile.write(errorOutput)
+                                print errorOutput
+                                return
+                        else:
+                            if ('cuisine' in formInfo or
+                                len(formInfo['custCuisine'][0]) > 0):
+                                self.wfile.write(errorOutput)
+                                print errorOutput
+                                return
+                            
+                    # use bleach on user provided text to defend SQL injection
+                    name = bleach.clean(formInfo['name'][0])
+                    cuisine = ""
+
+                    if 'commOrCust' in formInfo:
+                        if formInfo['commOrCust'][0] == 'custom':
+                            cuisine = bleach.clean(formInfo['custCuisine'][0])
+                        else:
+                            cuisine = formInfo['cuisine'][0]
+
+                    # add or edit
+                    if formInfo['form'] == 'restAdd':
+                        newRestaurant = Restaurant(name=name,foodType=cuisine)
+                        session.add(newRestaurant)
+                        message += "Added %s " % name
+                        message += "with cuisine type %s" % cuisine
+                        message += " to the database"
+                    elif formInfo['form'] == 'restEdit':
+                        message += "Made these changes to restaurant %s: " % rest_id
+                        if (name == restaurant.name and
+                            cuisine == restaurant.foodType):
+                            message += "<br>None because name and cuisine were not "
+                            message += "different"
+                        else:
+                            if (name != restaurant.name and
+                                len(name) > 0):
+                                session.query(Restaurant).\
+                                filter(Restaurant.id==rest_id).\
+                                update({'name':name})
+                                message += "<br>Name from %s " % restaurant.name
+                                message += "to %s" % name
+                            if (cuisine != restaurant.foodType and
+                                len(cuisine) > 0):
+                                session.query(Restaurant).\
+                                filter(Restaurant.id==rest_id).\
+                                update({'foodType':cuisine})
+                                message += "<br>Cuisine from %s " % restaurant.foodType
+                                message += "to %s" % cuisine
 
                 session.commit()
                 session.close()
 
-                output += "<h1>"+message+"</h1>"
-                output += "<h3>To continue, navigate to another page</h3>"
-                output += "</body><html>"
+                output = outputBegin+messageBegin+message+messageEnd+outputEnd
                 
                 self.wfile.write(output)
                 print output
