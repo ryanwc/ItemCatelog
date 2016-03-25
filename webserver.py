@@ -143,8 +143,29 @@ class webserverHandler(BaseHTTPRequestHandler):
                 localPath = ""
                 rest_id = ""
                 restaurant = []
+                output = ""
+                output += "<html><body>"
 
                 if self.path.endswith("restEdit"):
+                    # check if proper radio buttons are selected
+                    if 'commOrCust' not in formInfo:
+                        output += "<h1>You need to specify whether a"
+                        output += "common or custom cuisine should be used</h1>"
+                        output += "<h3>To try again, press your browser's"
+                        output += "'back' button</h3>"
+                        self.wfile.write(output)
+                        print output
+                        return
+                    elif  ('commOrCust' in formInfo and
+                           formInfo['commOrCust'][0] == 'common' and
+                           'cuisine' not in formInfo):
+                        output += "<h1>You chose 'use common cuisine', so you"
+                        output += " need to select a particular common cuisine"
+                        output += "<h3>To try again, press your browser's"
+                        output += " 'back' button</h3>"
+                        self.wfile.write(output)
+                        print output
+                        return
                     formInfo['form'] = 'restEdit'
                     localPath = re.search('/[0-9]+restEdit',\
                                           str(self.path)).group(0)
@@ -162,6 +183,8 @@ class webserverHandler(BaseHTTPRequestHandler):
                 # use bleach on user provided text to defend SQL injection
                 name = bleach.clean(formInfo['name'][0])
                 cuisine = ""
+
+                print formInfo
                 
                 if formInfo['commOrCust'][0] == 'custom':
                     cuisine = bleach.clean(formInfo['custCuisine'][0])
@@ -182,13 +205,13 @@ class webserverHandler(BaseHTTPRequestHandler):
                     else:
                         message += "Nothing added because name or cuisine empty"
                 elif formInfo['form'] == 'restEdit':
-
                     message += "Made these changes to restaurant %s: " % rest_id
                     if (name == restaurant.name and
                         cuisine == restaurant.foodType):
                         message += "<br>None because name and cuisine were not "
                         message += "different"
                     elif (len(name) == 0 and len(cuisine) == 0):
+                        print "empty"
                         message += "<br>None because name and cuisine fields "
                         message += "were empty"
                     else:
@@ -217,11 +240,8 @@ class webserverHandler(BaseHTTPRequestHandler):
                 session.commit()
                 session.close()
 
-                output = ""
-                output += "<html><body>"
                 output += "<h1>"+message+"</h1>"
-                output += "<h3>To continue, refresh the page "
-                output += "or navigate to another page"
+                output += "<h3>To continue, navigate to another page</h3>"
                 output += "</body><html>"
                 
                 self.wfile.write(output)
