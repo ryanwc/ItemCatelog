@@ -23,6 +23,19 @@ def getRestaurants():
     session.close()
     return restaurants
 
+def getRestaurant(rest_id):
+    """Return the restaurant with the given ID
+
+    Args:
+      rest_id: the id of the restaurant to get
+    """
+    session = getRestaurantDBSession()
+
+    restaurant = session.query(Restaurant).\
+                 filter(Restaurant.id==rest_id).first()
+
+    return restaurant
+
 def getMenuItems():
     """Return a list of all menu items ordered by restaurant ID
     """
@@ -49,5 +62,3 @@ def getPopularCuisines():
 
     session.close()
     return popCuisines
-
-    
