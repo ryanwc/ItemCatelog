@@ -46,6 +46,19 @@ def getMenuItems():
     session.close()
     return menuItems
 
+def getMenuItems(rest_id):
+    """Return a list of all menu items for a specific restaurant
+
+    Args:
+        rest_id: the id of the restaurant whose menu items to get
+    """
+    session = getRestaurantDBSession()
+
+    menuItems = session.query(MenuItem).filter_by(restaurant_id=rest_id)
+
+    session.close()
+    return menuItems
+
 def getPopularCuisines():
     """Return a list of all cuisines offered by at least three restaurants
     """
