@@ -73,7 +73,7 @@ cornBeef = {'name':'Corned Beef',
             'description':'Rye bread piled high with corned beef and topped with spicy mustard',
             'price':'$6.25'}
 italianSub = {'name':'Italian',
-              'description':'Salami, ham, banana peppers, lettue, and more topped with a vinaigrette',
+              'description':'Salami, ham, banana peppers, lettuce, and more topped with a vinaigrette',
               'price':'$5.50'}
 pickle = {'name':'Pickle',
           'description':'One whole kosher dill pickle',
