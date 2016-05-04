@@ -5,6 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
 
+import RestaurantManager
+
 engine = create_engine('sqlite:///restaurantmenu.db')
 Base.metadata.bind = engine
 
@@ -27,14 +29,20 @@ def restaurantMenu(restaurant_id):
         output += '<br><br>'
     return output
 
+@app.route('/restaurants/<int:restaurant_id>/menu/add/')
 def newMenuItem(restaurant_id):
-    return "page to create a new menu item"
+    return "page to create a new menu item to restaurant " + \
+           str(restaurant_id)
 
-def editMenuItem(restaurant_id, menu_id):
-    return "page to edit a new menu item
+@app.route('/restaurants/<int:restaurant_id>/menu/edit/<int:menuItem_id>/')
+def editMenuItem(restaurant_id, menuItem_id):
+    return "page to edit menu item " + str(menuItem_id) + \
+           " at restaruant " + str(restaurant_id)
 
-def deleteMenuItem(restaurant_id, menu_id):
-    return "page to delete a menu item"
+@app.route('/restaurants/<int:restaurant_id>/menu/delete/<int:menuItem_id>/')
+def deleteMenuItem(restaurant_id, menuItem_id):
+    return "page to delete menu item " + str(menuItem_id) + \
+           " from restaruant " + str(restaurant_id)
 
 if __name__ == '__main__':
     app.debug = True
