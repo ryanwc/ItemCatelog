@@ -1,6 +1,6 @@
 <html>
 	<body>
-		<h1>{{ restaurant.name }}</h1>
+		<h1>{{restaurant.name}}</h1>
 
 		<a href='/restaurants/{{restaurant.id}}/menu/add/'>
 			Create new menu item
@@ -16,13 +16,15 @@
 		</br>
 		{{i.price}}
 		</br>
-		<a href='/restaurants/{{restaurant.id}}/menu/edit/{{i.id}}'>
-			Edit
-		</a>
+		<a href="{{url_for('editMenuItem', 
+							restaurant_id=i.restaurant_id,
+							menuItem_id=i.id)}}">
+			Edit</a>
 		</br>
-		<a href='/restaurants/{{restaurant.id}}/menu/delete/{{i.id}}'>
-			Delete
-		</a>
+		<a href="{{url_for('deleteMenuItem', 
+							restaurant_id=i.restaurant_id,
+							menuItem_id=i.id)}}">
+			Delete</a>
 		</br>
 		</br>
 		{% endfor %}

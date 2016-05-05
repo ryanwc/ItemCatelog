@@ -47,6 +47,8 @@ def newMenuItem(restaurant_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/edit/<int:menuItem_id>/',
            methods=['GET','POST'])
 def editMenuItem(restaurant_id, menuItem_id):
+        item = session.query(MenuItem).filter_by(id=menuItem_id).one()
+        
         if request.method == 'POST':
             
             if request.form['name']:
@@ -71,7 +73,7 @@ def editMenuItem(restaurant_id, menuItem_id):
         else:
             return render_template('EditMenuItem.html',
                                    restaurant_id=restaurant_id,
-                                   menuItem_id=menuItem_id)
+                                   menuItem=item)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/delete/<int:menuItem_id>/',
            methods=['GET','POST'])
