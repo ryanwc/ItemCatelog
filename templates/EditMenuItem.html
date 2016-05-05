@@ -1,0 +1,26 @@
+<html>
+<body>
+
+<h1>Edit Menu Item</h1>
+<h3>Edit item {{menuItem_id}} from restaurant {{restaurant_id}}'s menu</h2>
+
+<p> NOTE: Leave a box blank if you do not wish to change its value.
+
+<form action="{{ url_for('editMenuItem', 
+						 restaurant_id=restaurant_id,
+						 menuItem_id=menuItem_id) }}"
+method='post'>
+
+	<p>Change Item Name to:</p>
+		<input type='text' size='30' name='name'>
+	<p>Change Item Description to:</p>
+		<input type='text' size='60' name='description'>
+	<p>Change Item Price to:</p>
+		<input type='text' size='30' name='price'>
+
+<input type='submit' value='Submit Changes'>
+
+</form>
+
+</body>
+</html>

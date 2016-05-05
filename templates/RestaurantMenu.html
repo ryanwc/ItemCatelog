@@ -1,0 +1,30 @@
+<html>
+	<body>
+		<h1>{{ restaurant.name }}</h1>
+
+		<a href='/restaurants/{{restaurant.id}}/menu/add/'>
+			Create new menu item
+		</a>
+
+		<h3>Menu</h3>
+
+		{% for i in items %}
+
+		{{i.name}}
+		</br>
+		{{i.description}}
+		</br>
+		{{i.price}}
+		</br>
+		<a href='/restaurants/{{restaurant.id}}/menu/edit/{{i.id}}'>
+			Edit
+		</a>
+		</br>
+		<a href='/restaurants/{{restaurant.id}}/menu/delete/{{i.id}}'>
+			Delete
+		</a>
+		</br>
+		</br>
+		{% endfor %}
+	</body>
+</html>

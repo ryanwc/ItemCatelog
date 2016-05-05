@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, request, redirect, url_for
 app = Flask(__name__)
 
 from sqlalchemy import create_engine
@@ -7,6 +7,8 @@ from database_setup import Base, Restaurant, MenuItem
 
 import RestaurantManager
 
+import bleach
+
 engine = create_engine('sqlite:///restaurantmenu.db')
 Base.metadata.bind = engine
 
@@ -14,30 +16,57 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 @app.route('/')
-@app.route('/restaurants/<int:restaurant_id>/')
+@app.route('/restaurants/<int:restaurant_id>/menu/')
 def restaurantMenu(restaurant_id):
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     items = session.query(MenuItem).filter_by(restaurant_id=restaurant_id)
+    
+    return render_template('RestaurantMenu.html',
+                           restaurant=restaurant,
+                           items=items)
 
-    output = ''
-    for i in items:
-        output += i.name
-        output += '<br>'
-        output += i.description
-        output += '<br>'
-        output += i.price
-        output += '<br><br>'
-    return output
-
-@app.route('/restaurants/<int:restaurant_id>/menu/add/')
+@app.route('/restaurants/<int:restaurant_id>/menu/add/',
+           methods=['GET','POST'])
 def newMenuItem(restaurant_id):
-    return "page to create a new menu item to restaurant " + \
-           str(restaurant_id)
+    if request.method == 'POST':
+        newItem = MenuItem(name=request.form['name'],
+                           restaurant_id=restaurant_id)
+        session.add(newItem)
+        session.commit()
+        return redirect(url_for('restaurantMenu',
+                                restaruant_id=restaurant_id))
+    else:
+        return render_template('AddMenuItem.html',
+                               restaurant_id=restaurant_id)
 
-@app.route('/restaurants/<int:restaurant_id>/menu/edit/<int:menuItem_id>/')
+@app.route('/restaurants/<int:restaurant_id>/menu/edit/<int:menuItem_id>/',
+           methods=['GET','POST'])
 def editMenuItem(restaurant_id, menuItem_id):
-    return "page to edit menu item " + str(menuItem_id) + \
-           " at restaruant " + str(restaurant_id)
+        if request.method == 'POST':
+            
+            if request.form['name']:
+                newName = bleach.clean(request.form['name'])
+                session.query(MenuItem).filter(MenuItem.id==menuItem_id).\
+                        update({'name':newName})
+                
+            if request.form['description']:
+                newDescription = bleach.clean(request.form['description'])
+                session.query(MenuItem).filter(MenuItem.id==menuItem_id).\
+                        update({'description':newDescription})
+                
+            if request.form['price']:
+                newPrice = bleach.clean(request.form['price'])
+                session.query(MenuItem).filter(MenuItem.id==menuItem_id).\
+                        update({'price':newPrice})
+                
+            session.commit()
+            
+            return redirect(url_for('restaurantMenu',
+                                    restaurant_id=restaurant_id))
+        else:
+            return render_template('EditMenuItem.html',
+                                   restaurant_id=restaurant_id,
+                                   menuItem_id=menuItem_id)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/delete/<int:menuItem_id>/')
 def deleteMenuItem(restaurant_id, menuItem_id):
