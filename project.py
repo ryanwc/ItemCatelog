@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 app = Flask(__name__)
 
 from sqlalchemy import create_engine
@@ -38,6 +38,7 @@ def newMenuItem(restaurant_id):
                            price=price)
         session.add(newItem)
         session.commit()
+        flash("menu item '" + name + "' added to the menu!")
         return redirect(url_for('restaurantMenu',
                                 restaurant_id=restaurant_id))
     else:
@@ -48,25 +49,48 @@ def newMenuItem(restaurant_id):
            methods=['GET','POST'])
 def editMenuItem(restaurant_id, menuItem_id):
         item = session.query(MenuItem).filter_by(id=menuItem_id).one()
+        oldName = item.name
+        oldDescription = item.description
+        oldPrice = item.price
         
         if request.method == 'POST':
+
+            changeName = False
+            changeDescription = False
+            changePrice = False
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
                 session.query(MenuItem).filter(MenuItem.id==menuItem_id).\
                         update({'name':newName})
+                changeName = True
                 
             if request.form['description']:
                 newDescription = bleach.clean(request.form['description'])
                 session.query(MenuItem).filter(MenuItem.id==menuItem_id).\
                         update({'description':newDescription})
+                changeDescription = True
                 
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
                 session.query(MenuItem).filter(MenuItem.id==menuItem_id).\
                         update({'price':newPrice})
+                changePrice = True
                 
             session.commit()
+
+            if changeName:
+                flash("menu item " + str(item.id) + "'s name changed from '"+\
+                      oldName + "' to '" + newName + "'")
+
+            if changeDescription:
+                flash("menu item " + str(item.id) + "'s description changed "\
+                      "from '"+ oldDescription + "' to '" + \
+                      newDescription + "'")
+
+            if changePrice:
+                flash("menu item " + str(item.id) + "'s price changed from '"+\
+                      oldPrice + "' to '" + newPrice + "'")
             
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
@@ -79,10 +103,12 @@ def editMenuItem(restaurant_id, menuItem_id):
            methods=['GET','POST'])
 def deleteMenuItem(restaurant_id, menuItem_id):
         if request.method == 'POST':
-            session.query(MenuItem).\
-                    filter(MenuItem.id==menuItem_id).\
-                    delete()
+            itemToDelete = session.query(MenuItem).\
+                           filter(MenuItem.id==menuItem_id).one()
+            session.delete(itemToDelete)
             session.commit()
+            flash("menu item " + str(itemToDelete.id) + " (" + \
+                  itemToDelete.name + ") deleted from the menu and database")
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
         else:
@@ -91,5 +117,6 @@ def deleteMenuItem(restaurant_id, menuItem_id):
                                    menuItem_id=menuItem_id)
 
 if __name__ == '__main__':
+    app.secret_key = 'super_secret_key'
     app.debug = True
     app.run(host = '0.0.0.0', port = 5000)
