@@ -29,12 +29,17 @@ def restaurantMenu(restaurant_id):
            methods=['GET','POST'])
 def newMenuItem(restaurant_id):
     if request.method == 'POST':
-        newItem = MenuItem(name=request.form['name'],
-                           restaurant_id=restaurant_id)
+        name = bleach.clean(request.form['name'])
+        description = bleach.clean(request.form['description'])
+        price = bleach.clean(request.form['price'])
+        newItem = MenuItem(name=name,
+                           restaurant_id=restaurant_id,
+                           description=description,
+                           price=price)
         session.add(newItem)
         session.commit()
         return redirect(url_for('restaurantMenu',
-                                restaruant_id=restaurant_id))
+                                restaurant_id=restaurant_id))
     else:
         return render_template('AddMenuItem.html',
                                restaurant_id=restaurant_id)
@@ -68,10 +73,20 @@ def editMenuItem(restaurant_id, menuItem_id):
                                    restaurant_id=restaurant_id,
                                    menuItem_id=menuItem_id)
 
-@app.route('/restaurants/<int:restaurant_id>/menu/delete/<int:menuItem_id>/')
+@app.route('/restaurants/<int:restaurant_id>/menu/delete/<int:menuItem_id>/',
+           methods=['GET','POST'])
 def deleteMenuItem(restaurant_id, menuItem_id):
-    return "page to delete menu item " + str(menuItem_id) + \
-           " from restaruant " + str(restaurant_id)
+        if request.method == 'POST':
+            session.query(MenuItem).\
+                    filter(MenuItem.id==menuItem_id).\
+                    delete()
+            session.commit()
+            return redirect(url_for('restaurantMenu',
+                                    restaurant_id=restaurant_id))
+        else:
+            return render_template('DeleteMenuItem.html',
+                                   restaurant_id=restaurant_id,
+                                   menuItem_id=menuItem_id)
 
 if __name__ == '__main__':
     app.debug = True

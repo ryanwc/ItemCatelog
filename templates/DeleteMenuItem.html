@@ -1,21 +1,17 @@
 <html>
 <body>
 
-<h1>New Menu Item</h1>
-<h3>Add an item to restaurant {{restaurant_id}}'s menu</h2>
+<h1>Delete Menu Item</h1>
+<h3>Delete item {{menuItem_id}} from restaurant {{restaurant_id}}'s menu</h3>
 
-<form action="{{ url_for('newMenuItem', restaurant_id=restaurant_id )}}"
+<p> Are you sure? Click the button below to remove the item from the menu and database.</p>
+
+<form action="{{ url_for('deleteMenuItem', 
+						 restaurant_id=restaurant_id,
+						 menuItem_id=menuItem_id) }}"
 method='post'>
 
-	<p>Item Name:</p>
-		<input type='text' size='30' name='name'>
-	<p>Item Description:</p>
-		<input type='text' size='30' name='description'>
-	<p>Item Price:</p>
-		<input type='text' size='30' name='price'>
-
-<input type='submit' value='Create'>
-
+<input type='submit' value='Delete Item'>
 </form>
 
 </body>
