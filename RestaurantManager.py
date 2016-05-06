@@ -4,6 +4,32 @@ from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
 
 
+def populateMenuWithBaseItems(restaurant_id):
+        session = getRestaurantDBSession()
+
+        restaurant = session.query(Restaurant).\
+                     filter_by(id=restaurant_id).one()
+
+        # do not add any menu items if the restaurant has no specific cuisine
+        if restaurant.cuisine_id is -1:
+            session.close()
+            return
+
+        baseMenuItems = session.query(BaseMenuItem).\
+                        filter_by(id=restaurant.cuisine_id)
+        
+        for baseMenuItem in baseMenuItems:
+            restaurantMenuItem = MenuItem(name=baseMenuItem.name,
+                                          description=baseMenuItem.description,
+                                          price=baseMenuItem.price,
+                                          baseMenuItem_id=baseMenuItem.id,
+                                          restaurant_id=restaurant.id)
+            session.add(restaurantMenuItem)
+
+        session.commit()
+        session.close()
+
+
 def getRestaurantDBSession():
     """Return an interactive session with the restaurant menu database
     """

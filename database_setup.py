@@ -32,14 +32,12 @@ class Restaurant(Base):
 class BaseMenuItem(Base):
 	__tablename__ = 'base_menu_item'
 
-	name = Column(String(80), nullable=False)
+	name = Column(String(80), nullable=False, unique=True)
 	id = Column(Integer, primary_key=True)
 	description = Column(String(250))
 	price = Column(String(8))
 	course = Column(String(250))
-	restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
 	cuisine_id = Column(Integer, ForeignKey('cuisine.id'))
-	restaurant = relationship(Restaurant)
 	cuisine_id = relationship(Cuisine)
 
 	@property

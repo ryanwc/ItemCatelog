@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from RestaurantManager import getRestaurants
-from database_setup import Base, Restaurant, MenuItem
+from database_setup import Base, Cuisine, Restaurant, BaseMenuItem, RestaurantMenuItem
 
 import random
 
@@ -17,31 +17,15 @@ for tbl in reversed(Base.metadata.sorted_tables):
     engine.execute(tbl.delete())
 session.commit()
 
-# list of possesive pronouns
-possPros = ['Jill\'s','Ryan\'s','Our','Your','Canada\'s','Franklin\'s',\
-            'Morroco\'s','Hilde\'s']
-# list of adjectives
-adjectives = ['Great','Best','Blazin','Happy','Delicious','Elegant',\
-              'Big','Yummy']
-# list of food types
-cuisines = ['Thai', 'Burgers','Delicatessen','Italian','Waffles','Ice Cream',\
-            'Salad','Fried Chicken']
 
-restaurants = []
-# populate the database with 40 restaurants
-# (note that it's OK if names repeat, this could just be another branch)
-for restaurant in range(0,40):
-    poss = possPros[int(round(random.uniform(0,len(possPros)-1)))]
-    adj = adjectives[int(round(random.uniform(0,len(adjectives)-1)))]
-    thisCuisine = cuisines[int(round(random.uniform(0,len(cuisines)-1)))]
+### add a dummy cuisine for foods and restaurants with no specific type
+dummyCuisine = Cuisine(id=-1,name="No specific cuisine")
+session.add(dummyCuisine)
+session.commit()
 
-    restaurantName = poss+" "+adj+" "+thisCuisine
-    restaurants.append({'name':restaurantName,'possPro':poss,\
-                        'adj':adj,'cuisine':thisCuisine})
-    newRestaurant = Restaurant(name=restaurantName,foodType=thisCuisine)
-    session.add(newRestaurant)
-    session.commit()
+### add eight popular cuisines and four of their signature dishes
 
+# prepare dishes
 tomYum = {'name':'Tom Yum Koong',
           'description':'Spicy soup with prawns',
           'price':'$7.00'}
@@ -139,6 +123,7 @@ sweeTea = {'name':'Sweet Tea',
            'description':'A tall, cool glass of southern sweet tea',
            'price':'$3.10'}
 
+# prepare menus
 baseMenus = {'Thai':[tomYum,padThai,somTam,khaoSoi],
              'Burgers':[hamburger,cheeseBurger,frenchFries,milkshake],
              'Delicatessen':[pumpBagel,cornBeef,italianSub,pickle],
@@ -148,15 +133,51 @@ baseMenus = {'Thai':[tomYum,padThai,somTam,khaoSoi],
              'Salad':[cobb,ceasar,fruitSalad,greenTea],
              'Fried Chicken':[twoDrum,oneBreast,mashTate,sweeTea]}
 
+# add cuisines and their associated dishes to the database
+for cuisine in baseMenus:
+    cuisineObj = Cuisine(name=cuisine)
+    session.add(cuisineObj)
+    session.commit()
+    
+    for baseMenuItem in cuisine:
+        cuisineObj = session.query(Cuisine).filter_by(name=cuisine).one()
+        baseMenuItem = BaseMenuItem(name=baseMenuItem['name'],
+                                    description=baseMenuItem['description'],
+                                    price=baseMenuItem['price'],
+                                    cuisine_id=cuisineObj.id)
+        session.add(baseMenuItem)
+        session.commit()
+
+
+### generate names for restaurants; we've manually ensured the
+### cuisine names match the names now in the Cuisine table
+possPros = ['Jill\'s','Ryan\'s','Our','Your','Canada\'s','Franklin\'s',\
+            'Morroco\'s','Hilde\'s']
+adjectives = ['Great','Best','Blazin','Happy','Delicious','Elegant',\
+              'Big','Yummy']
+cuisines = ['Thai', 'Burgers','Delicatessen','Italian','Waffles','Ice Cream',\
+            'Salad','Fried Chicken']
+
+
+### add 40 restaurants to the database (names not unique)
+for restaurant in range(0,40):
+    poss = possPros[int(round(random.uniform(0,len(possPros)-1)))]
+    adj = adjectives[int(round(random.uniform(0,len(adjectives)-1)))]
+    thisCuisine = cuisines[int(round(random.uniform(0,len(cuisines)-1)))]
+
+    thisCuisineObj = session.query(Cuisine).filter_by(name=thisCuisine).one()
+
+    restaurantName = poss+" "+adj+" "+thisCuisine
+    newRestaurant = Restaurant(name=restaurantName,cuisine_id=thisCuisineObj.id)
+    session.add(newRestaurant)
+    session.commit()
+    # populate this restaurant's menu
+
+session.close()
+
+
+### add base cuisine items to each restaurant's menu
 rests = getRestaurants()
 
-# populate the menu table
 for restaurant in rests:
-    print restaurant.foodType
-    for item in baseMenus[restaurant.foodType]:
-        menuItem = MenuItem(name=item['name'],
-                            description=item['description'],
-                            price=item['price'],
-                            restaurant_id=restaurant.id)
-        session.add(menuItem)
-        session.commit()
+    populateMenuWithBaseItems(restaurant.id)
