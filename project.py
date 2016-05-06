@@ -4,21 +4,21 @@ app = Flask(__name__)
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Restaurant, MenuItem
+from database_setup import Base, Restaurant, BaseMenuItem, Cuisine, RestaurantMenuItem
 
 import RestaurantManager
 
 import bleach
 
 
-engine = create_engine('sqlite:///restaurantmenu.db')
+engine = create_engine('sqlite:///restaurants.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
-### Make an API Endpoints (for GET Requests)
+### Make a API Endpoints (for GET Requests)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/JSON')
 def restaurantMenuJSON(restaurant_id):
@@ -40,6 +40,29 @@ def menuItemJSON(restaurant_id,menuItem_id):
 @app.route('/index/')
 def restaurantManagerIndex():
         return render_template("index.html")
+
+@app.route('/cuisines/')
+def cuisines():
+        cuisines = session.query(Cuisine).all()
+        
+        return render_template("Cuisines.html",
+                               cuisines=cuisines)
+
+@app.route('/cuisines/add/')
+def addCuisine():
+        return "add a cuisine"
+
+@app.route('/cuisines/<int:cuisine_id>/')
+def cuisine(cuisine_id):
+        return "cuisine " + str(cuisine_id)
+
+@app.route('/cuisines/<int:cuisine_id>/edit/')
+def editCuisine(cuisine_id):
+        return "edit cuisine " + str(cuisine_id)
+
+@app.route('/cuisines/<int:cuisine_id>/delete/')
+def deleteCuisine(cuisine_id):
+        return "delete cuisine " + str(cuisine_id)
 
 @app.route('/restaurants/')
 def restaurants():
