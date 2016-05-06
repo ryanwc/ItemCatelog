@@ -39,11 +39,14 @@ def menuItemJSON(restaurant_id,menuItem_id):
 @app.route('/')
 @app.route('/index/')
 def restaurantManagerIndex():
-        return "index page"
+        return render_template("index.html")
 
 @app.route('/restaurants/')
-def restaurantList():
-        return "restaurant list"
+def restaurants():
+        restaurants = session.query(Restaurant).all()
+        
+        return render_template("Restaurants.html",
+                               restaurants=restaurants)
 
 @app.route('/restaurants/add/')
 def addRestaurant():
@@ -62,7 +65,7 @@ def deleteRestaurant(restaurant_id):
         return "delete restaurant " + str(restaurant_id)
 
 @app.route('/baseMenuItems/')
-def baseMenuItemList():
+def baseMenuItems():
         return "base menu item list"
 
 @app.route('/baseMenuItems/add/')

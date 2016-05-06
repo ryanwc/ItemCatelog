@@ -1,0 +1,41 @@
+<html>
+<body> 
+	<h1 class='header'>List of All Restaurants</h1>
+
+	<p>
+		<a class='back' href="{{url_for('restaurantManagerIndex')}}">
+			Take me back to the start page
+		</a>
+	</p>
+
+	<p>
+		Click a restaurant to view or modify it, or 
+		<a href="{{url_for('addRestaurant')}}"> 
+			click here to create a new restaurant
+		</a>
+	</p>
+
+	<div class='flash'>
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<ul>
+				{% for message in messages %}
+					<li><strong>{{message}}</strong></li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+	</div>
+
+	<ul>
+	{% for r in restaurants %}
+		<li class='restaurant'>
+			<a href="{{url_for('restaurant',
+							 	restaurant_id=r.id)}}">
+				{{r.name}} (ID {{r.id}})
+			</a>
+		</li>
+	{% endfor %}
+	</ul>
+</body>
+</html>
