@@ -28,7 +28,7 @@ def restaurantMenuJSON(restaurant_id):
         return jsonify(MenuItems=[i.serialize for i in items])
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:menuItem_id>/JSON')
-def restaurantMenuItemJSON(restaurant_id,menuItem_id):
+def menuItemJSON(restaurant_id,menuItem_id):
         item = session.query(MenuItem).filter_by(id=menuItem_id).one()
 
         return jsonify(MenuItem=item.serialize)
@@ -37,6 +37,50 @@ def restaurantMenuItemJSON(restaurant_id,menuItem_id):
 ### Retrieve and post data
 
 @app.route('/')
+@app.route('/index/')
+def restaurantManagerIndex():
+        return "index page"
+
+@app.route('/restaurants/')
+def restaurantList():
+        return "restaurant list"
+
+@app.route('/restaurants/add/')
+def addRestaurant():
+        return "add a restaurant"
+
+@app.route('/restaurants/<int:restaurant_id>/')
+def restaurant(restaurant_id):
+        return "restaurant " + str(restaurant_id)
+
+@app.route('/restaurants/<int:restaurant_id>/edit/')
+def editRestaurant(restaurant_id):
+        return "edit restaurant " + str(restaurant_id)
+
+@app.route('/restaurants/<int:restaurant_id>/delete/')
+def deleteRestaurant(restaurant_id):
+        return "delete restaurant " + str(restaurant_id)
+
+@app.route('/baseMenuItems/')
+def baseMenuItemList():
+        return "base menu item list"
+
+@app.route('/baseMenuItems/add/')
+def addBaseMenuItem():
+        return "add a base menu item"
+
+@app.route('/baseMenuItems/<int:baseMenuItem_id>/')
+def baseMenuItem(baseMenuItem_id):
+        return "base menu item " + str(baseMenuItem_id)
+
+@app.route('/baseMenuItems/<int:baseMenuItem_id>/edit/')
+def editBaseMenuItem(baseMenuItem_id):
+        return "edit menu item " + str(baseMenuItem_id)
+
+@app.route('/baseMenuItems/<int:baseMenuItem_id>/delete/')
+def deleteBaseMenuItem(baseMenuItem_id):
+        return "delete base menu item " + str(baseMenuItem_id)
+
 @app.route('/restaurants/<int:restaurant_id>/menu/')
 def restaurantMenu(restaurant_id):
         restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
@@ -48,7 +92,7 @@ def restaurantMenu(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/menu/add/',
            methods=['GET','POST'])
-def newMenuItem(restaurant_id):
+def addMenuItem(restaurant_id):
         if request.method == 'POST':
             name = bleach.clean(request.form['name'])
             description = bleach.clean(request.form['description'])
@@ -66,7 +110,11 @@ def newMenuItem(restaurant_id):
             return render_template('AddMenuItem.html',
                                    restaurant_id=restaurant_id)
 
-@app.route('/restaurants/<int:restaurant_id>/menu/edit/<int:menuItem_id>/',
+@app.route('/restaurants/<int:restaurant_id>/menu/<int:menuItem_id>/')
+def menuItem(restaurant_id, menuItem_id):
+        return "item " + str(menuItem_id) + " at " + str(restaurant_id)
+
+@app.route('/restaurants/<int:restaurant_id>/menu/<int:menuItem_id>/edit/',
            methods=['GET','POST'])
 def editMenuItem(restaurant_id, menuItem_id):
         item = session.query(MenuItem).filter_by(id=menuItem_id).one()
@@ -120,7 +168,7 @@ def editMenuItem(restaurant_id, menuItem_id):
                                    restaurant_id=restaurant_id,
                                    menuItem=item)
 
-@app.route('/restaurants/<int:restaurant_id>/menu/delete/<int:menuItem_id>/',
+@app.route('/restaurants/<int:restaurant_id>/menu/<int:menuItem_id>/delete/',
            methods=['GET','POST'])
 def deleteMenuItem(restaurant_id, menuItem_id):
         if request.method == 'POST':

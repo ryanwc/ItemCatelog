@@ -1,14 +1,14 @@
 <html>
 <body>
 
-<h1>New Menu Item</h1>
+<h1>Add Menu Item</h1>
 <h3>Add an item to restaurant {{restaurant_id}}'s menu</h3>
 
 <a href="{{url_for('restaurantMenu',restaurant_id=restaurant_id)}}">
 Cancel (return to menu)
 </a>
 
-<form action="{{url_for('newMenuItem', restaurant_id=restaurant_id)}}"
+<form action="{{url_for('addMenuItem', restaurant_id=restaurant_id)}}"
 method='post'>
 
 	<p>Item Name:</p>
