@@ -1,21 +1,23 @@
+### WARNING: Running this script clears and repopulates
+### the database 'sqlite:///restaurants.db'
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from RestaurantManager import getRestaurants
+from RestaurantManager import getRestaurants, populateMenuWithBaseItems
 from database_setup import Base, Cuisine, Restaurant, BaseMenuItem, RestaurantMenuItem
 
 import random
 
 
-engine = create_engine('sqlite:///restaurantmenu.db')
+engine = create_engine('sqlite:///restaurants.db')
 Base.metadata.bind = engine
+# clear existing data
+Base.metadata.drop_all(engine)
+Base.metadata.create_all(engine)
+# get session
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
-
-# clear data
-for tbl in reversed(Base.metadata.sorted_tables):
-    engine.execute(tbl.delete())
-session.commit()
 
 
 ### add a dummy cuisine for foods and restaurants with no specific type
@@ -139,7 +141,7 @@ for cuisine in baseMenus:
     session.add(cuisineObj)
     session.commit()
     
-    for baseMenuItem in cuisine:
+    for baseMenuItem in baseMenus[cuisine]:
         cuisineObj = session.query(Cuisine).filter_by(name=cuisine).one()
         baseMenuItem = BaseMenuItem(name=baseMenuItem['name'],
                                     description=baseMenuItem['description'],
@@ -171,7 +173,6 @@ for restaurant in range(0,40):
     newRestaurant = Restaurant(name=restaurantName,cuisine_id=thisCuisineObj.id)
     session.add(newRestaurant)
     session.commit()
-    # populate this restaurant's menu
 
 session.close()
 

@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, select, func
 from sqlalchemy.orm import sessionmaker
 
-from database_setup import Base, Restaurant, MenuItem
+from database_setup import Base, Restaurant, BaseMenuItem, RestaurantMenuItem, Cuisine
 
 
 def populateMenuWithBaseItems(restaurant_id):
@@ -19,7 +19,7 @@ def populateMenuWithBaseItems(restaurant_id):
                         filter_by(id=restaurant.cuisine_id)
         
         for baseMenuItem in baseMenuItems:
-            restaurantMenuItem = MenuItem(name=baseMenuItem.name,
+            restaurantMenuItem = RestaurantMenuItem(name=baseMenuItem.name,
                                           description=baseMenuItem.description,
                                           price=baseMenuItem.price,
                                           baseMenuItem_id=baseMenuItem.id,
@@ -33,7 +33,7 @@ def populateMenuWithBaseItems(restaurant_id):
 def getRestaurantDBSession():
     """Return an interactive session with the restaurant menu database
     """
-    engine = create_engine('sqlite:///restaurantmenu.db')
+    engine = create_engine('sqlite:///restaurants.db')
     Base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
