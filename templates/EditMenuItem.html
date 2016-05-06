@@ -1,36 +1,32 @@
 <html>
 <body>
+	<h1>Edit Menu Item</h1>
+	
+	<h3>Edit item {{menuItem.id}} from restaurant {{restaurant_id}}'s menu</h3>
 
-<h1>Edit Menu Item</h1>
-<h3>Edit item {{menuItem.id}} from restaurant {{restaurant_id}}'s menu</h3>
+	<p> NOTE: Leave a box blank if you do not wish to change its value.</p>
 
-<p> NOTE: Leave a box blank if you do not wish to change its value.</p>
+	<a href="{{url_for('restaurantMenu',restaurant_id=restaurant_id)}}">
+		Cancel (return to menu)
+	</a>
 
-<a href="{{url_for('restaurantMenu',restaurant_id=restaurant_id)}}">
-Cancel (return to menu)
-</a>
+	<form action="{{url_for('editMenuItem', 
+							restaurant_id=restaurant_id,
+							menuItem_id=menuItem.id)}}"
+		method='post'>
 
-<form action="{{url_for('editMenuItem', 
-						restaurant_id=restaurant_id,
-						menuItem_id=menuItem.id)}}"
-method='post'>
-
-	<p>Change Item Name to:</p>
-		<input type='text' size='30' name='name'
-			placeholder='{{menuItem.name}}'
-		>
-	<p>Change Item Description to:</p>
+		<p>Change Item Name to:</p>
+		<input type='text' size='30' name='name' 
+			placeholder='{{menuItem.name}}'>
+		<p>Change Item Description to:</p>
 		<input type='text' size='60' name='description' 
-			placeholder='{{menuItem.description}}'
-		>
-	<p>Change Item Price to:</p>
+			placeholder='{{menuItem.description}}'>
+		<p>Change Item Price to:</p>
 		<input type='text' size='30' name='price' 
-			placeholder='{{menuItem.price}}'
-		>
+			placeholder='{{menuItem.price}}'>
 
-<input type='submit' value='Submit Changes'>
+		<input type='submit' value='Submit Changes'>
 
-</form>
-
+	</form>
 </body>
 </html>
