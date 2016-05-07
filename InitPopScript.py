@@ -4,7 +4,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from RestaurantManager import getRestaurants, populateMenuWithBaseItems
+from RestaurantManager import getRestaurants, populateMenuWithBaseItems, addCuisine, addBaseMenuItem, addRestaurant, getCuisine
 from database_setup import Base, Cuisine, Restaurant, BaseMenuItem, RestaurantMenuItem
 
 import random
@@ -21,14 +21,17 @@ session = DBSession()
 
 
 ### add a dummy cuisine for foods and restaurants with no specific type
-dummyCuisine = Cuisine(id=-1,name="No specific cuisine")
+dummyCuisine = Cuisine(id=-1,name="No Specific Cuisine")
 session.add(dummyCuisine)
 session.commit()
 
 ### add a dummy base menu item for foods with no specific type
-dummyBaseMenuItem = BaseMenuItem(id=-1, name="Base for No Cuisine")
+dummyBaseMenuItem = BaseMenuItem(id=-1, 
+  name="Base Item for Menu Items with No Specific Cuisine")
 session.add(dummyBaseMenuItem)
 session.commit()
+
+session.close()
 
 ### add eight popular cuisines and four of their signature dishes
 
@@ -142,18 +145,14 @@ baseMenus = {'Thai':[tomYum,padThai,somTam,khaoSoi],
 
 # add cuisines and their associated dishes to the database
 for cuisine in baseMenus:
-    cuisineObj = Cuisine(name=cuisine)
-    session.add(cuisineObj)
-    session.commit()
-    
+    addCuisine(cuisine)
+    cuisineObj = getCuisine(name=cuisine)
+
     for baseMenuItem in baseMenus[cuisine]:
-        cuisineObj = session.query(Cuisine).filter_by(name=cuisine).one()
-        baseMenuItem = BaseMenuItem(name=baseMenuItem['name'],
-                                    description=baseMenuItem['description'],
-                                    price=baseMenuItem['price'],
-                                    cuisine_id=cuisineObj.id)
-        session.add(baseMenuItem)
-        session.commit()
+        addBaseMenuItem(name=baseMenuItem['name'],
+                        description=baseMenuItem['description'],
+                        price=baseMenuItem['price'],
+                        cuisine_id=cuisineObj.id)
 
 
 ### generate names for restaurants; we've manually ensured the
@@ -172,14 +171,10 @@ for restaurant in range(0,40):
     adj = adjectives[int(round(random.uniform(0,len(adjectives)-1)))]
     thisCuisine = cuisines[int(round(random.uniform(0,len(cuisines)-1)))]
 
-    thisCuisineObj = session.query(Cuisine).filter_by(name=thisCuisine).one()
+    thisCuisineObj = getCuisine(name=thisCuisine)
 
     restaurantName = poss+" "+adj+" "+thisCuisine
-    newRestaurant = Restaurant(name=restaurantName,cuisine_id=thisCuisineObj.id)
-    session.add(newRestaurant)
-    session.commit()
-
-session.close()
+    addRestaurant(name=restaurantName, cuisine_id=thisCuisineObj.id)
 
 
 ### add base cuisine items to each restaurant's menu
