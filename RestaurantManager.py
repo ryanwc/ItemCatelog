@@ -161,6 +161,49 @@ def getRestaurantMenuItem(restaurantMenuItem_id):
     session.close()
     return restaurantMenuItem
 
+def getRestaurantsWithCuisine(cuisine_id):
+    """Return all restaurants with the given cuisine id
+
+    Args:
+        cuisine_id: the id of the cuisine to match
+    """
+    session = getRestaurantDBSession()
+
+    restaurants = session.query(Restaurant).\
+                  filter_by(cuisine_id=cuisine_id).all()
+
+    session.close()
+    return restaurants
+
+def getBaseMenuItemsWithCuisine(cuisine_id):
+    """Return all base menu items with the given cuisine id
+
+    Args:
+        cuisine_id: the id of the cuisine to match
+    """
+    session = getRestaurantDBSession()
+
+    baseMenuItems = session.query(BaseMenuItem).\
+                    filter_by(cuisine_id=cuisine_id).all()
+
+    session.close()
+    return baseMenuItems
+
+def getRestaurantMenuItemsWithCuisine(cuisine_id):
+    """Return all restaurant menu items with the given cuisine id
+
+    Args:
+        cuisine_id: the id of the cuisine to match
+    """
+    session = getRestaurantDBSession()
+
+    restaurantMenuItems = session.query(RestaurantMenuItem).\
+                          join(BaseMenuItem).\
+                          filter(BaseMenuItem.cuisine_id==cuisine_id).all()
+
+    session.close()
+    return restaurantMenuItems
+
 def getPopularCuisines():
     """Return a list of all cuisines offered by at least three restaurants
     """
