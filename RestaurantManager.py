@@ -7,80 +7,88 @@ from database_setup import Base, Restaurant, BaseMenuItem, RestaurantMenuItem, C
 def populateMenuWithBaseItems(restaurant_id):
     """Add all of a restaurant's base items base on its cuisine
     """
-        session = getRestaurantDBSession()
+    session = getRestaurantDBSession()
 
-        restaurant = session.query(Restaurant).\
-                     filter_by(id=restaurant_id).one()
+    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
 
-        # do not add any menu items if the restaurant has no specific cuisine
-        if restaurant.cuisine_id is -1:
-            session.close()
-            return
-
-        baseMenuItems = session.query(BaseMenuItem).\
-                        filter_by(id=restaurant.cuisine_id).all()
-        
-        for baseMenuItem in baseMenuItems:
-            restaurantMenuItem = RestaurantMenuItem(name=baseMenuItem.name,
-                                          description=baseMenuItem.description,
-                                          price=baseMenuItem.price,
-                                          baseMenuItem_id=baseMenuItem.id,
-                                          restaurant_id=restaurant.id)
-            session.add(restaurantMenuItem)
-
-        session.commit()
+    # do not add any menu items if the restaurant has no specific cuisine
+    if restaurant.cuisine_id is -1:
         session.close()
+        return
 
-def addRestaurantMenuItem(name, description=None, price=None, course=None,
-                          restaurant_id, baseMenuItem_id):
+    baseMenuItems = session.query(BaseMenuItem).\
+                    filter_by(id=restaurant.cuisine_id).all()
+        
+    for baseMenuItem in baseMenuItems:
+        restaurantMenuItem = RestaurantMenuItem(
+                name=baseMenuItem.name,
+                description=baseMenuItem.description,
+                price=baseMenuItem.price,
+                baseMenuItem_id=baseMenuItem.id,
+                restaurant_id=restaurant.id
+            )
+        session.add(restaurantMenuItem)
+
+    session.commit()
+    session.close()
+
+def addRestaurantMenuItem(name, restaurant_id, baseMenuItem_id,
+                          description=None, price=None, course=None):
     """Add an item to a restaurant's menu
     """
-        session = getRestaurantDBSession()
+    session = getRestaurantDBSession()
 
-        restaurantMenuItem = RestaurantMenuItem(name=name, 
-                                                description=description,
-                                                price=price, course=course,
-                                                restaurant_id=restaurant_id,
-                                                baseMenuItem_id=baseMenuItem_id)
+    restaurantMenuItem = RestaurantMenuItem(
+            name=name,
+            description=description,
+            price=price,
+            course=course,
+            restaurant_id=restaurant_id,
+            baseMenuItem_id=baseMenuItem_id
+        )
 
-        session.add(restaurantMenuItem)
-        session.commit()
-        session.close()
+    session.add(restaurantMenuItem)
+    session.commit()
+    session.close()
 
-def addBaseMenuItem(name, description=None, price=None,
-                    course=None, cuisine_id):
+def addBaseMenuItem(name, cuisine_id,
+                    description=None, price=None, course=None):
     """Add an item to a cuisine's base item list
     """
-        session = getRestaurantDBSession()
+    session = getRestaurantDBSession()
 
-        baseMenuItem = BaseMenuItem(name=name, description=description,
-                                    price=price, course=course,
-                                    cuisine_id=cuisine_id)
+    baseMenuItem = BaseMenuItem(
+            name=name, 
+            description=description,
+            price=price,
+            course=course,
+            cuisine_id=cuisine_id
+        )
 
-        session.commit()
-        session.close()
+    session.commit()
+    session.close()
 
 def addCuisine(name):
     """Add a cuisine to the database
     """
-        session = getRestaurantDBSession()
+    session = getRestaurantDBSession()
 
-        cuisine = Cuisine(name=name)
+    cuisine = Cuisine(name=name)
 
-        session.add(name)
-        session.commit()
-        session.close()
+    session.add(name)
+    session.commit()
+    session.close()
 
 def addRestaurant(name, cuisine_id):
     """Add a restaurant to the database
     """
-        session = getRestaurantDBSession()
+    session = getRestaurantDBSession()
 
-        restaurant = Restaurant(name=name, cuisine_id=cuisine_id)
+    restaurant = Restaurant(name=name, cuisine_id=cuisine_id)
 
-        session.add(restaurant)
-        session.commit()
-        session.close()
+    session.add(restaurant)
+    session.commit()
+    session.close()
 
 def getRestaurantDBSession():
     """Return an interactive session with the restaurant menu database
@@ -165,4 +173,20 @@ def getCuisines():
 
     session.close()
     return cuisines
+
+def getCuisine(cuisine_id=None, name=None):
+    """Return the cuisine with the given id
+
+    Args:
+        cuisine_id: the id of the cuisine to get
+    """
+    session = getRestaurantDBSession()
+
+    if cuisine_id is not None:
+        cuisine  = session.query(Cuisine).filter_by(id=cuisine_id).one()
+    else:
+        cuisine = session.query(Cuisine).filter_by(name=name).one()
+
+    session.close()
+    return cuisine
 
