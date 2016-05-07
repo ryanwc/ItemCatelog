@@ -25,6 +25,11 @@ dummyCuisine = Cuisine(id=-1,name="No specific cuisine")
 session.add(dummyCuisine)
 session.commit()
 
+### add a dummy base menu item for foods with no specific type
+dummyBaseMenuItem = BaseMenuItem(id=-1, name="Base for No Cuisine")
+session.add(dummyBaseMenuItem)
+session.commit()
+
 ### add eight popular cuisines and four of their signature dishes
 
 # prepare dishes
