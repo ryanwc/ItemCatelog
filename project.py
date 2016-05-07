@@ -42,21 +42,60 @@ def cuisines():
         return render_template("Cuisines.html",
                                cuisines=cuisines)
 
-@app.route('/cuisines/add/')
+@app.route('/cuisines/add/', methods=['GET', 'POST'])
 def addCuisine():
-        return render_template('AddCuisine.html')
+        if request.method == 'POST':
+
+            RestaurantManager.addCuisine(bleach.clean(request.form['name']))
+
+            flash("Cuisine '" + name + "' added to the database!")
+
+            return redirect(url_for('cuisines'))
+        else:
+
+            return render_template('AddCuisine.html')
 
 @app.route('/cuisines/<int:cuisine_id>/')
 def cuisine(cuisine_id):
-        return "cuisine " + str(cuisine_id)
+        cuisine = RestaurantManager.getCuisine(cuisine_id)
+        restaurants = RestaurantManager.getRestaurantsWithCuisine(cuisine_id)
+        baseMenuItems = RestaurantManager.\
+                        getBaseMenuItemsWithCuisine(cuisine_id)
+        restaurantMenuItems = RestaurantManager.\
+                              getRestaurantMenuItemsWithCuisine(cuisine_id)
+
+        mostExpensiveBaseMenuItem = baseMenuItems[0]
+        for item in baseMenuItems:
+            if item.price > mostExpensiveBaseMenuItem.price:
+                mostExpensiveBaseMenuItem = item
+
+        mostExpensiveRestaurantMenuItem = restaurantMenuItems[0]
+        for item in restaurantMenuItems:
+            if item.price > mostExpensiveRestaurantMenuItem.price:
+                mostExpensiveRestaurantMenuItem = item
+
+        return render_template("Cuisine.html",
+                               cuisine=cuisine,
+                               mostExpensiveBaseMenuItem=mostExpensiveBaseMenuItem,
+                               mostExpensiveRestaurantMenuItem=mostExpensiveRestaurantMenuItem,
+                               restaurants=restaurants,
+                               baseMenuItems=baseMenuItems,
+                               restaurantMenuItems=restaurantMenuItems)
 
 @app.route('/cuisines/<int:cuisine_id>/edit/')
 def editCuisine(cuisine_id):
         return "edit cuisine " + str(cuisine_id)
 
-@app.route('/cuisines/<int:cuisine_id>/delete/')
+@app.route('/cuisines/<int:cuisine_id>/delete/', methods=['GET', 'POST'])
 def deleteCuisine(cuisine_id):
-        return "delete cuisine " + str(cuisine_id)
+        cuisine = RestaurantManager.getCuisine(cuisine_id)
+
+        if request.method == 'POST':
+
+            redirect(url_for('cuisines'))
+        else:
+            return render_template("DeleteCuisine.html",
+                                   cuisine=cuisine)
 
 @app.route('/restaurants/')
 def restaurants():
@@ -85,7 +124,7 @@ def addRestaurant():
             flash("restaurant '" + name + "' with cuisine '" + cuisineName +\
                 "' added to the database!")
 
-            return redirect(url_for('Restaurants.html'))
+            return redirect(url_for('restaurants'))
         else:
 
             cuisines = RestaurantManager.getCuisines()

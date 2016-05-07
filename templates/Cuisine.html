@@ -1,0 +1,95 @@
+<html>
+<body> 
+	<h1 class='header'>{{cuisine.name}}</h1>
+
+	<p>
+		<a class='back' href="{{url_for('cuisines')}}">
+			Take me back to the cuisine list
+		</a>
+	</p>
+
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<ul>
+				{% for message in messages %}
+					<li><strong>{{message}}</strong></li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+	</div>
+
+	<div class='stats'>
+		<p>Stats for {{cuisine.name}}:</p>
+		<ul>
+			<li>ID: {{cuisine.id}}</li>
+			<li>Most expensive base menu item: {{mostExpensiveBaseMenuItem.name}} 
+				({{mostExpensiveBaseMenuItem.price}})</li>
+			<li>Most expensive restaurant menu item: 
+				{{mostExpensiveRestaurantMenuItem.name}} 
+				({{mostExpensiveRestaurantMenuItem.price}}) at 
+				restaurant {{mostExpensiveRestaurantMenuItem.restaurant_id}}</li>
+		</ul>
+
+		<div class='restaurants'>
+		<p>
+			Restaurants with this as primary cuisine:
+		</p>
+		<ol>
+			{% for restaurant in restaurants %}
+			<li>
+			<a href="{{url_for('restaurant',
+							   restaurant_id=restaurant.id)}}">
+				{{restaurant.name}} (ID {{restaurant.id}})</a>
+			</li>
+			{% endfor %}
+		</ol>
+		</div>
+		
+		<div class='baseMenuItems'>
+		<p>
+			Base menu items with this cuisine:
+		</p>
+		<ol>
+			{% for item in baseMenuItems %}
+			<li>
+			<a href="{{url_for('baseMenuItem',
+							   baseMenuItem_id=item.id)}}">
+				{{item.name}}</a>
+			</li>
+			{% endfor %}
+		</ol>
+		</div>
+
+		<div class='restaurantMenuItems'>
+		<p>
+			Restaurant menu items with this cuisine:
+		</p>
+		<ol>
+			{% for item in restaurantMenuItems %}
+			<li>
+			<a href="{{url_for('restaurantMenuItem',
+							   restaurant_id=item.restaurant_id,
+							   restaurantMenuItem_id=item.id)}}">
+				{{item.name}} (at restaurant {{item.restaurant_id}})</a>
+			</li>
+			{% endfor %}
+		</ol>
+		</div>
+	</div>
+
+	<div class='actions'>
+	<p>Other Actions:</p>
+	<ul>
+		<li><a href="{{url_for('editCuisine', 
+							   cuisine_id=cuisine.id)}}">
+			Edit Cuisine</a>
+		</li>
+		<li><a href="{{url_for('deleteCuisine', 
+							   cuisine_id=cuisine.id)}}">
+			Delete Cuisine</a>
+		</li>
+	</ul>
+	</div>
+</body>
+</html>

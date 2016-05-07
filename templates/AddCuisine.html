@@ -1,0 +1,31 @@
+<html>
+<body>
+	<h1>Add Cuisine</h1>
+	
+	<div class='pageOverivew'>
+		<p>
+			Create a new cuisine and add it to the cuisine list.
+			</br>
+			Note that the cuisine will not start with any base menu items.
+			</br>
+			So, after you create the cuisine, you might want to create some
+			base menu items for it.
+		</p>
+	</div>
+
+	<a class='back' href="{{url_for('cuisines')}}">
+		Cancel (return to cuisine list)
+	</a>
+
+	<form action="{{url_for('addCuisine')}}"
+		method='post'>
+
+	<p>Cuisine Name:</p>
+	<input type='text' size='50' name='name'>
+
+	<input type='submit' value='Create Cuisine'>
+
+</form>
+
+</body>
+</html>
