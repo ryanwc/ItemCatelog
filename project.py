@@ -93,11 +93,62 @@ def addRestaurant():
 
 @app.route('/restaurants/<int:restaurant_id>/')
 def restaurant(restaurant_id):
-        return "restaurant " + str(restaurant_id)
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+        restaurantMenuItems = RestaurantManager.\
+                              getRestaurantMenuItems(restaurant_id)
+
+        # get some stats about the restaurant
+        print restaurantMenuItems
+        numMenuItems = len(restaurantMenuItems)
+
+        mostExpensiveItem = restaurantMenuItems[0]
+
+        for item in restaurantMenuItems:
+            if item.price > mostExpensiveItem.price:
+                mostExpensiveItem = item
+
+        return render_template('Restaurant.html', 
+                               restaurant=restaurant, 
+                               numMenuItems=numMenuItems,
+                               mostExpensiveItem=mostExpensiveItem)
 
 @app.route('/restaurants/<int:restaurant_id>/edit/')
 def editRestaurant(restaurant_id):
-        return "edit restaurant " + str(restaurant_id)
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+        cuisines = RestaurantManager.getCuisines()
+        
+        if request.method == 'POST':
+
+            oldName = restaurant.name
+            oldCuisineID = restauran.cuisine_id
+            newName = None
+            newCuisineID = None
+            
+            if request.form['name']:
+                newName = bleach.clean(request.form['name'])
+                
+            if request.form['cuisineID'] != 2:
+                newCuisineID = request.form['cuisineID']
+
+            RestaurantManager.updateRestaurant(restaurant.id,
+                name=newName, newCuisineID=newCuisineID)
+
+            if newName is not None:
+                flash("changed restaurant " + str(restaurant.id) + "'s name "+\
+                    "from '" + oldName + "' to '" + newName + "'")
+
+            if newCuisineID is not None:
+                flash("changed restaurant " + str(restaurantMenuitem.id) + \
+                    "'s cuisine from '"+ oldCuisineID + "' to '" + \
+                    newCuisineID + "'")
+            
+            return redirect(url_for('restaurantMenu',
+                                    restaurant_id=restaurant_id))
+        else:
+
+            return render_template('EditRestaurant.html',
+                                   restaurant=restaurant,
+                                   cuisines=cuisines)
 
 @app.route('/restaurants/<int:restaurant_id>/delete/')
 def deleteRestaurant(restaurant_id):
@@ -165,12 +216,12 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
-        oldName = restaurantMenuItem.name
-        oldDescription = restaurantMenuItem.description
-        oldPrice = restaurantMenuItem.price
         
         if request.method == 'POST':
 
+            oldName = restaurantMenuItem.name
+            oldDescription = restaurantMenuItem.description
+            oldPrice = restaurantMenuItem.price
             newName = None
             newDescription = None
             newPrice = None

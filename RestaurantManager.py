@@ -118,8 +118,7 @@ def getRestaurant(rest_id):
     """
     session = getRestaurantDBSession()
 
-    restaurant = session.query(Restaurant).\
-                 filter(Restaurant.id==rest_id).one()
+    restaurant = session.query(Restaurant).filter_by(id=rest_id).one()
 
     return restaurant
 

@@ -4,20 +4,22 @@
 	
 	<div class='pageOverivew'>
 		<p>
-			Create a new restaurant and add it to the 
-			restaurant list.  Note that the restaurant's menu will start 
-			with all of the base menu items (if any) for its cuisine.
-			You can view and modify cuisines
-			<a href="url_for('cuisines')'">here</a>
-			and base menu items
-			<a href="url_for('baseMenuItems')'">here</a>
-			.
+			Create a new restaurant and add it to the restaurant list.
+			</br>
+			Note that the restaurant's menu will start with all of the base
+			menu items (if any) for its cuisine.
+			</br>
+			You can view and modify cuisines <a href="url_for('cuisines')'">here</a>
+			and base menu items <a href="url_for('baseMenuItems')'">here</a>.
 		</p>
 		<p>
-			All existing cuisines are listed in the dropdown menu below.  
+			All existing cuisines are listed in the dropdown menu below.
+			</br>
 			If you want to create a new cuisine, select "Custom (enter in 
 			text box below)" from the dropdown and type your custom
-			cuisine in the box. A custom cuisine will not have any base menu 
+			cuisine in the box.
+			</br>
+			A custom cuisine will not have any base menu 
 			items, so you will need to populate the restaurant's menu yourself.
 		</p>
 	</div>
@@ -36,6 +38,7 @@
   			<option value="{{cuisine.id}}">{{cuisine.name}}</option>
   		{% endfor %}
 	</select>
+	</br>
 	<input type='text' size='50' name='customCuisine' 
 		placeholder='Custom Cuisine Name'>
 	<p>Restaruant Name:</p>
