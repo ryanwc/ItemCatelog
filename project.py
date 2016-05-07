@@ -15,18 +15,16 @@ import bleach
 
 @app.route('/restaurants/<int:restaurant_id>/menu/JSON')
 def restaurantMenuJSON(restaurant_id):
-        session = RestaurantManager.getRestaurantDBSession()
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
-        items = session.query(RestaurantMenuItem).filter_by(restaurant_id=restaurant_id)
-        session.close()
-        return jsonify(RestaurantMenuItems=[i.serialize for i in items])
+        restaurantMenuItems = RestaurantManager.\
+            getRestaurantMenuItems(restaurant_id)
+        return jsonify(RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/JSON')
 def RestaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
-        session = RestaurantManager.getRestaurantDBSession()
-        item = session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).one()
-        session.close()
-        return jsonify(RestaurantMenuItem=item.serialize)
+        restaurantMenuItem = RestaurantManager.\
+            getRestaurantMenuItem(restaurantMenuItem_id)
+        return jsonify(RestaurantMenuItem=restaurantMenuItem.serialize)
 
 
 ### Retrieve and post data
@@ -127,13 +125,13 @@ def deleteBaseMenuItem(baseMenuItem_id):
 
 @app.route('/restaurants/<int:restaurant_id>/menu/')
 def restaurantMenu(restaurant_id):
-        session = RestaurantManager.getRestaurantDBSession()
-        restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
-        items = session.query(RestaurantMenuItem).filter_by(restaurant_id=restaurant_id)
-        session.close()
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+        restaurantMenuItems = RestaurantManager.\
+            getRestaurantMenuItems(restaurant_id)
+
         return render_template('RestaurantMenu.html',
                                restaurant=restaurant,
-                               items=items)
+                               items=restaurantMenuItems)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/add/',
            methods=['GET','POST'])
@@ -164,62 +162,52 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/edit/',
            methods=['GET','POST'])
 def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
-        session = RestaurantManager.getRestaurantDBSession()
 
-        item = session.query(RestaurantMenuItem).filter_by(id=restaurnatMenuItem_id).one()
-        oldName = item.name
-        oldDescription = item.description
-        oldPrice = item.price
+        restaurantMenuItem = RestaurantManager.\
+            getRestaurantMenuItem(restaurantMenuItem_id)
+        oldName = restaurantMenuItem.name
+        oldDescription = restaurantMenuItem.description
+        oldPrice = restaurantMenuItem.price
         
         if request.method == 'POST':
 
-            changeName = False
-            changeDescription = False
-            changePrice = False
+            newName = None
+            newDescription = None
+            newPrice = None
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
-                session.query(RestaurantMenuItem).filter(RestaurantMenuItem.id==restaurantMenuItem_id).\
-                        update({'name':newName})
-                changeName = True
                 
             if request.form['description']:
                 newDescription = bleach.clean(request.form['description'])
-                session.query(RestaurantMenuItem).filter(RestaurantMenuItem.id==restaurantMenuItem_id).\
-                        update({'description':newDescription})
-                changeDescription = True
                 
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
-                session.query(RestaurantMenuItem).filter(RestaurantMenuItem.id==restaurantMenuItem_id).\
-                        update({'price':newPrice})
-                changePrice = True
-                
-            session.commit()
 
-            if changeName:
-                flash("restaurant menu item " + str(item.id) + "'s name changed from '"+\
-                      oldName + "' to '" + newName + "'")
+            RestaurantManager.updateRestaurantMenuItem(restaurantMenuItem.id,
+                name=newName, newDescription=newDescription, newPrice=newPrice)
 
-            if changeDescription:
-                flash("restaurant menu item " + str(item.id) + "'s description changed "\
-                      "from '"+ oldDescription + "' to '" + \
-                      newDescription + "'")
+            if newName is not None:
+                flash("changed restaurant menu item " + str(restaurantMenuitem.id) + \
+                    "'s name from '" + oldName + "' to '" + newName + "'")
 
-            if changePrice:
-                flash("restaurant menu item " + str(item.id) + "'s price changed from '"+\
-                      oldPrice + "' to '" + newPrice + "'")
+            if newDescription is not None:
+                flash("changed restaurant menu item " + str(restaurantMenuitem.id) + \
+                    "'s description from '"+ oldDescription + "' to '" + \
+                    newDescription + "'")
 
-            session.close()
+            if newPrice is not None:
+                flash("changed restaurant menu item " + str(restaurantMenuitem.id) + \
+                    "'s price changed from '" + oldPrice + "' to '" + \
+                    newPrice + "'")
             
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
         else:
 
-            session.close()
             return render_template('EditRestaurantMenuItem.html',
                                    restaurant_id=restaurant_id,
-                                   restaurantMenuItem=item)
+                                   restaurantMenuItem=restaurantMenuItem)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
            methods=['GET','POST'])
@@ -229,7 +217,7 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             session = session.getRestaurantDBSession()
 
             itemToDelete = session.query(RestaurantMenuItem).\
-                           filter(RestaurantMenuItem.id==RestaurantMenuItem_id).one()
+                           filter_by(id=RestaurantMenuItem_id).one()
             session.delete(itemToDelete)
             session.commit()
             session.close()

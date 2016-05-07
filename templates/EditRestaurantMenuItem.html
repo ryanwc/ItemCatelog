@@ -1,8 +1,8 @@
 <html>
 <body>
-	<h1>Edit Menu Item</h1>
+	<h1>Edit Restaurant Menu Item</h1>
 	
-	<h3>Edit item {{menuItem.id}} from restaurant 
+	<h3>Edit item {{restaurantMenuItem.id}} from restaurant 
 		{{restaurant_id}}'s menu
 	</h3>
 
@@ -12,20 +12,20 @@
 		Cancel (return to menu)
 	</a>
 
-	<form action="{{url_for('editMenuItem', 
+	<form action="{{url_for('editRestaurantMenuItem', 
 							restaurant_id=restaurant_id,
-							menuItem_id=menuItem.id)}}"
+							restaurantMenuItem_id=restaurantMenuItem.id)}}"
 		method='post'>
 
 		<p>Change Item Name to:</p>
 		<input type='text' size='30' name='name' 
-			placeholder='{{menuItem.name}}'>
+			placeholder='{{restaurantMenuItem.name}}'>
 		<p>Change Item Description to:</p>
 		<input type='text' size='60' name='description' 
-			placeholder='{{menuItem.description}}'>
+			placeholder='{{restaurantMenuItem.description}}'>
 		<p>Change Item Price to:</p>
 		<input type='text' size='30' name='price' 
-			placeholder='{{menuItem.price}}'>
+			placeholder='{{restaurantMenuItem.price}}'>
 
 		<input type='submit' value='Submit Changes'>
 

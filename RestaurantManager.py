@@ -9,7 +9,7 @@ def populateMenuWithBaseItems(restaurant_id):
     """
     session = getRestaurantDBSession()
 
-    restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+    restaurant = getRestaurant(restaurant_id)
 
     # do not add any menu items if the restaurant has no specific cuisine
     if restaurant.cuisine_id is -1:
@@ -17,7 +17,7 @@ def populateMenuWithBaseItems(restaurant_id):
         return
 
     baseMenuItems = session.query(BaseMenuItem).\
-                    filter_by(id=restaurant.cuisine_id).all()
+                    filter_by(cuisine_id=restaurant.cuisine_id).all()
         
     for baseMenuItem in baseMenuItems:
         restaurantMenuItem = RestaurantMenuItem(
@@ -65,6 +65,7 @@ def addBaseMenuItem(name, cuisine_id,
             cuisine_id=cuisine_id
         )
 
+    session.add(baseMenuItem)
     session.commit()
     session.close()
 
@@ -75,7 +76,7 @@ def addCuisine(name):
 
     cuisine = Cuisine(name=name)
 
-    session.add(name)
+    session.add(cuisine)
     session.commit()
     session.close()
 
@@ -201,7 +202,7 @@ def getCuisine(cuisine_id=None, name=None):
 
     if cuisine_id is not None:
         cuisine  = session.query(Cuisine).filter_by(id=cuisine_id).one()
-    else if name is not None:
+    elif name is not None:
         cuisine = session.query(Cuisine).filter_by(name=name).one()
 
     session.close()
@@ -254,33 +255,27 @@ def editRestaurantMenuItem(restaurantMenuItem_id, newName=None,
     session = getRestaurantDBSession()
 
     if newName is not None:
-        session.query(RestaurantMenuItem).\
-            filter_by(id=restaurantMenuItem_id).\
+        session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
             update({'name':newName})
 
     if newDescription is not None:
-        session.query(RestaurantMenuItem).\
-            filter_by(id=restaurantMenuItem_id).\
+        session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
             update({'description':newDescription})
 
     if newPrice is not None:
-        session.query(RestaurantMenuItem).\
-            filter_by(id=restaurantMenuItem_id).\
+        session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
             update({'price':newPrice})
 
     if newCourse is not None:
-        session.query(RestaurantMenuItem).\
-            filter_by(id=restaurantMenuItem_id).\
+        session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
             update({'course':newCourse})
 
     if newRestaurant_id is not None:
-        session.query(RestaurantMenuItem).\
-            filter_by(id=restaurantMenuItem_id).\
+        session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
             update({'restaurant_id':newRestaurant_id})
 
     if newBaseMenuItem_id is not None:
-        session.query(RestaurantMenuItem).\
-            filter_by(id=restaurantMenuItem_id).\
+        session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
             update({'baseMenuItem_id':newBaseMenuItem_id})
 
     session.commit()
