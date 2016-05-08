@@ -189,6 +189,31 @@ def getBaseMenuItemsWithCuisine(cuisine_id):
     session.close()
     return baseMenuItems
 
+def getBaseMenuItem(baseMenuItem_id):
+    """Return the base menu item with the given id
+
+    Args:
+        baseMenuItem_id: the id of the base menu item to get
+    """
+    session = getRestaurantDBSession()
+
+    baseMenuItem = session.query(BaseMenuItem).\
+                   filter_by(id=baseMenuItem_id).one()
+
+    session.close()
+    return baseMenuItem
+
+def getBaseMenuItems():
+    """Return all base menu items ordered by id
+    """
+    session = getRestaurantDBSession()
+
+    baseMenuItems = session.query(BaseMenuItem).\
+                    order_by(BaseMenuItem.id).all()
+
+    session.close()
+    return baseMenuItems
+
 def getRestaurantMenuItemsWithCuisine(cuisine_id):
     """Return all restaurant menu items with the given cuisine id
 

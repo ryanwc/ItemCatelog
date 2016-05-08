@@ -2,14 +2,16 @@
 <body>
 	<h1>Edit Restaurant Menu Item</h1>
 	
-	<h3>Edit item {{restaurantMenuItem.id}} from restaurant 
+	<h3>Edit {{restaurantMenuItem.name}} (ID {{restaurantMenuItem.id}}) on restaurant 
 		{{restaurant_id}}'s menu
 	</h3>
 
 	<p> NOTE: Leave a box blank if you do not wish to change its value.</p>
 
-	<a href="{{url_for('restaurantMenu',restaurant_id=restaurant_id)}}">
-		Cancel (return to menu)
+	<a href="{{url_for('restaurantMenuItem',
+					   restaurant_id=restaurant_id,
+					   restaurantMenuItem_id=restaurantMenuItem.id)}}">
+		Cancel (return to the item)
 	</a>
 
 	<form action="{{url_for('editRestaurantMenuItem', 

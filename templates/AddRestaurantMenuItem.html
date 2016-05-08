@@ -1,0 +1,34 @@
+<html>
+<body>
+	<h1>Add Restaurant Menu Item</h1>
+	<h3>Add an item to {{restaurant.name}}'s (ID {{restaurant.id}}) menu</h3>
+
+	<a href="{{url_for('restaurantMenu',restaurant_id=restaurant.id)}}">
+		Cancel (return to menu)
+	</a>
+
+	<p> Note that a restaurant menu item can be based on. for this restaurant menu item, Note that you can choose the first option in the dropdown to 
+
+	<form action="{{url_for('addRestaurantMenuItem', 
+							restaurant_id=restaurant.id)}}"
+		method='post'>
+
+		<p>Base menu item:</p>
+		<select name="baseMenuItemID">
+		<option value="">Custom (enter in text box below)</option>
+  		{% for baseMenuItem in baseMenuItems %}
+  			<option value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
+  		{% endfor %}
+		</select>
+		<p>Item Name:</p>
+		<input type='text' size='30' name='name'>
+		<p>Item Description:</p>
+		<input type='text' size='60' name='description'>
+		<p>Item Price:</p>
+		<input type='text' size='30' name='price'>
+
+		<input type='submit' value='Create Restaurant Menu Item'>
+
+	</form>
+</body>
+</html>

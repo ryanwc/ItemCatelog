@@ -29,19 +29,13 @@
 		</br>
 		<div class='price'>{{i.price}}</div>
 		</br>
-		<a href="{{url_for('editRestaurantMenuItem', 
+		<a href="{{url_for('restaurantMenuItem', 
 							restaurant_id=i.restaurant_id,
 							restaurantMenuItem_id=i.id)}}">
-			Edit</a>
-		</br>
-		<a href="{{url_for('deleteRestaurantMenuItem', 
-							restaurant_id=i.restaurant_id,
-							restaurantMenuItem_id=i.id)}}">
-			Delete</a>
+			View item</a>
 		</br>
 		</br>
 		{% endfor %}
-
 		<a href="{{url_for('addRestaurantMenuItem', 
 						restaurant_id=restaurant.id)}}">
 			Create new menu item

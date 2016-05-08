@@ -239,6 +239,9 @@ def restaurantMenu(restaurant_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/add/',
            methods=['GET','POST'])
 def addRestaurantMenuItem(restaurant_id):
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+        baseMenuItems = RestaurantManager.getBaseMenuItems()
+        #### update this! 
         if request.method == 'POST':
 
             RestaurantManager.addRestaurantMenuItem(
@@ -255,12 +258,33 @@ def addRestaurantMenuItem(restaurant_id):
         else:
 
             return render_template('AddRestaurantMenuItem.html',
-                                   restaurant_id=restaurant_id)
+                                   restaurant=restaurant,
+                                   baseMenuItems=baseMenuItems)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/')
 def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
-        return "item " + str(restaurantMenuItem_id) + " at " +\
-            str(restaurant_id)
+        restaurantMenuItem = RestaurantManager.\
+                             getRestaurantMenuItem(restaurantMenuItem_id)
+
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+        restaurantCuisineObj = RestaurantManager.getCuisine(restaurant.cuisine_id)
+        restaurantCuisine = restaurantCuisineObj.name
+
+        baseMenuItem = RestaurantManager.\
+                       getBaseMenuItem(restaurantMenuItem.baseMenuItem_id)
+        baseMenuItemCuisineObj = RestaurantManager.\
+                                 getCuisine(baseMenuItem.cuisine_id)
+        baseMenuItemCuisine = baseMenuItemCuisineObj.name
+
+        timesOrdered = 0
+
+        return render_template("RestaurantMenuItem.html",
+                               restaurantMenuItem=restaurantMenuItem,
+                               restaurant=restaurant,
+                               restaurantCuisine=restaurantCuisine,
+                               baseMenuItem=baseMenuItem,
+                               baseMenuItemCuisine=baseMenuItemCuisine,
+                               timesOrdered=timesOrdered)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/edit/',
            methods=['GET','POST'])
@@ -315,8 +339,13 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
            methods=['GET','POST'])
 def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
+
+        restaurantMenuItem = RestaurantManager.\
+                             getRestaurantMenuItem(restaurantMenuItem_id)
+
         if request.method == 'POST':
 
+            #### update this
             session = session.getRestaurantDBSession()
 
             itemToDelete = session.query(RestaurantMenuItem).\
@@ -331,7 +360,7 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         else:
             return render_template('DeleteRestaurantMenuItem.html',
                                    restaurant_id=restaurant_id,
-                                   restaurantMenuItem_id=restaurantMenuItem_id)
+                                   restaurantMenuItem=restaurantMenuItem)
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
