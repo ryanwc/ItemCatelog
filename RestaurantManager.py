@@ -100,12 +100,22 @@ def getRestaurantDBSession():
     session = DBSession()
     return session
 
-def getRestaurants():
-    """Return a list of all restaurants ordered by ID
+def getRestaurants(cuisine_id=None):
+    """If no arguments are given, return a list of all restaurants 
+    ordered by ID.  Otherwise, return a list of all restaurants that match
+    the given argument.
+
+    Args:
+        cuisine_id: the id of the cuisine to match
     """
     session = getRestaurantDBSession()
     
-    restaurants = session.query(Restaurant).order_by(Restaurant.id).all()
+    if cuisine_id is not None:
+        restaurants = session.query(Restaurant).\
+                      filter_by(cuisine_id=cuisine_id).all()
+    else:
+        restaurants = session.query(Restaurant).\
+                      order_by(Restaurant.id).all()
     
     session.close()
     return restaurants
@@ -120,35 +130,47 @@ def getRestaurant(rest_id):
 
     restaurant = session.query(Restaurant).filter_by(id=rest_id).one()
 
+    session.close()
     return restaurant
 
-def getRestaurantMenuItems():
-    """Return a list of all menu items ordered by restaurant ID
-    """
-    session = getRestaurantDBSession()
+def getRestaurantMenuItems(restaurant_id=None, baseMenuItem_id=None,
+                           cuisine_id=None):
+    """If no arguments are given, return a list of all menu items ordered 
+    by restaurant ID.  Otherwise, return a list of all menu items that match 
+    the argument given.
 
-    restaurantMenuItems = session.query(RestaurantMenuItem).\
-                          order_by(RestaurantMenuItem.restaurant_id).all()
-
-    session.close()
-    return restaurantMenuItems
-
-def getRestaurantMenuItems(rest_id):
-    """Return a list of all menu items for a specific restaurant
+    NOTE: Exactly zero or one argument should be given.
 
     Args:
-        rest_id: the id of the restaurant whose menu items to get
+        restaurant_id: the id of the restaurant whose menu items to get
+            Pass None to match by another id.
+        baseMenuItem_id: the id of the base menu item whose menu items to get
+            Pass None to match by another id.
+        cuisine_id: the id of the cuisine to whose menu items to get
+            Pass None to match by another id.
     """
     session = getRestaurantDBSession()
 
-    restaurantMenuItems = session.query(RestaurantMenuItem).\
-                          filter_by(restaurant_id=rest_id).all()
+    if restaurant_id is not None:
+        restaurantMenuItems = session.query(RestaurantMenuItem).\
+                              filter_by(restaurant_id=restaurant_id).all()
+    elif baseMenuItem_id is not None:
+        restaurantMenuItems = session.query(RestaurantMenuItem).\
+                              filter_by(baseMenuItem_id=baseMenuItem_id).all()
+        print restaurantMenuItems
+    elif cuisine_id is not None:
+        restaurantMenuItems = session.query(RestaurantMenuItem).\
+                              join(BaseMenuItem).\
+                              filter(BaseMenuItem.cuisine_id==cuisine_id).all()
+    else:
+        restaurantMenuItems = session.query(RestaurantMenuItem).\
+                              order_by(RestaurantMenuItem.restaurant_id).all()
 
     session.close()
     return restaurantMenuItems
 
 def getRestaurantMenuItem(restaurantMenuItem_id):
-    """Return a restaurant menu item with the given it
+    """Return a restaurant menu item with the given id
 
     Args:
         restaurantMenuItem_id: the id of the restaurant menu item to get
@@ -160,34 +182,6 @@ def getRestaurantMenuItem(restaurantMenuItem_id):
 
     session.close()
     return restaurantMenuItem
-
-def getRestaurantsWithCuisine(cuisine_id):
-    """Return all restaurants with the given cuisine id
-
-    Args:
-        cuisine_id: the id of the cuisine to match
-    """
-    session = getRestaurantDBSession()
-
-    restaurants = session.query(Restaurant).\
-                  filter_by(cuisine_id=cuisine_id).all()
-
-    session.close()
-    return restaurants
-
-def getBaseMenuItemsWithCuisine(cuisine_id):
-    """Return all base menu items with the given cuisine id
-
-    Args:
-        cuisine_id: the id of the cuisine to match
-    """
-    session = getRestaurantDBSession()
-
-    baseMenuItems = session.query(BaseMenuItem).\
-                    filter_by(cuisine_id=cuisine_id).all()
-
-    session.close()
-    return baseMenuItems
 
 def getBaseMenuItem(baseMenuItem_id):
     """Return the base menu item with the given id
@@ -203,56 +197,57 @@ def getBaseMenuItem(baseMenuItem_id):
     session.close()
     return baseMenuItem
 
-def getBaseMenuItems():
-    """Return all base menu items ordered by id
-    """
-    session = getRestaurantDBSession()
+def getBaseMenuItems(cuisine_id=None):
+    """If no arguments are given, return all base menu items ordered by id.
+    If an argument is given, return the base menu items matching the argument.
 
-    baseMenuItems = session.query(BaseMenuItem).\
-                    order_by(BaseMenuItem.id).all()
-
-    session.close()
-    return baseMenuItems
-
-def getRestaurantMenuItemsWithCuisine(cuisine_id):
-    """Return all restaurant menu items with the given cuisine id
+    NOTE: Exactly zero or one argument should be given.
 
     Args:
         cuisine_id: the id of the cuisine to match
     """
     session = getRestaurantDBSession()
 
-    restaurantMenuItems = session.query(RestaurantMenuItem).\
-                          join(BaseMenuItem).\
-                          filter(BaseMenuItem.cuisine_id==cuisine_id).all()
+    if cuisine_id is not None:
+        baseMenuItems = session.query(BaseMenuItem).\
+                        filter_by(cuisine_id=cuisine_id).all()
+    else:
+        baseMenuItems = session.query(BaseMenuItem).\
+                        order_by(BaseMenuItem.id).all()
 
     session.close()
-    return restaurantMenuItems
+    return baseMenuItems
 
 def getPopularCuisines():
     """Return a list of all cuisines offered by at least three restaurants
     """
     session = getRestaurantDBSession()
 
-    numPerCuisine = session.query(Restaurant.foodType,
-                                  func.count(Restaurant.foodType).label('No')).\
-                                  group_by(Restaurant.foodType).all()
-    popCuisines = []
-
-    for cuisine in numPerCuisine:
-        if cuisine.No >= 3:
-            popCuisines.append(cuisine)
-
     session.close()
     return popCuisines
 
-def getCuisines():
-    """Return a list of all cuisines offered by at least one restaurant
-    ordered by cuisine id
+def getCuisines(onlyPopular=False):
+    """If onlyPopular is false, return a list of all cuisines offered by at 
+    least one restaurant ordered by cuisine id.  Otherwise, return a list
+    of all cuisines offered by more than three restaurants.
+
+    Args:
+        onlyPopular: boolean indicating whether to return all or a subset
+        of restaurants.
     """
     session = getRestaurantDBSession()
 
-    cuisines  = session.query(Cuisine).order_by(Cuisine.id).all()
+    if onlyPopular:
+        numPerCuisine = session.query(Restaurant.foodType,
+                        func.count(Restaurant.foodType).label('No')).\
+                        group_by(Restaurant.foodType).all()
+        cuisines = []
+
+        for cuisine in numPerCuisine:
+            if cuisine.No > 3:
+                cuisines.append(cuisine)
+    else:
+        cuisines  = session.query(Cuisine).order_by(Cuisine.id).all()
 
     session.close()
     return cuisines
@@ -278,12 +273,12 @@ def getCuisine(cuisine_id=None, name=None):
 def editRestaurant(restaurantMenuItem_id, newName=None, newCuisine_id=None):
     """Edit a restaurant
 
+    Pass none for any attribute to leave it unchanged.
+
     Args:
         restaurant_id: the id of the restaurant to edit
-        newName: a new name of the restaurant to edit.  Pass none to leave
-            the name unchanged.
+        newName: a new name of the restaurant to edit.
         newCuisine_id: the id of the restaurant's new cuisine.
-            Pass None to leave the cuisine unchanged.
     """
     session = getRestaurantDBSession()
 
@@ -302,22 +297,18 @@ def editRestaurantMenuItem(restaurantMenuItem_id, newName=None,
                            newDescription=None, newPrice=None,
                            newCourse=None, newRestaurant_id=None,
                            newBaseMenuItem_id=None):
-    """Edit a restaurant menu item
+    """Edit a restaurant menu item.
+
+    Pass none for any attribute to leave it unchanged.
 
     Args:
         restaurantMenuItem_id: the id of the restaurant menu item to edit
         newName: a new name for the restaurant menu item.
-            Pass none to leave the name unchanged.
         newDescription: a new description for the restaurant menu item.
-            Pass None to leave the description unchanged.
         newPrice: a new price for the restaurant menu item.
-            Pass None to leave the price unchanged.
         newCourse: the restaurant menu item's new course.
-            Pass None to leave the course unchanged.
         newRestaurant_id: the id of the restaurant menu item's new restaurant.
-            Pass None to leave the restaurant unchanged.
         newBaseMenuItem_id: the id of the restaurant menu item's new
-            base menu item. Pass None to leave the base menu item unchanged.
     """
     session = getRestaurantDBSession()
 
@@ -351,10 +342,10 @@ def editRestaurantMenuItem(restaurantMenuItem_id, newName=None,
 def editCuisine(cuisine_id, newName=None):
     """Edit a cuisine
 
+    Pass none for an attribute to leave it unchanged.
     Args:
         cuisine_id: the id of the cuisine to edit
-        newName: the new name of the cuisine to edit.  Pass none to leave
-            the name unchanged.
+        newName: the new name of the cuisine to edit.
     """
     session = getRestaurantDBSession()
 
@@ -370,18 +361,15 @@ def editBaseMenuItem(baseMenuItem_id, newName=None,
                      newCourse=None, newCuisine_id=None):
     """Edit a base menu item
 
+    Pass none for an attribute to leave it unchanged.
+
     Args:
         baseMenuItem_id: the id of the base menu item to edit
         newName: a new name for the base menu item.
-            Pass none to leave the name unchanged.
         newDescription: a new description for the base menu item.
-            Pass None to leave the description unchanged.
         newPrice: a new price for the base menu item.
-            Pass None to leave the price unchanged.
         newCourse: the base menu item's new course.
-            Pass None to leave the course unchanged.
         newCuisine_id: the id of the base menu item's new cuisine.
-            Pass None to leave the cuisine unchanged.
     """
     session = getRestaurantDBSession()
 
