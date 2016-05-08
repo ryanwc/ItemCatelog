@@ -1,0 +1,36 @@
+<html>
+<body>
+	<h1>Edit Base Menu Item</h1>
+	
+	<h3>Edit {{baseMenuItem.name}} (ID {{baseMenuItem.id}}) from
+		{{cuisine_id}}'s base menu
+	</h3>
+
+	<p> NOTE: Leave a box blank if you do not wish to change its value.  Also note that you cannot change the cuisine type.  If you want to do that, you're probably better off creating a new base menu item.</p>
+
+	<a href="{{url_for('baseMenuItem',
+					   cuisine_id=cuisine_id,
+					   baseMenuItem_id=baseMenuItem.id)}}">
+		Cancel (return to the item)
+	</a>
+
+	<form action="{{url_for('editBaseMenuItem', 
+							cuisine_id=cuisine_id,
+							baseMenuItem_id=baseMenuItem.id)}}"
+		method='post'>
+
+		<p>Change Item Name to:</p>
+		<input type='text' size='30' name='name' 
+			placeholder='{{baseMenuItem.name}}'>
+		<p>Change Item Description to:</p>
+		<input type='text' size='60' name='description' 
+			placeholder='{{baseMenuItem.description}}'>
+		<p>Change Item Price to:</p>
+		<input type='text' size='30' name='price' 
+			placeholder='{{baseMenuItem.price}}'>
+
+		<input type='submit' value='Submit Changes'>
+
+	</form>
+</body>
+</html>

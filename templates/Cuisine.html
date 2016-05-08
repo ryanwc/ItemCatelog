@@ -54,11 +54,18 @@
 			{% for item in baseMenuItems %}
 			<li>
 			<a href="{{url_for('baseMenuItem',
+							   cuisine_id=cuisine.id,
 							   baseMenuItem_id=item.id)}}">
 				{{item.name}}</a>
 			</li>
 			{% endfor %}
 		</ol>
+		<ul>
+			<li><a href="{{url_for('addBaseMenuItem', 
+							   	   cuisine_id=cuisine.id)}}">
+				Add base menu item</a>
+			</li>
+		</ul>
 		</div>
 
 		<div class='restaurantMenuItems'>
@@ -83,11 +90,11 @@
 	<ul>
 		<li><a href="{{url_for('editCuisine', 
 							   cuisine_id=cuisine.id)}}">
-			Edit Cuisine</a>
+			Edit cuisine</a>
 		</li>
 		<li><a href="{{url_for('deleteCuisine', 
 							   cuisine_id=cuisine.id)}}">
-			Delete Cuisine</a>
+			Delete cuisine</a>
 		</li>
 	</ul>
 	</div>

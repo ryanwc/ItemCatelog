@@ -17,7 +17,7 @@ import bleach
 def restaurantMenuJSON(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         restaurantMenuItems = RestaurantManager.\
-            getRestaurantMenuItems(restaurant_id)
+            getRestaurantMenuItems(restaurant_id=restaurant_id)
         return jsonify(RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/JSON')
@@ -36,9 +36,8 @@ def restaurantManagerIndex():
 
 @app.route('/cuisines/')
 def cuisines():
-        session = RestaurantManager.getRestaurantDBSession()
-        cuisines = session.query(Cuisine).all()
-        session.close()
+        cuisines = RestaurantManager.getCuisines()
+
         return render_template("Cuisines.html",
                                cuisines=cuisines)
 
@@ -58,11 +57,11 @@ def addCuisine():
 @app.route('/cuisines/<int:cuisine_id>/')
 def cuisine(cuisine_id):
         cuisine = RestaurantManager.getCuisine(cuisine_id)
-        restaurants = RestaurantManager.getRestaurantsWithCuisine(cuisine_id)
+        restaurants = RestaurantManager.getRestaurants(cuisine_id=cuisine_id)
         baseMenuItems = RestaurantManager.\
-                        getBaseMenuItemsWithCuisine(cuisine_id)
+                        getBaseMenuItems(cuisine_id=cuisine_id)
         restaurantMenuItems = RestaurantManager.\
-                              getRestaurantMenuItemsWithCuisine(cuisine_id)
+                              getRestaurantMenuItems(cuisine_id=cuisine_id)
 
         mostExpensiveBaseMenuItem = baseMenuItems[0]
         for item in baseMenuItems:
@@ -134,7 +133,7 @@ def addRestaurant():
 def restaurant(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         restaurantMenuItems = RestaurantManager.\
-                              getRestaurantMenuItems(restaurant_id)
+                              getRestaurantMenuItems(restaurant_id=restaurant_id)
 
         # get some stats about the restaurant
         print restaurantMenuItems
@@ -206,31 +205,67 @@ def deleteRestaurant(restaurant_id):
             return render_template('DeleteRestaurant.html',
                                    restaurant=restaurant)
 
-@app.route('/baseMenuItems/')
-def baseMenuItems():
-        return "base menu item list"
+@app.route('/cuisines/<int:cuisine_id>/add/', methods=['GET','POST'])
+def addBaseMenuItem(cuisine_id):
+        cuisine = RestaurantManager.getCuisine(cuisine_id)
 
-@app.route('/baseMenuItems/add/')
-def addBaseMenuItem():
-        return "add a base menu item"
+        if request.method == 'POST':
 
-@app.route('/baseMenuItems/<int:baseMenuItem_id>/')
-def baseMenuItem(baseMenuItem_id):
-        return "base menu item " + str(baseMenuItem_id)
+            return redirect(url_for('cuisine', cuisine_id=cuisine.id))
+        else:
+            return render_template('AddBaseMenuItem.html',
+                                   cuisine=cuisine)
 
-@app.route('/baseMenuItems/<int:baseMenuItem_id>/edit/')
-def editBaseMenuItem(baseMenuItem_id):
-        return "edit menu item " + str(baseMenuItem_id)
+@app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/')
+def baseMenuItem(cuisine_id, baseMenuItem_id):
+        baseMenuItem = RestaurantManager.getBaseMenuItem(baseMenuItem_id)
+        cuisine = RestaurantManager.getCuisine(baseMenuItem.cuisine_id)
+        restaurantMenuItems = RestaurantManager.\
+                              getRestaurantMenuItems(baseMenuItem_id=baseMenuItem.id)
+        timesOrdered = 0
 
-@app.route('/baseMenuItems/<int:baseMenuItem_id>/delete/')
-def deleteBaseMenuItem(baseMenuItem_id):
-        return "delete base menu item " + str(baseMenuItem_id)
+        return render_template("BaseMenuItem.html",
+                                baseMenuItem=baseMenuItem,
+                                restaurantMenuItems=restaurantMenuItems,
+                                cuisine=cuisine,
+                                timesOrdered=timesOrdered)
+
+@app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/edit/',
+           methods=['POST','GET'])
+def editBaseMenuItem(cuisine_id, baseMenuItem_id):
+        baseMenuItem = RestaurantManager.\
+                       getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
+
+        if request.method == 'POST':
+
+            return redirect(url_for('baseMenuItem',
+                                    cuisine_id=cuisine_id,
+                                    baseMenuItem_id=baseMenuItem_id))
+        else:
+            return render_template("EditBaseMenuItem.html",
+                                   baseMenuItem=baseMenuItem,
+                                   cuisine_id=cuisine_id)
+
+@app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/delete/',
+           methods=['GET','POST'])
+def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
+        baseMenuItem = RestaurantManager.\
+                       getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
+
+        if request.method == 'POST':
+
+            return redirect(url_for('cuisine',cuisine_id=cuisine_id))
+        else:
+
+            return render_template("DeleteBaseMenuItem.html",
+                                   baseMenuItem=baseMenuItem,
+                                   cuisine_id=cuisine_id)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/')
 def restaurantMenu(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         restaurantMenuItems = RestaurantManager.\
-            getRestaurantMenuItems(restaurant_id)
+            getRestaurantMenuItems(restaurant_id=restaurant_id)
 
         return render_template('RestaurantMenu.html',
                                restaurant=restaurant,
@@ -345,7 +380,7 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         if request.method == 'POST':
 
-            #### update this
+            """update this
             session = session.getRestaurantDBSession()
 
             itemToDelete = session.query(RestaurantMenuItem).\
@@ -355,6 +390,7 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             session.close()
             flash("menu item " + str(itemToDelete.id) + " (" + \
                   itemToDelete.name + ") deleted from the menu and database")
+            """
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
         else:

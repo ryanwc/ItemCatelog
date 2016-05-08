@@ -1,0 +1,60 @@
+<html>
+<body> 
+	<h1 class='header'>Base Menu Item</h1>
+	<h3 class='header'>{{baseMenuItem.name}}</h3>
+
+	<p>
+		<a class='back' href="{{url_for('cuisine',
+										cuisine_id=cuisine.id)}}">
+			Back to the cuisine
+		</a>
+	</p>
+
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<ul>
+				{% for message in messages %}
+					<li><strong>{{message}}</strong></li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+	</div>
+
+	<div class='stats'>
+	<p>Stats for {{baseMenuItem.name}}:</p>
+	<ul>
+		<li>ID: {{baseMenuItem.id}}</li>
+		<li>Cuisine: {{cuisine.name}} (ID {{cuisine.id}})</li>
+		<li>Description: {{baseMenuItem.description}}
+		<li>Price: {{baseMenuItem.price}}</li>
+	</ul>
+	List of all restaurant menu items with this base menu item:
+	<ol>
+		{% for restaurantMenuItem in restaurantMenuItems %}
+			<li><a href="{{url_for('restaurantMenuItem',
+								   restaurant_id=restaurantMenuItem.restaurant_id,
+								   restaurantMenuItem_id=restaurantMenuItem.id)}}">
+				{{restaurantMenuItem.name}} (at restaurant 
+				{{restaurantMenuItem.restaurant_id}})</a>
+			</li>
+		{% endfor %}
+	</ol>
+	</div>
+
+	<div class='actions'>
+	<p>Actions:</p>
+	<ul>
+		<li><a href="{{url_for('editBaseMenuItem',
+							   cuisine_id=cuisine.id,
+							   baseMenuItem_id=baseMenuItem.id)}}">
+			Edit</a>
+		</li>
+		<li><a href="{{url_for('deleteBaseMenuItem', 
+							   cuisine_id=cuisine.id,
+							   baseMenuItem_id=baseMenuItem.id)}}">
+			Delete</a>
+		</li>
+	</ul>
+</body>
+</html>

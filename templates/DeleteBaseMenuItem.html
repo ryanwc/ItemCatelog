@@ -1,0 +1,25 @@
+<html>
+<body>
+	<h1>Delete Base Menu Item</h1>
+
+	<h3>Delete {{baseMenuItem.name}} (ID {{baseMenuItem.id}}) from the database</h3>
+
+	<p> WARNING: Deleting this item will set the base item for all related restaurant menu items to "Base Item with no Specific Cuisine".
+
+	<p>
+	<a href="{{url_for('baseMenuItem',
+					   cuisine_id=cuisine_id,
+					   baseMenuItem_id=baseMenuItem.id)}}">
+		Cancel (return to item)</a>
+	</p>
+
+	<form action="{{url_for('deleteBaseMenuItem', 
+							cuisine_id=cuisine_id,
+							baseMenuItem_id=baseMenuItem.id)}}"
+		method='post'>
+
+		<input type='submit' value='Delete Item'>
+	
+	</form>
+</body>
+</html>

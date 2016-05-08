@@ -1,0 +1,25 @@
+<html>
+<body>
+	<h1>Add Base Menu Item</h1>
+	<h3>Add an item to {{cuisine.name}} (ID {{cuisine.id}}) cuisine's base menu</h3>
+
+	<a href="{{url_for('cuisine',cuisine_id=cuisine.id)}}">
+		Cancel (return to cuisine)
+	</a>
+
+	<form action="{{url_for('addBaseMenuItem', 
+							cuisine_id=cuisine.id)}}"
+		method='post'>
+
+		<p>Item Name:</p>
+		<input type='text' size='30' name='name'>
+		<p>Item Description:</p>
+		<input type='text' size='60' name='description'>
+		<p>Item Price:</p>
+		<input type='text' size='30' name='price'>
+
+		<input type='submit' value='Create Base Menu Item'>
+
+	</form>
+</body>
+</html>
