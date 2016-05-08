@@ -1,0 +1,24 @@
+<html>
+<body>
+	<h1>Delete Restaurant</h1>
+
+	<h3>Delete {{restaurant.name}} (ID {{restaurant.id}}) from the database</h3>
+
+	<p>
+		WARNING: This will also delete all of this restaurant's restaurant menu items.
+	</p>
+
+	<p>
+		<a href="{{url_for('restaurant',
+				restaurant_id=restaurant.id)}}">Cancel (return to restaurant)</a>
+	</p>
+
+	<form action="{{url_for('deleteRestaurant', 
+							restaurant_id=restaurant.id)}}"
+		method='post'>
+
+		<input type='submit' value='Delete Restaurant'>
+	
+	</form>
+</body>
+</html>

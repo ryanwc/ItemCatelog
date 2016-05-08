@@ -37,8 +37,13 @@
 		</br>
 		{% endfor %}
 		<a href="{{url_for('addRestaurantMenuItem', 
-						restaurant_id=restaurant.id)}}">
+						   restaurant_id=restaurant.id)}}">
 			Create new menu item
+		</a>
+		</br>
+		<a href="{{url_for('restaurant', 
+						   restaurant_id=restaurant.id)}}">
+			Back to restaurant
 		</a>
 		</br>
 		</br>
