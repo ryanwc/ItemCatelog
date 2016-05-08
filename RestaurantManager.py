@@ -396,3 +396,21 @@ def editBaseMenuItem(baseMenuItem_id, newName=None,
 
     session.commit()
     session.close()
+
+def deleteRestaurantMenuItem(restaurantMenuItem_id=None):
+    """Remove a restaurant menu item from the database.
+
+    Args:
+        restaurantMenuItem_id: the id of the restaurant menu item to remove
+    """
+    session = getRestaurantDBSession()
+
+    if restaurantMenuItem_id is not None:
+        session.query(RestaurantMenuItem).\
+            filter_by(id=restaurantMenuItem_id).\
+            delete(synchronize_session=False)
+
+    session.commit()
+    session.close()
+
+

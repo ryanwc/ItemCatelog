@@ -168,7 +168,7 @@ def editRestaurant(restaurant_id):
             if request.form['cuisineID'] != 2:
                 newCuisineID = request.form['cuisineID']
 
-            RestaurantManager.updateRestaurant(restaurant.id,
+            RestaurantManager.editRestaurant(restaurant.id,
                 name=newName, newCuisineID=newCuisineID)
 
             if newName is not None:
@@ -276,17 +276,19 @@ def restaurantMenu(restaurant_id):
 def addRestaurantMenuItem(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         baseMenuItems = RestaurantManager.getBaseMenuItems()
-        #### update this! 
+
         if request.method == 'POST':
 
             RestaurantManager.addRestaurantMenuItem(
                 name=bleach.clean(request.form['name']),
                 restaurant_id=restaurant_id,
                 description=bleach.clean(request.form['description']),
-                price=bleach.clean(request.form['price'])
+                price=bleach.clean(request.form['price']),
+                baseMenuItem_id=request.form['baseMenuItemID']
             )
 
-            flash("menu item '" + name + "' added to the menu!")
+            flash("menu item '" + bleach.clean(request.form['name']) + \
+                "' added to the menu!")
 
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
@@ -346,21 +348,21 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
 
-            RestaurantManager.updateRestaurantMenuItem(restaurantMenuItem.id,
-                name=newName, newDescription=newDescription, newPrice=newPrice)
+            RestaurantManager.editRestaurantMenuItem(restaurantMenuItem.id,
+                newName=newName, newDescription=newDescription, newPrice=newPrice)
 
             if newName is not None:
-                flash("changed restaurant menu item " + str(restaurantMenuitem.id) + \
+                flash("changed restaurant menu item " + str(restaurantMenuItem.id) + \
                     "'s name from '" + oldName + "' to '" + newName + "'")
 
             if newDescription is not None:
-                flash("changed restaurant menu item " + str(restaurantMenuitem.id) + \
+                flash("changed restaurant menu item " + str(restaurantMenuItem.id) + \
                     "'s description from '"+ oldDescription + "' to '" + \
                     newDescription + "'")
 
             if newPrice is not None:
-                flash("changed restaurant menu item " + str(restaurantMenuitem.id) + \
-                    "'s price changed from '" + oldPrice + "' to '" + \
+                flash("changed restaurant menu item " + str(restaurantMenuItem.id) + \
+                    "'s price from '" + oldPrice + "' to '" + \
                     newPrice + "'")
             
             return redirect(url_for('restaurantMenu',
@@ -380,17 +382,14 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         if request.method == 'POST':
 
-            """update this
-            session = session.getRestaurantDBSession()
+            restaurantMenuItemName = restaurantMenuItem.name
 
-            itemToDelete = session.query(RestaurantMenuItem).\
-                           filter_by(id=RestaurantMenuItem_id).one()
-            session.delete(itemToDelete)
-            session.commit()
-            session.close()
-            flash("menu item " + str(itemToDelete.id) + " (" + \
-                  itemToDelete.name + ") deleted from the menu and database")
-            """
+            RestaurantManager.\
+                deleteRestaurantMenuItem(restaurantMenuItem_id=restaurantMenuItem_id)
+
+            flash("removed item " + str(restaurantMenuItem_id) + " (" + \
+                  restaurantMenuItemName + ") from the menu and database")
+
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
         else:

@@ -7,7 +7,11 @@
 		Cancel (return to menu)
 	</a>
 
-	<p> Note that a restaurant menu item can be based on. for this restaurant menu item, Note that you can choose the first option in the dropdown to 
+	<p>
+		Note that you can choose "Base Item for Menu Items with no Specific Cuisine" if the menu item you want to create doesn't have a good fit for its base on the dropdown.
+		</br>
+		If this is the case, though, you might want to consider first creating a relevant base menu item for the relevant cuisine.  You can view and edit cuisines <a href="{{url_for('cuisines')}}">here</a>.
+	</p>
 
 	<form action="{{url_for('addRestaurantMenuItem', 
 							restaurant_id=restaurant.id)}}"
@@ -15,7 +19,6 @@
 
 		<p>Base menu item:</p>
 		<select name="baseMenuItemID">
-		<option value="">Custom (enter in text box below)</option>
   		{% for baseMenuItem in baseMenuItems %}
   			<option value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
   		{% endfor %}
