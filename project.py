@@ -189,9 +189,22 @@ def editRestaurant(restaurant_id):
                                    restaurant=restaurant,
                                    cuisines=cuisines)
 
-@app.route('/restaurants/<int:restaurant_id>/delete/')
+@app.route('/restaurants/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
-        return "delete restaurant " + str(restaurant_id)
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+
+        if request.method == 'POST':
+
+            # delete restaurant
+
+            flash("restaurant " + str(restaurant.id) + " (" + restaurant.name+\
+                ") deleted from the database.")
+            
+            return redirect(url_for('restaurants'))
+        else:   
+            
+            return render_template('DeleteRestaurant.html',
+                                   restaurant=restaurant)
 
 @app.route('/baseMenuItems/')
 def baseMenuItems():
