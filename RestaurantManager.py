@@ -263,6 +263,7 @@ def getCuisine(cuisine_id=None, name=None):
     session = getRestaurantDBSession()
 
     if cuisine_id is not None:
+        print "looking for " + str(cuisine_id)
         cuisine  = session.query(Cuisine).filter_by(id=cuisine_id).one()
     elif name is not None:
         cuisine = session.query(Cuisine).filter_by(name=name).one()
@@ -270,7 +271,7 @@ def getCuisine(cuisine_id=None, name=None):
     session.close()
     return cuisine
 
-def editRestaurant(restaurantMenuItem_id, newName=None, newCuisine_id=None):
+def editRestaurant(restaurant_id, newName=None, newCuisine_id=None):
     """Edit a restaurant
 
     Pass none for any attribute to leave it unchanged.
@@ -285,6 +286,8 @@ def editRestaurant(restaurantMenuItem_id, newName=None, newCuisine_id=None):
     if newName is not None:
         session.query(Restaurant).filter_by(id=restaurant_id).\
             update({'name':newName})
+
+    print "updated name"
 
     if newCuisine_id is not None:
         session.query(Restaurant).filter_by(id=restaurant_id).\
@@ -410,7 +413,33 @@ def deleteRestaurantMenuItem(restaurantMenuItem_id=None):
             filter_by(id=restaurantMenuItem_id).\
             delete(synchronize_session=False)
 
-    session.commit()
+        session.commit()
+
+    session.close()
+
+def deleteRestaurant(restaurant_id=None):
+    """Remove a restaurant from the database.
+
+    NOTE: This also deletes all the restaurant's restaurant menu items.
+
+    Args:
+        restaurant_id: the id of the restaurant to remove
+    """
+    session = getRestaurantDBSession()
+
+    if restaurant_id is not None:
+        restaurantMenuItems = getRestaurantMenuItems(restaurant_id=restaurant_id)
+
+        for restaurantMenuItem in restaurantMenuItems:
+            session.query(RestaurantMenuItem).\
+                filter_by(id=restaurantMenuItem.id).\
+                delete(synchronize_session=False)
+
+        session.query(Restaurant).filter_by(id=restaurant_id).\
+                delete(synchronize_session=False)
+        
+        session.commit()
+
     session.close()
 
 

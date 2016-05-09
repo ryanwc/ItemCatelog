@@ -31,21 +31,6 @@
 				restaurant {{mostExpensiveRestaurantMenuItem.restaurant_id}}</li>
 		</ul>
 
-		<div class='restaurants'>
-		<p>
-			Restaurants with this as primary cuisine:
-		</p>
-		<ol>
-			{% for restaurant in restaurants %}
-			<li>
-			<a href="{{url_for('restaurant',
-							   restaurant_id=restaurant.id)}}">
-				{{restaurant.name}} (ID {{restaurant.id}})</a>
-			</li>
-			{% endfor %}
-		</ol>
-		</div>
-		
 		<div class='baseMenuItems'>
 		<p>
 			Base menu items with this cuisine:
@@ -61,11 +46,26 @@
 			{% endfor %}
 		</ol>
 		<ul>
-			<li><a href="{{url_for('addBaseMenuItem', 
+			<li><a class = 'actions' href="{{url_for('addBaseMenuItem', 
 							   	   cuisine_id=cuisine.id)}}">
 				Add base menu item</a>
 			</li>
 		</ul>
+		</div>
+
+		<div class='restaurants'>
+		<p>
+			Restaurants with this as primary cuisine:
+		</p>
+		<ol>
+			{% for restaurant in restaurants %}
+			<li>
+			<a href="{{url_for('restaurant',
+							   restaurant_id=restaurant.id)}}">
+				{{restaurant.name}} (ID {{restaurant.id}})</a>
+			</li>
+			{% endfor %}
+		</ol>
 		</div>
 
 		<div class='restaurantMenuItems'>

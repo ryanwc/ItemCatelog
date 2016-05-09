@@ -9,18 +9,15 @@
 			Note that the restaurant's menu will start with all of the base
 			menu items (if any) for its cuisine.
 			</br>
-			You can view and modify cuisines <a href="url_for('cuisines')'">here</a>
-			and base menu items <a href="url_for('baseMenuItems')'">here</a>.
+			You can view and modify cuisines and their base menu items <a href="{{url_for('cuisines')}}">here</a>.
 		</p>
 		<p>
-			All existing cuisines are listed in the dropdown menu below.
-			</br>
-			If you want to create a new cuisine, select "Custom (enter in 
-			text box below)" from the dropdown and type your custom
-			cuisine in the box.
-			</br>
-			A custom cuisine will not have any base menu 
-			items, so you will need to populate the restaurant's menu yourself.
+			Important notes about cuisines:
+			<ul>
+				<li>All existing cuisines are listed in the dropdown menu below.</li>
+				<li>If you want the restaurant to have a cuisine that doesn't exist in the database yet, select "Custom (enter in text box below)" from the dropdown and type your custom cuisine in the box.  This will create a new cuisine in the database and assign it to the restaurant.</li>
+				<li>A custom cuisine will not have any base menu items, so you will need to populate the restaurant's menu yourself.</li>
+				<li>If the restaurant has no specific cuisine type, you can select "No Specific Cuisine" from the dropdown and the restaurant will not get any items on its menu.</li>
 		</p>
 	</div>
 
@@ -39,10 +36,10 @@
   		{% endfor %}
 	</select>
 	</br>
-	<input type='text' size='50' name='customCuisine' 
+	<input type='text' size='60' name='customCuisine' 
 		placeholder='Custom Cuisine Name'>
 	<p>Restaruant Name:</p>
-	<input type='text' size='50' name='name'>
+	<input type='text' size='30' name='name'>
 
 	<input type='submit' value='Create Restaurant'>
 

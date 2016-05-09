@@ -63,15 +63,27 @@ def cuisine(cuisine_id):
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(cuisine_id=cuisine_id)
 
-        mostExpensiveBaseMenuItem = baseMenuItems[0]
-        for item in baseMenuItems:
-            if item.price > mostExpensiveBaseMenuItem.price:
-                mostExpensiveBaseMenuItem = item
+        if len(baseMenuItems) > 0:
+            mostExpensiveBaseMenuItem = baseMenuItems[0]
+            for item in baseMenuItems:
+                if item.price > mostExpensiveBaseMenuItem.price:
+                    mostExpensiveBaseMenuItem = item
+        else:
+            ## got to be a better way to do this
+            mostExpensiveBaseMenuItem = RestaurantManager.getBaseMenuItem(-1)
+            mostExpensiveBaseMenuItem.name = "N/A"
+            mostExpensiveBaseMenuItem.price = "N/A"
 
-        mostExpensiveRestaurantMenuItem = restaurantMenuItems[0]
-        for item in restaurantMenuItems:
-            if item.price > mostExpensiveRestaurantMenuItem.price:
-                mostExpensiveRestaurantMenuItem = item
+        if len(restaurantMenuItems) > 0:
+            mostExpensiveRestaurantMenuItem = restaurantMenuItems[0]
+            for item in restaurantMenuItems:
+                if item.price > mostExpensiveRestaurantMenuItem.price:
+                    mostExpensiveRestaurantMenuItem = item
+        else:
+            ## got to be a better way to do this
+            mostExpensiveRestaurantMenuItem = RestaurantManager.getBaseMenuItem(-1)
+            mostExpensiveRestaurantMenuItem.name = "N/A"
+            mostExpensiveRestaurantMenuItem.price = "N/A"
 
         return render_template("Cuisine.html",
                                cuisine=cuisine,
@@ -107,20 +119,28 @@ def restaurants():
 def addRestaurant():
         if request.method == 'POST':
 
+            name = bleach.clean(request.form['name'])
+
             if request.form['cuisineID'] == 'custom':
-                cuisineName = bleach.clean(request.form['customCuisine'])
-                RestaurantManager.addCuisine(name=name)
-                custCuisine = RestaurantManager.getCuisine(cuisineName)
+                custCuisineName = bleach.clean(request.form['customCuisine'])
+                RestaurantManager.addCuisine(name=custCuisineName)
+                custCuisine = RestaurantManager.getCuisine(name=custCuisineName)
                 cuisine_id = custCuisine.id
             else:
                 cuisine_id = request.form['cuisineID']
 
+            cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
+
             RestaurantManager.addRestaurant(
-                name=bleach.clean(request.form['name']),
+                name=name,
                 cuisine_id=cuisine_id
             )
 
-            flash("restaurant '" + name + "' with cuisine '" + cuisineName +\
+            if request.form['cuisineID'] == 'custom':
+                flash("cuisine '" + cuisine.name + "' added to the " +\
+                    "database!")
+
+            flash("restaurant '" + name + "' with cuisine '" + cuisine.name +\
                 "' added to the database!")
 
             return redirect(url_for('restaurants'))
@@ -134,23 +154,30 @@ def restaurant(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(restaurant_id=restaurant_id)
+        cuisine = RestaurantManager.getCuisine(restaurant.cuisine_id)
 
-        # get some stats about the restaurant
-        print restaurantMenuItems
         numMenuItems = len(restaurantMenuItems)
 
-        mostExpensiveItem = restaurantMenuItems[0]
-
-        for item in restaurantMenuItems:
-            if item.price > mostExpensiveItem.price:
-                mostExpensiveItem = item
+        if numMenuItems > 0:
+            mostExpensiveItem = restaurantMenuItems[0]
+            for item in restaurantMenuItems:
+                if item.price > mostExpensiveItem.price:
+                    mostExpensiveItem = item
+        else:
+            ## got to be a better way to do this
+            mostExpensiveItem = RestaurantManager.\
+                                getBaseMenuItem(baseMenuItem_id=-1)
+            mostExpensiveItem.name = 'N/A'
+            mostExpensiveItem.price = 'N/A'
 
         return render_template('Restaurant.html', 
                                restaurant=restaurant, 
                                numMenuItems=numMenuItems,
-                               mostExpensiveItem=mostExpensiveItem)
+                               mostExpensiveItem=mostExpensiveItem,
+                               cuisine=cuisine)
 
-@app.route('/restaurants/<int:restaurant_id>/edit/')
+@app.route('/restaurants/<int:restaurant_id>/edit/',
+           methods=['GET','POST'])
 def editRestaurant(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         cuisines = RestaurantManager.getCuisines()
@@ -158,29 +185,37 @@ def editRestaurant(restaurant_id):
         if request.method == 'POST':
 
             oldName = restaurant.name
-            oldCuisineID = restauran.cuisine_id
+            oldCuisine = RestaurantManager.\
+                         getCuisine(cuisine_id=restaurant.cuisine_id)
             newName = None
+            newCuisine = None
             newCuisineID = None
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
                 
-            if request.form['cuisineID'] != 2:
+            if request.form['cuisineID'] != "noNewCuisine":
+                print "it was not -2"
                 newCuisineID = request.form['cuisineID']
+                newCuisine = RestaurantManager.\
+                             getCuisine(cuisine_id=newCuisineID)
 
             RestaurantManager.editRestaurant(restaurant.id,
-                name=newName, newCuisineID=newCuisineID)
+                newName=newName, newCuisine_id=newCuisineID)
+
+            restaruant = RestaurantManager.getRestaurant(restaurant_id)
 
             if newName is not None:
-                flash("changed restaurant " + str(restaurant.id) + "'s name "+\
-                    "from '" + oldName + "' to '" + newName + "'")
+                flash("changed " + restaurant.name + "'s (ID " + \
+                    str(restaurant.id) + ") name from '" + oldName + \
+                    "' to '" + newName + "'")
 
-            if newCuisineID is not None:
-                flash("changed restaurant " + str(restaurantMenuitem.id) + \
-                    "'s cuisine from '"+ oldCuisineID + "' to '" + \
-                    newCuisineID + "'")
+            if newCuisine is not None:
+                flash("changed " + restaurant.name + "'s (ID " + \
+                    str(restaurant.id) + ") cuisine from '"+ \
+                    oldCuisine.name + "' to '" + newCuisine.name + "'")
             
-            return redirect(url_for('restaurantMenu',
+            return redirect(url_for('restaurant',
                                     restaurant_id=restaurant_id))
         else:
 
@@ -194,10 +229,16 @@ def deleteRestaurant(restaurant_id):
 
         if request.method == 'POST':
 
-            # delete restaurant
+            restaurantMenuItems = RestaurantManager.\
+                                  getRestaurantMenuItems(restaurant_id=restaurant_id)
 
-            flash("restaurant " + str(restaurant.id) + " (" + restaurant.name+\
-                ") deleted from the database.")
+            RestaurantManager.deleteRestaurant(restaurant_id)
+
+            flash("deleted " + str(len(restaurantMenuItems)) + \
+                " restaurant menu items from the database")
+
+            flash("deleted restaurant " + str(restaurant.id) + " (" + \
+                restaurant.name + ") from the database")
             
             return redirect(url_for('restaurants'))
         else:   
