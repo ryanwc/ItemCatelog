@@ -252,6 +252,15 @@ def addBaseMenuItem(cuisine_id):
 
         if request.method == 'POST':
 
+            name = bleach.clean(request.form['name'])
+            description = bleach.clean(request.form['description'])
+            price = bleach.clean(request.form['price'])
+
+            RestaurantManager. addBaseMenuItem(name, cuisine_id,
+                description=description, price=price)
+
+            flash("added " + name + " to " + cuisine.name + "'s base menu")
+
             return redirect(url_for('cuisine', cuisine_id=cuisine.id))
         else:
             return render_template('AddBaseMenuItem.html',
@@ -279,6 +288,36 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 
         if request.method == 'POST':
 
+            oldName = baseMenuItem.name
+            oldDescription = baseMenuItem.description
+            oldPrice = baseMenuItem.price
+            newName = None
+            newDescription = None
+            newPrice = None
+            
+            if request.form['name']:
+                newName = bleach.clean(request.form['name'])
+                
+            if request.form['description']:
+                newDescription = bleach.clean(request.form['description'])
+                
+            if request.form['price']:
+                newPrice = bleach.clean(request.form['price'])
+
+            RestaurantManager.editBaseMenuItem(baseMenuItem.id,
+                newName=newName, newDescription=newDescription, newPrice=newPrice)
+
+            if newName is not None:
+                flash("changed name from '"+oldName+"' to '"+newName+"'")
+
+            if newDescription is not None:
+                flash("changed description from '"+ oldDescription + "' to '" + \
+                    newDescription + "'")
+
+            if newPrice is not None:
+                flash("changed price from '" + oldPrice + "' to '" + \
+                    newPrice + "'")
+
             return redirect(url_for('baseMenuItem',
                                     cuisine_id=cuisine_id,
                                     baseMenuItem_id=baseMenuItem_id))
@@ -294,6 +333,19 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
 
         if request.method == 'POST':
+
+            cuisine = RestaurantManager.getCuisine(cuisine_id)
+            restaurantMenuItems = RestaurantManager.\
+                                  getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
+            baseForNoCuisine = RestaurantManager.getBaseMenuItem(-1)
+
+            RestaurantManager.deleteBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
+
+            flash("reassigned " + str(len(restaurantMenuItems)) + \
+                " restaurant menu item's base to '" +\
+                baseForNoCuisine.name + "'")
+            flash("deleted " + baseMenuItem.name + " from " +\
+                cuisine.name + "' menu (and from the database)")
 
             return redirect(url_for('cuisine',cuisine_id=cuisine_id))
         else:

@@ -435,6 +435,8 @@ def deleteRestaurant(restaurant_id=None):
                 filter_by(id=restaurantMenuItem.id).\
                 delete(synchronize_session=False)
 
+            session.commit()
+
         session.query(Restaurant).filter_by(id=restaurant_id).\
                 delete(synchronize_session=False)
         
@@ -442,4 +444,33 @@ def deleteRestaurant(restaurant_id=None):
 
     session.close()
 
+def deleteBaseMenuItem(baseMenuItem_id=None):
+    """Remove a base menu item from the database.
+
+    NOTE: This also reassigns all restaurant menu items with the given 
+    item as its base to the default base item for restaurant menu
+    items with no base item.
+
+    Args:
+        baseMenuItem_id: the id of the base menu item to remove
+    """
+    session = getRestaurantDBSession()
+
+    if baseMenuItem_id is not None:
+        restaurantMenuItems = getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
+
+        for restaurantMenuItem in restaurantMenuItems:
+            session.query(RestaurantMenuItem).\
+                filter_by(id=restaurantMenuItem.id).\
+                update({'baseMenuItem_id':-1})
+
+            session.commit()
+
+        session.query(BaseMenuItem).\
+            filter_by(id=baseMenuItem_id).\
+            delete(synchronize_session=False)
+
+        session.commit()
+
+    session.close()
 
