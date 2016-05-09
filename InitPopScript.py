@@ -27,7 +27,7 @@ session.commit()
 
 ### add a dummy base menu item for foods with no specific type
 dummyBaseMenuItem = BaseMenuItem(id=-1, 
-  name="Base Item for Menu Items with No Specific Cuisine")
+  name="Base Item with no Specific Cuisine", cuisine_id=-1)
 session.add(dummyBaseMenuItem)
 session.commit()
 

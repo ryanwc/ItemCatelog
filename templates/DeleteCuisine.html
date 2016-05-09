@@ -2,7 +2,7 @@
 <body>
 	<h1>Delete Cuisine</h1>
 
-	<h3>Delete {{cuisine.name}} from the cuisine list</h3>
+	<h3>Delete {{cuisine.name}} from the cuisine list (and database)</h3>
 
 	<p>
 		WARNING: This will also:
@@ -20,7 +20,7 @@
 	</p>
 
 	<p>
-		<a href="{{url_for('cuisine'), cuisine_id=cuisine.id}}">Cancel (return to the cuisine)</a>
+		<a href="{{url_for('cuisine', cuisine_id=cuisine.id)}}">Cancel</a>
 	</p>
 
 	<form action="{{url_for('deleteCuisine', 

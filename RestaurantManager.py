@@ -199,7 +199,7 @@ def getBaseMenuItem(baseMenuItem_id):
 
 def getBaseMenuItems(cuisine_id=None):
     """If no arguments are given, return all base menu items ordered by id.
-    If an argument is given, return the base menu items matching the argument.
+    If an argument is given, returns the base menu items matching the argument.
 
     NOTE: Exactly zero or one argument should be given.
 
@@ -263,7 +263,6 @@ def getCuisine(cuisine_id=None, name=None):
     session = getRestaurantDBSession()
 
     if cuisine_id is not None:
-        print "looking for " + str(cuisine_id)
         cuisine  = session.query(Cuisine).filter_by(id=cuisine_id).one()
     elif name is not None:
         cuisine = session.query(Cuisine).filter_by(name=name).one()
@@ -460,11 +459,8 @@ def deleteBaseMenuItem(baseMenuItem_id=None):
         restaurantMenuItems = getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
 
         for restaurantMenuItem in restaurantMenuItems:
-            session.query(RestaurantMenuItem).\
-                filter_by(id=restaurantMenuItem.id).\
-                update({'baseMenuItem_id':-1})
-
-            session.commit()
+            editRestaurantMenuItem(restaurantMenuItem.id,
+                                   newBaseMenuItem_id=-1)
 
         session.query(BaseMenuItem).\
             filter_by(id=baseMenuItem_id).\
@@ -474,3 +470,34 @@ def deleteBaseMenuItem(baseMenuItem_id=None):
 
     session.close()
 
+def deleteCuisine(cuisine_id=None):
+    """Remove a cuisine from the database.
+
+    NOTE: This also reassigns all restaurants with this cuisine to "No
+        specific cuisine" and reassigns all restaurant menu items with a base
+        menu item with this cuisine to "Base Menu Item for Restaurant Menu Items
+        with No Specific Cuisine".
+
+    Args:
+        cuisine_id: the id of the cuisine to remove
+    """
+    session = getRestaurantDBSession()
+
+    if cuisine_id is not None:
+        baseMenuItems = getBaseMenuItems(cuisine_id=cuisine_id)
+        restaurants = getRestaurants(cuisine_id=cuisine_id)
+
+        for baseMenuItem in baseMenuItems:
+            deleteBaseMenuItem(baseMenuItem_id=baseMenuItem.id)
+
+        for restaurant in restaurants:
+            editRestaurant(restaurant.id,
+                           newCuisine_id=-1)
+            session.commit()        
+
+        session.query(Cuisine).filter_by(id=cuisine_id).\
+                delete(synchronize_session=False)
+        
+        session.commit()
+
+    session.close()

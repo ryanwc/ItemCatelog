@@ -43,11 +43,14 @@ def cuisines():
 
 @app.route('/cuisines/add/', methods=['GET', 'POST'])
 def addCuisine():
+
         if request.method == 'POST':
 
-            RestaurantManager.addCuisine(bleach.clean(request.form['name']))
+            name = bleach.clean(request.form['name'])
 
-            flash("Cuisine '" + name + "' added to the database!")
+            RestaurantManager.addCuisine(name)
+
+            flash("Added cuisine '" + name + "' to the database!")
 
             return redirect(url_for('cuisines'))
         else:
@@ -56,7 +59,7 @@ def addCuisine():
 
 @app.route('/cuisines/<int:cuisine_id>/')
 def cuisine(cuisine_id):
-        cuisine = RestaurantManager.getCuisine(cuisine_id)
+        cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
         restaurants = RestaurantManager.getRestaurants(cuisine_id=cuisine_id)
         baseMenuItems = RestaurantManager.\
                         getBaseMenuItems(cuisine_id=cuisine_id)
@@ -93,17 +96,68 @@ def cuisine(cuisine_id):
                                baseMenuItems=baseMenuItems,
                                restaurantMenuItems=restaurantMenuItems)
 
-@app.route('/cuisines/<int:cuisine_id>/edit/')
+@app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
-        return "edit cuisine " + str(cuisine_id)
-
-@app.route('/cuisines/<int:cuisine_id>/delete/', methods=['GET', 'POST'])
-def deleteCuisine(cuisine_id):
-        cuisine = RestaurantManager.getCuisine(cuisine_id)
+        cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         if request.method == 'POST':
 
-            redirect(url_for('cuisines'))
+            oldName = cuisine.name
+            newName = None
+
+            if request.form['name']:
+                newName = bleach.clean(request.form['name'])
+
+            if newName is not oldName:
+                RestaurantManager.editCuisine(cuisine_id, newName=newName)
+                
+                flash("Changed cuisine's name from '" + oldName +\
+                    "' to '" + newName + "'")
+
+            return redirect(url_for('cuisine',
+                                    cuisine_id=cuisine_id))
+        else:
+            return render_template("EditCuisine.html",
+                               cuisine=cuisine)
+
+@app.route('/cuisines/<int:cuisine_id>/delete/', methods=['GET', 'POST'])
+def deleteCuisine(cuisine_id):
+        cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
+
+        if request.method == 'POST':
+
+            cuisineName = cuisine.name
+            cuisineID = cuisine.id
+            restaurantMenuItems = RestaurantManager.\
+                                  getRestaurantMenuItems(cuisine_id=cuisine_id)
+            numItemsReassigned = len(restaurantMenuItems)
+            restaurants = RestaurantManager.\
+                          getRestaurants(cuisine_id=cuisine_id)
+            numRestaurantsReassigned = len(restaurants)
+            baseMenuItems = RestaurantManager.\
+                            getBaseMenuItems(cuisine_id=cuisine_id)
+            numItemsDeleted = len(baseMenuItems)
+            itemBaseForNoCuisine = RestaurantManager.getBaseMenuItem(-1)
+            restaurantBaseForNoCuisine = RestaurantManager.\
+                                         getCuisine(cuisine_id=-1)
+
+            RestaurantManager.deleteCuisine(cuisine_id)
+
+            flash("reassigned " + str(numItemsReassigned) + \
+                " restaurant menu items' base item to '" + \
+                itemBaseForNoCuisine.name + "'")
+
+            flash("reassigned " + str(numRestaurantsReassigned) + \
+                " restaurants' cuisine to '" + \
+                restaurantBaseForNoCuisine.name + "'")
+
+            flash("deleted " + str(numItemsDeleted) + \
+                " base menu items from the database")
+
+            flash("deleted cuisine " + str(cuisineID) + " (" + \
+                cuisineName + ") from the database")
+
+            return redirect(url_for('cuisines'))
         else:
             return render_template("DeleteCuisine.html",
                                    cuisine=cuisine)
@@ -154,7 +208,7 @@ def restaurant(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(restaurant_id=restaurant_id)
-        cuisine = RestaurantManager.getCuisine(restaurant.cuisine_id)
+        cuisine = RestaurantManager.getCuisine(cuisine_id=restaurant.cuisine_id)
 
         numMenuItems = len(restaurantMenuItems)
 
@@ -248,7 +302,7 @@ def deleteRestaurant(restaurant_id):
 
 @app.route('/cuisines/<int:cuisine_id>/add/', methods=['GET','POST'])
 def addBaseMenuItem(cuisine_id):
-        cuisine = RestaurantManager.getCuisine(cuisine_id)
+        cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         if request.method == 'POST':
 
@@ -269,7 +323,7 @@ def addBaseMenuItem(cuisine_id):
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/')
 def baseMenuItem(cuisine_id, baseMenuItem_id):
         baseMenuItem = RestaurantManager.getBaseMenuItem(baseMenuItem_id)
-        cuisine = RestaurantManager.getCuisine(baseMenuItem.cuisine_id)
+        cuisine = RestaurantManager.getCuisine(cuisine_id=baseMenuItem.cuisine_id)
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(baseMenuItem_id=baseMenuItem.id)
         timesOrdered = 0
@@ -334,7 +388,7 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
 
         if request.method == 'POST':
 
-            cuisine = RestaurantManager.getCuisine(cuisine_id)
+            cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
             restaurantMenuItems = RestaurantManager.\
                                   getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
             baseForNoCuisine = RestaurantManager.getBaseMenuItem(-1)
@@ -397,13 +451,14 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                              getRestaurantMenuItem(restaurantMenuItem_id)
 
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
-        restaurantCuisineObj = RestaurantManager.getCuisine(restaurant.cuisine_id)
+        restaurantCuisineObj = RestaurantManager.\
+                               getCuisine(cuisine_id=restaurant.cuisine_id)
         restaurantCuisine = restaurantCuisineObj.name
 
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(restaurantMenuItem.baseMenuItem_id)
         baseMenuItemCuisineObj = RestaurantManager.\
-                                 getCuisine(baseMenuItem.cuisine_id)
+                                 getCuisine(cuisine_id=baseMenuItem.cuisine_id)
         baseMenuItemCuisine = baseMenuItemCuisineObj.name
 
         timesOrdered = 0

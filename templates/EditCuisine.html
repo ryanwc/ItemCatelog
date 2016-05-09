@@ -1,31 +1,24 @@
 <html>
 <body>
-	<h1>Edit Menu Item</h1>
+	<h1>Edit Cuisine</h1>
 	
-	<h3>Edit item {{menuItem.id}} from restaurant 
-		{{restaurant_id}}'s menu
-	</h3>
+	<h3>Edit {{cuisine.name}} (ID {{cuisine.id}})</h3>
 
-	<p> NOTE: Leave a box blank if you do not wish to change its value.</p>
+	<p> 
+		Note that cuisine names must be unique, so you will get an error if the cuisine name already exisits in the database.
+	</p>
 
-	<a href="{{url_for('restaurantMenu',restaurant_id=restaurant_id)}}">
-		Cancel (return to menu)
+	<a href="{{url_for('cuisines')}}">
+		Cancel
 	</a>
 
-	<form action="{{url_for('editMenuItem', 
-							restaurant_id=restaurant_id,
-							menuItem_id=menuItem.id)}}"
+	<form action="{{url_for('editCuisine', 
+							cuisine_id=cuisine.id)}}"
 		method='post'>
 
-		<p>Change Item Name to:</p>
-		<input type='text' size='30' name='name' 
-			placeholder='{{menuItem.name}}'>
-		<p>Change Item Description to:</p>
-		<input type='text' size='60' name='description' 
-			placeholder='{{menuItem.description}}'>
-		<p>Change Item Price to:</p>
-		<input type='text' size='30' name='price' 
-			placeholder='{{menuItem.price}}'>
+		<p>Change Cuisine Name to:</p>
+		<input type='text' size='60' name='name' 
+			placeholder='{{cuisine.name}}'>
 
 		<input type='submit' value='Submit Changes'>
 
