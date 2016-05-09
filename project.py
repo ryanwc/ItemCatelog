@@ -13,17 +13,56 @@ import bleach
 
 ### Make a API Endpoints (for GET Requests)
 
-@app.route('/restaurants/<int:restaurant_id>/menu/JSON')
-def restaurantMenuJSON(restaurant_id):
+@app.route('/cuisines/JSON/')
+def cuisinesJSON():
+        cuisines = RestaurantManager.getCuisines()
+
+        return jsonify(Cuisines=[i.serialize for i in cuisines])
+
+@app.route('/cuisines/<int:cuisine_id>/JSON/')
+def cuisineJSON(cuisine_id):
+        cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
+        baseMenuItems = RestaurantManager.\
+                        getBaseMenuItems(cuisine_id=cuisine_id)
+        restaurants = RestaurantManager.getRestaurants(cuisine_id=cuisine_id)
+        restaurantMenuItems = RestaurantManager.\
+                              getRestaurantMenuItems(cuisine_id=cuisine_id)
+
+        return jsonify(Cuisine=cuisine.serialize,
+                       BaseMenuItems=[i.serialize for i in baseMenuItems],
+                       Restaurants=[i.serialize for i in restaurants],
+                       RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
+
+@app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/JSON/')
+def baseMenuItemJSON(cuisine_id, baseMenuItem_id):
+        baseMenuItem = RestaurantManager.getBaseMenuItem(baseMenuItem_id)
+        restaurantMenuItems = RestaurantManager.\
+                              getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
+
+        return jsonify(BaseMenuItem=baseMenuItem.serialize,
+                       RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
+
+@app.route('/restaurants/JSON/')
+def restaurantsJSON():
+        restaurants = RestaurantManager.getRestaurants()
+
+        return jsonify(Restaurants=[i.serialize for i in restaurants])
+
+@app.route('/restaurants/<int:restaurant_id>/JSON/')
+def restaurantJSON(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
+
         restaurantMenuItems = RestaurantManager.\
             getRestaurantMenuItems(restaurant_id=restaurant_id)
-        return jsonify(RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
 
-@app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/JSON')
-def RestaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
+        return jsonify(Restaurant=restaurant.serialize,
+                       RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
+
+@app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/JSON/')
+def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
+
         return jsonify(RestaurantMenuItem=restaurantMenuItem.serialize)
 
 

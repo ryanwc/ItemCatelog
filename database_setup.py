@@ -15,10 +15,17 @@ Base = declarative_base()
 # define tables for the database in Python classes
 
 class Cuisine(Base):
-        __tablename__ = 'cuisine'
+	__tablename__ = 'cuisine'
 
-        id = Column(Integer, primary_key=True)
-        name = Column(String(80), nullable=False, unique=True)
+	id = Column(Integer, primary_key=True)
+	name = Column(String(80), nullable=False, unique=True)
+
+	@property
+	def serialize(self):
+                return {
+                        'name': self.name,
+                        'id': self.id,
+                }
 
         
 class Restaurant(Base):
@@ -28,6 +35,14 @@ class Restaurant(Base):
 	name = Column(String(250), nullable=False)
 	cuisine_id = Column(Integer, ForeignKey('cuisine.id'))
 	cuisine = relationship(Cuisine)
+
+	@property
+	def serialize(self):
+                return {
+                        'name': self.name,
+                        'id': self.id,
+                        'cuisine_id': self.cuisine_id,
+                }
 
 class BaseMenuItem(Base):
 	__tablename__ = 'base_menu_item'
@@ -42,13 +57,13 @@ class BaseMenuItem(Base):
 
 	@property
 	def serialize(self):
-                #Returns object data in easily serializeable format
                 return {
                         'name': self.name,
                         'description': self.description,
                         'id': self.id,
                         'price': self.price,
                         'course': self.course,
+                        'cuisine_id':self.cuisine_id,
                 }
 
 class RestaurantMenuItem(Base):
@@ -63,6 +78,18 @@ class RestaurantMenuItem(Base):
 	baseMenuItem_id = Column(Integer, ForeignKey('base_menu_item.id'))
 	restaurant = relationship(Restaurant)
 	baseMenuItem = relationship(BaseMenuItem)
+
+	@property
+	def serialize(self):
+                return {
+                        'name': self.name,
+                        'description': self.description,
+                        'id': self.id,
+                        'price': self.price,
+                        'course': self.course,
+                        'restaurant_id':self.restaurant_id,
+                        'baseMenuItem_id':self.baseMenuItem_id,
+                }
 	
 
 # connect to database engine
