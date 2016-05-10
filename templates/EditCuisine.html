@@ -1,20 +1,31 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Cuisines.css')}}">
+</head>
 <body>
-	<h1>Edit Cuisine</h1>
+	<h1 class='header'>Edit {{cuisine.name}}</h1>
 	
-	<h3>Edit {{cuisine.name}} (ID {{cuisine.id}})</h3>
-
-	<p> 
+	<div class='actionText'>
+		<p>
+			Edit cuisine {{cuisine.name}} (ID {{cuisine.id}}).
+		</p>
+		<p> 
 		Note that cuisine names must be unique, so you will get an error if the cuisine name already exisits in the database.
-	</p>
+		</p>
+	</div>
 
-	<a href="{{url_for('cuisines')}}">
+	<a class='backLink' href="{{url_for('cuisine',cuisine_id=cuisine.id)}}">
 		Cancel
 	</a>
 
-	<form action="{{url_for('editCuisine', 
+	<form class='form' action="{{url_for('editCuisine', 
 							cuisine_id=cuisine.id)}}"
 		method='post'>
+
+		<h3 class='header'>
+			Cuisine Attributes to Edit
+		</h3>
 
 		<p>Change Cuisine Name to:</p>
 		<input type='text' size='60' name='name' 

@@ -1,26 +1,38 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Cuisines.css')}}">
+</head>
 <body>
-	<h1>Edit Base Menu Item</h1>
+	<h1 class='header'>Edit '{{baseMenuItem.name}}'</h1>
 	
-	<h3>Edit {{baseMenuItem.name}} (ID {{baseMenuItem.id}}) from
-		{{cuisine_id}}'s base menu
-	</h3>
+	<div class='actionText'>
+		<p>
+			Edit base menu item '{{baseMenuItem.name}}' (ID {{baseMenuItem.id}}) from from cuisine {{cuisine.name}}'s base menu.
+		</p>
+	</div>
 
-	<p> NOTE: Leave a box blank if you do not wish to change its value.
-		</br>
-		Also note that you cannot change the cuisine type.  If you want to do that, you're probably better off creating a new base menu item.
-	</p>
-
-	<a href="{{url_for('baseMenuItem',
-					   cuisine_id=cuisine_id,
+	<a class='backLink' href="{{url_for('baseMenuItem',
+					   cuisine_id=cuisine.id,
 					   baseMenuItem_id=baseMenuItem.id)}}">
 		Cancel
 	</a>
 
-	<form action="{{url_for('editBaseMenuItem', 
-							cuisine_id=cuisine_id,
+	<form class='form' action="{{url_for('editBaseMenuItem', 
+							cuisine_id=cuisine.id,
 							baseMenuItem_id=baseMenuItem.id)}}"
 		method='post'>
+
+		<h3 class='header'>
+			Base Menu Item Attributes to Edit
+		</h3>
+
+		<p>
+			NOTE: Leave a box blank if you do not wish to change its value.
+		</p>
+		<p>
+			Also note that you cannot change the cuisine type.  If you want to do that, you're better off creating a new base menu item.
+		</p>
 
 		<p>Change Item Name to:</p>
 		<input type='text' size='30' name='name' 

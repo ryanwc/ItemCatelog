@@ -1,10 +1,14 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Cuisines.css')}}">
+</head>
 <body> 
 	<h1 class='header'>{{cuisine.name}}</h1>
 
 	<p>
-		<a class='back' href="{{url_for('cuisines')}}">
-			Take me back to the cuisine list
+		<a class='backLink' href="{{url_for('cuisines')}}">
+			Back to the cuisine list
 		</a>
 	</p>
 
@@ -21,7 +25,7 @@
 	</div>
 
 	<div class='stats'>
-		<p>Stats for {{cuisine.name}}:</p>
+		<p>Stats for cuisine '{{cuisine.name}}':</p>
 		<ul>
 			<li>ID: {{cuisine.id}}</li>
 			<li>Most expensive base menu item: {{mostExpensiveBaseMenuItem.name}} 
@@ -32,14 +36,14 @@
 				restaurant {{mostExpensiveRestaurantMenuItem.restaurant_id}}</li>
 		</ul>
 
-		<div class='baseMenuItems'>
+		<div class='list'>
 		<p>
 			Base menu items with this cuisine:
 		</p>
 		<ol>
 			{% for item in baseMenuItems %}
 			<li>
-			<a href="{{url_for('baseMenuItem',
+			<a class='forwardLink' href="{{url_for('baseMenuItem',
 							   cuisine_id=cuisine.id,
 							   baseMenuItem_id=item.id)}}">
 				{{item.name}}</a>
@@ -47,21 +51,21 @@
 			{% endfor %}
 		</ol>
 		<ul>
-			<li><a class = 'actions' href="{{url_for('addBaseMenuItem', 
+			<li><a class='actionLink' href="{{url_for('addBaseMenuItem', 
 							   	   cuisine_id=cuisine.id)}}">
 				Add base menu item</a>
 			</li>
 		</ul>
 		</div>
 
-		<div class='restaurants'>
+		<div class='list'>
 		<p>
 			Restaurants with this as primary cuisine:
 		</p>
 		<ol>
 			{% for restaurant in restaurants %}
 			<li>
-			<a href="{{url_for('restaurant',
+			<a class='forwardLink' href="{{url_for('restaurant',
 							   restaurant_id=restaurant.id)}}">
 				{{restaurant.name}} (ID {{restaurant.id}})</a>
 			</li>
@@ -69,14 +73,14 @@
 		</ol>
 		</div>
 
-		<div class='restaurantMenuItems'>
+		<div class='list'>
 		<p>
 			Restaurant menu items with this cuisine:
 		</p>
 		<ol>
 			{% for item in restaurantMenuItems %}
 			<li>
-			<a href="{{url_for('restaurantMenuItem',
+			<a class='forwardLink' href="{{url_for('restaurantMenuItem',
 							   restaurant_id=item.restaurant_id,
 							   restaurantMenuItem_id=item.id)}}">
 				{{item.name}} (at restaurant {{item.restaurant_id}})</a>
@@ -86,14 +90,14 @@
 		</div>
 	</div>
 
-	<div class='actions'>
+	<div class='list'>
 	<p>Other Actions:</p>
 	<ul>
-		<li><a href="{{url_for('editCuisine', 
+		<li><a class='actionLink' href="{{url_for('editCuisine', 
 							   cuisine_id=cuisine.id)}}">
 			Edit cuisine</a>
 		</li>
-		<li><a href="{{url_for('deleteCuisine', 
+		<li><a class='actionLink' href="{{url_for('deleteCuisine', 
 							   cuisine_id=cuisine.id)}}">
 			Delete cuisine</a>
 		</li>

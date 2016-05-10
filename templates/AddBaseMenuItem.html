@@ -1,15 +1,28 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Cuisines.css')}}">
+</head>
 <body>
-	<h1>Add Base Menu Item</h1>
-	<h3>Add an item to {{cuisine.name}} (ID {{cuisine.id}}) cuisine's base menu</h3>
+	<h1 class='header'>Add Base Menu Item</h1>
 
-	<a href="{{url_for('cuisine',cuisine_id=cuisine.id)}}">
-		Cancel (return to cuisine)
+	<div class='actionText'>
+		<p>
+			Add an item to cuisine {{cuisine.name}}'s base menu.
+		</p>
+	</div>
+
+	<a class='backLink' href="{{url_for('cuisine',cuisine_id=cuisine.id)}}">
+		Cancel
 	</a>
 
-	<form action="{{url_for('addBaseMenuItem', 
+	<form class='form'action="{{url_for('addBaseMenuItem', 
 							cuisine_id=cuisine.id)}}"
 		method='post'>
+
+		<h3 class='header'>
+			Info for New Base Menu Item
+		</h3>
 
 		<p>Item Name:</p>
 		<input type='text' size='30' name='name'>

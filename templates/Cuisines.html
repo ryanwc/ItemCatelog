@@ -1,17 +1,14 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Cuisines.css')}}">
+</head>
 <body> 
 	<h1 class='header'>List of All Cuisines</h1>
 
 	<p>
-		<a class='back' href="{{url_for('restaurantManagerIndex')}}">
-			Take me back to the start page
-		</a>
-	</p>
-
-	<p>
-		Click a cuisine to view, edit, or delete it, or 
-		<a href="{{url_for('addCuisine')}}"> 
-			click here to create a new cuisine
+		<a class='backLink' href="{{url_for('restaurantManagerIndex')}}">
+			Back to the start page
 		</a>
 	</p>
 
@@ -27,11 +24,18 @@
 	{% endwith %}
 	</div>
 
+	<div class='list'>
+	<p>
+		Click a cuisine to view, edit, or delete it, or 
+		<a class='actionLink' href="{{url_for('addCuisine')}}"> 
+			click here to create a new cuisine
+		</a>
+	</p>
 	<ul>
 	{% for c in cuisines %}
 	{% if c.id != -1: %}
-		<li class='cuisine'>
-			<a href="{{url_for('cuisine',
+		<li>
+			<a class='forwardLink' href="{{url_for('cuisine',
 							 	cuisine_id=c.id)}}">
 				{{c.name}} (ID {{c.id}})
 			</a>
@@ -39,5 +43,6 @@
 	{% endif %}
 	{% endfor %}
 	</ul>
+	</div>
 </body>
 </html>

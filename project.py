@@ -352,7 +352,7 @@ def addBaseMenuItem(cuisine_id):
             RestaurantManager. addBaseMenuItem(name, cuisine_id,
                 description=description, price=price)
 
-            flash("added " + name + " to " + cuisine.name + "'s base menu")
+            flash("added '" + name + "'' to " + cuisine.name + "'s base menu")
 
             return redirect(url_for('cuisine', cuisine_id=cuisine.id))
         else:
@@ -378,6 +378,7 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
 def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
+        cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         if request.method == 'POST':
 
@@ -417,7 +418,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         else:
             return render_template("EditBaseMenuItem.html",
                                    baseMenuItem=baseMenuItem,
-                                   cuisine_id=cuisine_id)
+                                   cuisine=cuisine)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/delete/',
            methods=['GET','POST'])

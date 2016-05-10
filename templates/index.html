@@ -1,16 +1,20 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='index.css')}}">
+</head>
 <body> 
-	<h1>Welcome to Restaurant Manager</h1>
+	<h1 class='header'>Welcome to Restaurant Manager</h1>
 
-	<p>What would you like to do?</p>
-
-	<ul>
-		<li><a href="{{url_for('restaurants')}}">
+	<div class='list'>
+		What would you like to do?
+		<ul>
+		<li><a class='forwardLink' href="{{url_for('restaurants')}}">
 			View, edit, or delete restaurants and their menu items</a>
 		</li>
-		<li><a href="{{url_for('cuisines')}}">
+		<li><a class='forwardLink' href="{{url_for('cuisines')}}">
 			View, edit, or delete cuisines and their base menu items</a>
 		</li>
-	</ul>
+		</ul>
 </body>
 </html>

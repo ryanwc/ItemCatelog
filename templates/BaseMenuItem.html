@@ -1,10 +1,13 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Cuisines.css')}}">
+</head>
 <body> 
-	<h1 class='header'>Base Menu Item</h1>
-	<h3 class='header'>{{baseMenuItem.name}}</h3>
+	<h1 class='header'>{{baseMenuItem.name}}</h1>
 
 	<p>
-		<a class='back' href="{{url_for('cuisine',
+		<a class='backLink' href="{{url_for('cuisine',
 										cuisine_id=cuisine.id)}}">
 			Back to the cuisine
 		</a>
@@ -23,39 +26,45 @@
 	</div>
 
 	<div class='stats'>
-	<p>Stats for {{baseMenuItem.name}}:</p>
-	<ul>
-		<li>ID: {{baseMenuItem.id}}</li>
-		<li>Cuisine: {{cuisine.name}} (ID {{cuisine.id}})</li>
-		<li>Description: {{baseMenuItem.description}}
-		<li>Price: {{baseMenuItem.price}}</li>
-	</ul>
-	List of all restaurant menu items with this base menu item:
-	<ol>
-		{% for restaurantMenuItem in restaurantMenuItems %}
-			<li><a href="{{url_for('restaurantMenuItem',
+		<p>Stats for base menu item '{{baseMenuItem.name}}':</p>
+		<ul>
+			<li>ID: {{baseMenuItem.id}}</li>
+			<li>Cuisine: {{cuisine.name}} (ID {{cuisine.id}})</li>
+			<li>Description: {{baseMenuItem.description}}
+			<li>Price: {{baseMenuItem.price}}</li>
+		</ul>
+
+		<div class='list'>
+		<p>
+			List of all restaurant menu items with this base menu item:
+		</p>
+		<ol>
+			{% for restaurantMenuItem in restaurantMenuItems %}
+				<li><a class='forwardLink' href="{{url_for('restaurantMenuItem',
 								   restaurant_id=restaurantMenuItem.restaurant_id,
 								   restaurantMenuItem_id=restaurantMenuItem.id)}}">
-				{{restaurantMenuItem.name}} (at restaurant 
-				{{restaurantMenuItem.restaurant_id}})</a>
-			</li>
-		{% endfor %}
-	</ol>
+					{{restaurantMenuItem.name}} (at restaurant 
+					{{restaurantMenuItem.restaurant_id}})</a>
+				</li>
+			{% endfor %}
+		</ol>
+		</div>
 	</div>
 
-	<div class='actions'>
+	<div class='list'>
 	<p>Actions:</p>
 	<ul>
-		<li><a href="{{url_for('editBaseMenuItem',
+		<li><a class='actionLink' href="{{url_for('editBaseMenuItem',
 							   cuisine_id=cuisine.id,
 							   baseMenuItem_id=baseMenuItem.id)}}">
 			Edit</a>
 		</li>
-		<li><a href="{{url_for('deleteBaseMenuItem', 
+		<li><a class='actionLink' href="{{url_for('deleteBaseMenuItem', 
 							   cuisine_id=cuisine.id,
 							   baseMenuItem_id=baseMenuItem.id)}}">
 			Delete</a>
 		</li>
 	</ul>
+	</div>
 </body>
 </html>

@@ -1,29 +1,36 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Cuisines.css')}}">
+</head>
 <body>
-	<h1>Add Cuisine</h1>
+	<h1 class='header'>Add Cuisine</h1>
 	
-	<div class='pageOverivew'>
+	<div class='actionText'>
 		<p>
 			Create a new cuisine and add it to the cuisine list.  Note that cuisine names must be unique, so you will get an error if the cuisine name already exisits in the database.
-			</br>
-			Note that the cuisine will not start with any base menu items.
-			</br>
-			So, after you create the cuisine, you might want to create some
+		</p>
+		<p>
+			Note that the cuisine will not start with any base menu items. So, after you create the cuisine, you might want to create some
 			base menu items for it.
 		</p>
 	</div>
 
-	<a class='back' href="{{url_for('cuisines')}}">
+	<a class='backLink' href="{{url_for('cuisines')}}">
 		Cancel
 	</a>
 
-	<form action="{{url_for('addCuisine')}}"
+	<form class='form' action="{{url_for('addCuisine')}}"
 		method='post'>
 
-	<p>Cuisine Name:</p>
-	<input type='text' size='50' name='name'>
+		<h3 class='header'>
+			Info for New Cuisine
+		</h3>
+		
+		<p>Cuisine Name:</p>
+		<input type='text' size='50' name='name'>
 
-	<input type='submit' value='Create Cuisine'>
+		<input type='submit' value='Create Cuisine'>
 
 </form>
 
