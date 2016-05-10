@@ -1,20 +1,24 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Restaurants.css')}}">
+</head>
 <body> 
-	<h1 class='header'>List of All Restaurants</h1>
+	<h1 class='header'>
+		List of All Restaurants
+	</h1>
+
+	<div class='homeLinks'>
+		<a href="{{url_for('restaurants')}}">restaurants</a>
+		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+		<a href="{{url_for('cuisines')}}">cuisines</a>
+	</div>
 
 	<p>
-		<a class='back' href="{{url_for('restaurantManagerIndex')}}">
-			Take me back to the start page
-		</a>
+		<a class='backLink' href="{{url_for('restaurantManagerIndex')}}">
+				Back to start</a>
 	</p>
-
-	<p>
-		Click a restaurant to view, edit, or delete it, or 
-		<a href="{{url_for('addRestaurant')}}"> 
-			click here to create a new restaurant
-		</a>
-	</p>
-
+	
 	<div class='flash'>
 	{% with messages = get_flashed_messages() %}
 		{% if messages %}
@@ -27,15 +31,22 @@
 	{% endwith %}
 	</div>
 
+	<div class='list'>
+	<p>
+		Click a restaurant to view, edit, or delete it, or 
+		<a class='actionLink' href="{{url_for('addRestaurant')}}"> 
+			click here to create a new restaurant</a>
+	</p>
 	<ul>
 	{% for r in restaurants %}
-		<li class='restaurant'>
-			<a href="{{url_for('restaurant',
+		<li>
+			<a class='forwardLink' href="{{url_for('restaurant',
 							 	restaurant_id=r.id)}}">
 				{{r.name}} (ID {{r.id}})
 			</a>
 		</li>
 	{% endfor %}
 	</ul>
+	</div>
 </body>
 </html>

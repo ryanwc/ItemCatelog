@@ -4,7 +4,15 @@
 											           filename='Cuisines.css')}}">
 </head>
 <body>
-	<h1 class='header'>Edit '{{baseMenuItem.name}}'</h1>
+	<h1 class='header'>
+		Edit '{{baseMenuItem.name}}'
+	</h1>
+	
+	<div class='homeLinks'>
+		<a href="{{url_for('restaurants')}}">restaurants</a>
+		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+		<a href="{{url_for('cuisines')}}">cuisines</a>
+	</div>
 	
 	<div class='actionText'>
 		<p>
@@ -28,10 +36,15 @@
 		</h3>
 
 		<p>
-			NOTE: Leave a box blank if you do not wish to change its value.
-		</p>
-		<p>
-			Also note that you cannot change the cuisine type.  If you want to do that, you're better off creating a new base menu item.
+			Important notes:
+			<ul>
+				<li>
+					NOTE: Leave a box blank if you do not wish to change its value.
+				</li>
+				<li>
+					Also note that you cannot change the cuisine type.  If you want to do that, you're better off creating a new base menu item.
+				</li>
+			</ul>
 		</p>
 
 		<p>Change Item Name to:</p>

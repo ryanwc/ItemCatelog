@@ -1,37 +1,116 @@
 <html>
-<body>
-	<h1>Add Restaurant Menu Item</h1>
-	<h3>Add an item to {{restaurant.name}}'s (ID {{restaurant.id}}) menu</h3>
-
-	<a href="{{url_for('restaurantMenu',restaurant_id=restaurant.id)}}">
-		Cancel (return to menu)
-	</a>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Restaurants.css')}}">
+</head>
+<body onload='setSelectedBaseMenuItem()'>
+	<h1 class='header'>
+		Add Restaurant Menu Item
+	</h1>
+	
+	<div class='homeLinks'>
+		<a href="{{url_for('restaurants')}}">restaurants</a>
+		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+		<a href="{{url_for('cuisines')}}">cuisines</a>
+	</div>
+	
+	<div class='actionText'>
+		<p>
+			Add an item to {{restaurant.name}}'s (ID {{restaurant.id}}) menu
+		</p>
+	</div>
 
 	<p>
-		Note that you can choose "Base Item for Menu Items with no Specific Cuisine" if the menu item you want to create doesn't have a good fit for its base on the dropdown.
-		</br>
-		If this is the case, though, you might want to consider first creating a relevant base menu item for the relevant cuisine.  You can view and edit cuisines <a href="{{url_for('cuisines')}}">here</a>.
+		<a class='backLink' href="{{url_for('restaurantMenu',restaurant_id=restaurant.id)}}">
+			Cancel</a>
 	</p>
 
-	<form action="{{url_for('addRestaurantMenuItem', 
+	<form class='form' action="{{url_for('addRestaurantMenuItem', 
 							restaurant_id=restaurant.id)}}"
 		method='post'>
 
-		<p>Base menu item:</p>
-		<select name="baseMenuItemID">
+		<h3 class='header'>
+			Info for New Restaurant Menu Item
+		</h3>
+
+		<p>
+			Important notes:
+			<ul>
+				<li>
+					If the menu item you want to create doesn't have a good fit for its base on the dropdown, you should either 1) select "Base Item for Menu Items with no Specific Cuisine" or 2) create a relevant base menu item (and relevant cuisine, if needed).  You can view and edit cuisines and their base menu items <a class='actionLink' href="{{url_for('cuisines')}}">here</a>.
+				</li>
+				<li>
+					The placeholder text for the text inputs will change as you select a base menu item so you can see the base menu item's attributes.
+				</li>
+			</ul>
+		</p>
+
+		<p>Base Menu Item:</p>
+		<select id='baseMenuItemID' name="baseMenuItemID" oninput='
+			placeholdWithBaseMenuItem()'>
   		{% for baseMenuItem in baseMenuItems %}
-  			<option value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
+  			<option id="{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
   		{% endfor %}
 		</select>
 		<p>Item Name:</p>
-		<input type='text' size='30' name='name'>
+		<input id='name' type='text' size='30' name='name' placeholder='Name'>
 		<p>Item Description:</p>
-		<input type='text' size='60' name='description'>
+		<input id='description' type='text' size='60' name='description' placeholder='Description'>
 		<p>Item Price:</p>
-		<input type='text' size='30' name='price'>
+		<input id='price' type='text' size='30' name='price' placeholder='Price'>
 
 		<input type='submit' value='Create Restaurant Menu Item'>
 
 	</form>
+
+	<!--
+    # this could use improvement.
+    # needed because the select element above would always pass a String value 
+    # to the 'oninput' JavaScript function, even if the input was actually a python
+    # list, dictionary, object serialized to JSON, or SQLAlchemy query object.
+    # Further, JSON.parse(str) runs into trouble with unicode, which the 
+    # serialize(self) function in python spits out for Strings. Plus, even after
+    # I've removed unicode and ensured the str for JSON.parse(str) is well-formed
+    # JSON, JSON.parse(str) returns a String instead of an Object, and therefore I 
+    # could not access any attribute/value pairs after parsing.
+	-->
+	<div id='baseMenuItemInfo' style='display: none;'>
+		{% for baseMenuItem in baseMenuItems %}
+		  	<div id="{{baseMenuItem.id}}name">{{baseMenuItem.name}}</div>
+		  	<div id="{{baseMenuItem.id}}description">{{baseMenuItem.description}}</div>
+  			<div id="{{baseMenuItem.id}}price">{{baseMenuItem.price}}</div>
+  		{% endfor %}
+  		<div id="selectedBase">-1</div>
+	</div>
+
+	<script>
+	function placeholdWithBaseMenuItem() {
+
+		// get the selected item
+    	var baseMenuItemID = document.getElementById("baseMenuItemID").value;
+
+    	// set it as the selected one
+    	document.getElementById(baseMenuItemID.innerHTML = baseMenuItemID)
+
+    	// get the info
+    	placeholderName = document.getElementById(baseMenuItemID + "name").innerHTML;
+    	placeholderDescription = document.getElementById(baseMenuItemID + "description").innerHTML;
+    	placeholderPrice = document.getElementById(baseMenuItemID + "price").innerHTML;
+
+    	// set the placeholders
+    	document.getElementById("name").setAttribute("placeholder", placeholderName);
+    	document.getElementById("description").setAttribute("placeholder", placeholderDescription);
+    	document.getElementById("price").setAttribute("placeholder", placeholderPrice);	
+	}
+	</script>
+	<script>
+	function setSelectedBaseMenuItem() {
+
+		// get the item that was selected (starts as cuisine-less base item)
+		var selectedID = document.getElementById("selectedBase").innerHTML;
+		// set it to seleted in the dropdown
+		document.getElementById(selectedID).setAttribute("selected", "true");
+	}
+	</script>
 </body>
 </html>

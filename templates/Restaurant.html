@@ -1,13 +1,26 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Restaurants.css')}}">
+</head>
 <body> 
-	<h1 class='header'>{{restaurant.name}}</h1>
+	<h1 class='header'>
+		{{restaurant.name}}
+	</h1>
+
+	<div class='homeLinks'>
+		<a href="{{url_for('restaurants')}}">restaurants</a>
+		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+		<a href="{{url_for('cuisines')}}">cuisines</a>
+	</div>
 
 	<p>
 		<a class='back' href="{{url_for('restaurants')}}">
-			Take me back to the restaurant list
+			Back to the restaurant list
 		</a>
 	</p>
 
+	<div class='flash'>
 	{% with messages = get_flashed_messages() %}
 		{% if messages %}
 			<ul>
@@ -20,28 +33,30 @@
 	</div>
 
 	<div class='stats'>
-	<p>Stats for {{restaurant.name}}:</p>
-	<ul>
-		<li>ID: {{restaurant.id}}</li>
-		<li>Cuisine: {{cuisine.name}}</li>
-		<li>Number of items on menu: {{numMenuItems}}</li>
-		<li>Most expensive item: {{mostExpensiveItem.name}} 
-			({{mostExpensiveItem.price}})</li>
-	</ul>
+		<p>
+			Stats for restaurant '{{restaurant.name}}':
+		</p>
+		<ul>
+			<li>ID: {{restaurant.id}}</li>
+			<li>Cuisine: {{cuisine.name}}</li>
+			<li>Number of items on menu: {{numMenuItems}}</li>
+			<li>Most expensive item: {{mostExpensiveItem.name}} 
+				({{mostExpensiveItem.price}})</li>
+		</ul>
 	</div>
 
-	<div class='actions'>
+	<div class='list'>
 	<p>Actions:</p>
 	<ul>
-		<li><a href="{{url_for('restaurantMenu', 
+		<li><a class='actionLink' href="{{url_for('restaurantMenu', 
 							   restaurant_id=restaurant.id)}}">
 			View/Edit Menu</a>
 		</li>
-		<li><a href="{{url_for('editRestaurant', 
+		<li><a class='actionLink' href="{{url_for('editRestaurant', 
 							   restaurant_id=restaurant.id)}}">
 			Edit Restaurant</a>
 		</li>
-		<li><a href="{{url_for('deleteRestaurant', 
+		<li><a class='actionLink' href="{{url_for('deleteRestaurant', 
 							   restaurant_id=restaurant.id)}}">
 			Delete Restaurant</a>
 		</li>

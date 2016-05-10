@@ -1,26 +1,52 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Restaurants.css')}}">
+</head>
 <body>
-	<h1>Edit Restaurant Menu Item</h1>
+	<h1 class='header'>
+		Edit {{restaurantMenuItem.name}}
+	</h1>
 	
-	<h3>Edit {{restaurantMenuItem.name}} (ID {{restaurantMenuItem.id}}) on restaurant 
-		{{restaurant_id}}'s menu
-	</h3>
+	<div class='homeLinks'>
+		<a href="{{url_for('restaurants')}}">restaurants</a>
+		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+		<a href="{{url_for('cuisines')}}">cuisines</a>
+	</div>
+	
+	<div class='actionText'>
+		<p>
+			Edit {{restaurantMenuItem.name}} (ID {{restaurantMenuItem.id}}) on {{restaurant.name}}'s (ID {{restaurant.id}}) menu.
+		</p>
+	</div>
 
-	<p> NOTE: Leave a box blank if you do not wish to change its value.
-		</br>
-		Also note you cannot change the base menu item.  If you want to do that, you're probably better off creating a new restaurant menu item.
+	<p>
+		<a class='backLink' href="{{url_for('restaurantMenuItem',
+					   restaurant_id=restaurant.id,
+					   restaurantMenuItem_id=restaurantMenuItem.id)}}">
+			Cancel</a>
 	</p>
 
-	<a href="{{url_for('restaurantMenuItem',
-					   restaurant_id=restaurant_id,
-					   restaurantMenuItem_id=restaurantMenuItem.id)}}">
-		Cancel
-	</a>
-
-	<form action="{{url_for('editRestaurantMenuItem', 
-							restaurant_id=restaurant_id,
+	<form class='form' action="{{url_for('editRestaurantMenuItem', 
+							restaurant_id=restaurant.id,
 							restaurantMenuItem_id=restaurantMenuItem.id)}}"
 		method='post'>
+
+		<h3 class='header'>
+			Restaurant Menu Item Attributes to Edit
+		</h3>
+
+		<p>
+			Important notes:
+			<ul>
+				<li>
+					Leave a box blank if you do not wish to change its value.
+				</li>
+				<li>
+					Also note you cannot change the base menu item.  If you want to do that, you're better off creating a new restaurant menu item.
+				</li>
+			</ul>
+		</p>
 
 		<p>Change Item Name to:</p>
 		<input type='text' size='30' name='name' 

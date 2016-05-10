@@ -1,15 +1,27 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Restaurants.css')}}">
+</head>
 <body> 
-	<h1 class='header'>Restaurant Menu Item</h1>
-	<h3 class='header'>{{restaurantMenuItem.name}}</h3>
+	<h1 class='header'>
+		{{restaurantMenuItem.name}}
+	</h1>
+
+	<div class='homeLinks'>
+		<a href="{{url_for('restaurants')}}">restaurants</a>
+		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+		<a href="{{url_for('cuisines')}}">cuisines</a>
+	</div>
 
 	<p>
-		<a class='back' href="{{url_for('restaurantMenu',
+		<a class='backLink' href="{{url_for('restaurantMenu',
 										restaurant_id=restaurant.id)}}">
-			Take me back to the menu
+			Back to the menu
 		</a>
 	</p>
 
+	<div class='flash'>
 	{% with messages = get_flashed_messages() %}
 		{% if messages %}
 			<ul>
@@ -22,28 +34,47 @@
 	</div>
 
 	<div class='stats'>
-	<p>Stats for {{restaurantMenuItem.name}}:</p>
-	<ul>
-		<li>ID: {{restaurantMenuItem.id}}</li>
-		<li>Restaurant: {{restaurant.name}} (ID {{restaurant.id}}, cuisine {{restaurantCuisine}})</li>
-		<li>Description: {{restaurantMenuItem.description}}
-		<li>Price: {{restaurantMenuItem.price}}</li>
-		<li>Base menu item: {{baseMenuItem.name}} (ID {{baseMenuItem.id}}, cuisine {{baseMenuItemCuisine}})</li>
-		<li>Base menu item description: {{baseMenuItem.description}}</li>
-		<li>Base menu item price: {{baseMenuItem.price}}</li>
-		<li>Times ordered: {{timesOrdered}}</li>
-	</ul>
+		<p>
+			Stats for restaurant menu item '{{restaurantMenuItem.name}}':
+		</p>
+		<ul>
+			<li>
+				ID: {{restaurantMenuItem.id}}
+			</li>
+			<li>
+				Restaurant: {{restaurant.name}} (ID {{restaurant.id}}, cuisine {{restaurantCuisine}})
+			</li>
+			<li>
+				Description: {{restaurantMenuItem.description}}
+			</li>
+			<li>
+				Price: {{restaurantMenuItem.price}}
+			</li>
+			<li>
+				Times ordered: {{timesOrdered}}
+			</li>
+			</br>
+			<li>
+				Base menu item: {{baseMenuItem.name}} (ID {{baseMenuItem.id}}, cuisine {{baseMenuItemCuisine}})
+			</li>
+			<li>
+				Base menu item description: {{baseMenuItem.description}}
+			</li>
+			<li>
+				Base menu item price: {{baseMenuItem.price}}
+			</li>
+		</ul>
 	</div>
 
-	<div class='actions'>
+	<div class='list'>
 	<p>Actions:</p>
 	<ul>
-		<li><a href="{{url_for('editRestaurantMenuItem',
+		<li><a class='actionLink' href="{{url_for('editRestaurantMenuItem',
 							   restaurant_id=restaurant.id,
 							   restaurantMenuItem_id=restaurantMenuItem.id)}}">
 			Edit</a>
 		</li>
-		<li><a href="{{url_for('deleteRestaurantMenuItem', 
+		<li><a class='actionLink' href="{{url_for('deleteRestaurantMenuItem', 
 							   restaurant_id=restaurant.id,
 							   restaurantMenuItem_id=restaurantMenuItem.id)}}">
 			Delete</a>

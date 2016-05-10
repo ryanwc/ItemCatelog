@@ -1,49 +1,67 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Restaurants.css')}}">
+</head>
 <body>
-	<h1>Add Restaurant</h1>
+	<h1 class='header'>
+		Add Restaurant
+	</h1>
+
+	<div class='homeLinks'>
+		<a href="{{url_for('restaurants')}}">restaurants</a>
+		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+		<a href="{{url_for('cuisines')}}">cuisines</a>
+	</div>
 	
-	<div class='pageOverivew'>
+	<div class='actionText'>
 		<p>
 			Create a new restaurant and add it to the restaurant list.
-			</br>
-			Note that the restaurant's menu will start with all of the base
-			menu items (if any) for its cuisine.
-			</br>
-			You can view and modify cuisines and their base menu items <a href="{{url_for('cuisines')}}">here</a>.
-		</p>
-		<p>
-			Important notes about cuisines:
-			<ul>
-				<li>All existing cuisines are listed in the dropdown menu below.</li>
-				<li>If you want the restaurant to have a cuisine that doesn't exist in the database yet, select "Custom (enter in text box below)" from the dropdown and type your custom cuisine in the box.  This will create a new cuisine in the database and assign it to the restaurant.</li>
-				<li>A custom cuisine will not have any base menu items, so you will need to populate the restaurant's menu yourself.</li>
-				<li>If the restaurant has no specific cuisine type, you can select "No Specific Cuisine" from the dropdown and the restaurant will not get any items on its menu.</li>
 		</p>
 	</div>
 
 	<a class='back' href="{{url_for('restaurants')}}">
-		Cancel (return to restaurant list)
+		Cancel
 	</a>
 
-	<form action="{{url_for('addRestaurant')}}"
+	<form class='form' action="{{url_for('addRestaurant')}}"
 		method='post'>
 
-	<p>Restaurant Cuisine:</p>
-	<select name="cuisineID">
-		<option value="custom">Custom (enter in text box below)</option>
-  		{% for cuisine in cuisines %}
-  			<option value="{{cuisine.id}}">{{cuisine.name}}</option>
-  		{% endfor %}
-	</select>
-	</br>
-	<input type='text' size='60' name='customCuisine' 
-		placeholder='Custom Cuisine Name'>
-	<p>Restaruant Name:</p>
-	<input type='text' size='30' name='name'>
+		<h3 class='header'>
+			Info for New Restaurant
+		</h3>
 
-	<input type='submit' value='Create Restaurant'>
+		</p>
+			Important notes:
+			<ul>
+				<li>
+					The restaurant's menu will start with all of the base menu items (if any) for its cuisine.
+				</li>
+				<li>
+					If the restaurant doesn't have a specific cuisine, select "No Specific Cuisine" from the dropdown.  The restaurant will not start with any items on its menu.
+				</li>
+				<li>
+					If the restaurant has a specific cuisine but the cuisine is not listed in the dropdown, select "Custom (enter in text box below)" from the dropdown and type the new cuisine in the box.  This will create a new cuisine in the database with no base menu items and assign it to the restaurant.  You'll have to manually add base menu items for the cuisine and restaurant menu items for the restaurant.
+				</li>
+			</ul>
+		</p>
 
-</form>
+		<p>Restaurant Cuisine:</p>
+		<select name="cuisineID">
+			<option value="custom">Custom (enter in text box below)</option>
+  			{% for cuisine in cuisines %}
+  				<option value="{{cuisine.id}}">{{cuisine.name}}</option>
+  			{% endfor %}
+		</select>
+		</br>
+		</br>
+		<input type='text' size='60' name='customCuisine' 
+			placeholder='Custom Cuisine Name'>
+		<p>Restaruant Name:</p>
+		<input type='text' size='30' name='name'>
 
+		<input type='submit' value='Create Restaurant'>
+
+	</form>
 </body>
 </html>

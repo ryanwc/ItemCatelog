@@ -1,28 +1,51 @@
 <html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Restaurants.css')}}">
+</head>
 <body>
-	<h1>Edit Restaurant</h1>
+	<h1 class='header'>
+		Edit {{restaurant.name}}
+	</h1>
+
+	<div class='homeLinks'>
+		<a href="{{url_for('restaurants')}}">restaurants</a>
+		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+		<a href="{{url_for('cuisines')}}">cuisines</a>
+	</div>
 	
-	<h3>Edit restaurant {{restaurant.id}} ({{restaurant.name}})</h3>
+	<div class='actionText'>
+		<p>
+			Edit restaurant '{{restaurant.name}}' (ID {{restaurant.id}})
+		</p>
 
-	<p>
-		Leave a box blank or select the appropriate dropdown option if you do 
-		not wish to change a particular value.
-	</p>
-	<p> 
-		Note that the cuisines listed in the dropdown are cuisines currently in
-		use.  If you wish to use a custom cuisine, you must first create that
-		custom cuisine <a href="{{url_for('addCuisine')}}">here</a>.
-		</br>
-		Also note that if you change the restaurant's cuisine, the menu and menu items will stay exactly the same.
+	</div> 
+		<a class='backLink' href="{{url_for('restaurant',restaurant_id=restaurant.id)}}">
+			Cancel</a>
 	</p>
 
-	<a href="{{url_for('restaurant',restaurant_id=restaurant.id)}}">
-		Cancel (return to restaurant)
-	</a>
-
-	<form action="{{url_for('editRestaurant', 
+	<form class='form' action="{{url_for('editRestaurant', 
 							restaurant_id=restaurant.id)}}"
 		method='post'>
+
+		<h3 class='header'>
+			Restaurant Attributes to Edit
+		</h3>
+
+		<p>
+			Imporant notes:
+			<ul>
+				<li>
+					Leave a box blank or select the appropriate dropdown option if you do not wish to change a particular value.
+				</li>
+				<li>
+					If you change the restaurant's cuisine, the menu and menu items will stay exactly the same.
+				</li>
+				<li>
+					The cuisines listed in the dropdown are cuisines currently in use.  If you wish to change to a new cuisine, you must first create that custom cuisine <a class='actionLink' href="{{url_for('addCuisine')}}">here</a>.
+				</li>
+			</ul>
+		</p>
 
 		<p>Change Restaurant Cuisine to:</p>
 		<select name="cuisineID">

@@ -4,7 +4,15 @@
 											           filename='Cuisines.css')}}">
 </head>
 <body> 
-	<h1 class='header'>{{cuisine.name}}</h1>
+	<h1 class='header'>
+		{{cuisine.name}}
+	</h1>
+
+	<div class='homeLinks'>
+		<a href="{{url_for('restaurants')}}">restaurants</a>
+		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+		<a href="{{url_for('cuisines')}}">cuisines</a>
+	</div>
 
 	<p>
 		<a class='backLink' href="{{url_for('cuisines')}}">

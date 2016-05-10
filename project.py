@@ -471,7 +471,7 @@ def addRestaurantMenuItem(restaurant_id):
                 restaurant_id=restaurant_id,
                 description=bleach.clean(request.form['description']),
                 price=bleach.clean(request.form['price']),
-                baseMenuItem_id=request.form['baseMenuItemID']
+                baseMenuItem_id=request.form['baseMenuItemID'].id
             )
 
             flash("menu item '" + bleach.clean(request.form['name']) + \
@@ -517,6 +517,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
         
         if request.method == 'POST':
 
@@ -558,7 +559,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         else:
 
             return render_template('EditRestaurantMenuItem.html',
-                                   restaurant_id=restaurant_id,
+                                   restaurant=restaurant,
                                    restaurantMenuItem=restaurantMenuItem)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
@@ -567,6 +568,7 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
         if request.method == 'POST':
 
@@ -582,7 +584,7 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                     restaurant_id=restaurant_id))
         else:
             return render_template('DeleteRestaurantMenuItem.html',
-                                   restaurant_id=restaurant_id,
+                                   restaurant=restaurant,
                                    restaurantMenuItem=restaurantMenuItem)
 
 if __name__ == '__main__':
