@@ -2,11 +2,28 @@
 <head>
 	<link rel=stylesheet type=text/css href="{{url_for('static',
 											           filename='index.css')}}">
+	<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
+	</script>
+	<script src="https://apis.google.com/js/platform.js" async defer></script>
+	<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
 </head>
 <body> 
 	<h1 class='header'>
 		Welcome to Restaurant Manager
 	</h1>
+
+	<div class='flash'>
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<ul>
+				{% for message in messages %}
+					<li><strong>{{message}}</strong></li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+	</div>
 
 	<div class='list'>
 		What would you like to do?
@@ -18,5 +35,76 @@
 			View, edit, or delete cuisines and their base menu items</a>
 		</li>
 		</ul>
+	</div>
+
+<!-- Google Plus sign in button -->
+<!-- data-scope is the data we want to have access to -->
+<!-- data-redirect="postmessage" enables the one-time use code flow -->
+<!-- data-accesstype="offline" lets the app access user data even when 
+	the user is offline -->
+<!-- data-cookiepolicy determines scope of URIs that can acces the cookie -->
+<!-- data-callback specifies a callback method 
+	(in this case when the user signs in and Google gives the one-time-use code
+	along with an access code) -->
+<!-- data-approvalprompt="force" means user has to log in 
+	each time visit login page // useful for debugging, not so in production -->
+	<div id="signIn">
+		<div class="g-signin"
+			data-scope="openid email"
+            data-redirecturi="postmessage"
+            data-clientid="446362929824-aoa0sov3apqfqin1njstj6hu078e49ap.apps.googleusercontent.com"
+            data-accesstype="offline"
+            data-cookiepolicy="single_host_origin"
+            data-callback="signInCallback"
+            data-approvalprompt="force">
+    	</div>
+    </div>
+    <a href="{{url_for('restaurantManagerIndex')}}" onclick="signOut();">Sign out</a>
+    <div id='result'></div>
+
+<script>
+function signInCallback(authResult) {
+
+	if (authResult['code']) {
+		// hide the sign-in button now that the user is authorized
+		$('#signIn').attr('style', 'display: none');
+		// send the on-time-use code to the server, if the server responds, write
+		// a "login successful" message to the web page and then redirect back
+		// to the main restaurants page
+		$.ajax({
+			type: 'POST',
+			url:'/gconnect?state={{state}}',
+			processData: false,
+			contentType: 'application/octet-stream; charset=utf-8',
+			data: authResult['code'],
+			success: function(result) {
+				if (result) {
+					console.log("result")
+					$('#result').html('Login Sucessful!<br>' + result + '</br>Redirecting...')
+					setTimeout(function() {
+						location.reload();
+					}, 4000);
+				}
+				else if (authResult['error']) {
+					
+					console.log('There was an error: ' + authResult['error']);
+				}
+				else {
+
+					$('#result').html('Failed to make a server-side call.  Check your configuration and console.');
+				}
+			}
+		})
+	}
+}
+</script>
+<script>
+  function signOut() {
+    var auth2 = gapi.auth2.getAuthInstance();
+    auth2.signOut().then(function () {
+      console.log('User signed out.');
+    });
+  }
+</script>
 </body>
 </html>

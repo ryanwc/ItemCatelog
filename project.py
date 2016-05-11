@@ -1,14 +1,133 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-
-app = Flask(__name__)
+from flask import session as login_session
+from flask import make_response
+import requests
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+from oauth2client.client import flow_from_clientsecrets
+from oauth2client.client import FlowExchangeError
+import traceback
+
+import httplib2
+
+import json
+
 from database_setup import Base, Restaurant, BaseMenuItem, Cuisine, RestaurantMenuItem
 
 import RestaurantManager
 
 import bleach
+
+import random, string
+
+
+app = Flask(__name__)
+
+CLIENT_ID = json.loads(open('/vagrant/catalog/client_secrets.json', 
+    'r').read())['web']['client_id']
+
+### ajax enpoint for authentication
+@app.route('/gconnect', methods=['POST'])
+def gconnect():
+        # confirm entity with correct 3rd party credentials is same entity 
+        # that is trying to login from the current login page's session.
+        if request.args.get('state') != login_session['state']:
+            print 'verify same'
+            print request.args.get('state')
+            print login_session['state']
+            response = make_response(json.dumps('Invalid state parameter'), 
+                401)
+            response.headers['Content-Type'] = 'application/json'
+
+            return response
+
+        code = request.data
+
+        try:
+            # upgrade the authorization code into a credentials object
+            # i.e., give google the data (one time code) the entity to be 
+            # authenticated supposedly got from google and have google 
+            # return credentials if the data is correct
+            print 'try upgrade'
+            oauth_flow = flow_from_clientsecrets('/vagrant/catalog/client_secrets.json', scope='')
+            print 'load oauth flow'
+            oauth_flow.redirect_uri = 'postmessage'
+            print 'about to exchange'
+            credentials = oauth_flow.step2_exchange(code)
+        except:
+            print traceback.format_exc()
+
+            print 'excepting upgrade'
+            response = make_response(json.dumps('Failed to upgrade the authorization code.'), 401)
+            response.headers['Content-Type'] = 'application/json'
+
+            return response
+
+        # check that the access token from google is valid
+        print 'check token valid'
+        access_token = credentials.access_token
+        url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
+           % access_token)
+        print url
+        h = httplib2.Http()
+        print h.request(url, 'GET')[1]
+        result = json.loads(h.request(url, 'GET')[1])
+
+        print result
+
+        # if there was an error in the access token info, abort
+        if result.get('error') is not None:
+            response = make_response(json.dumps(result.get('error')), 500)
+            response.headers['Content-Type'] = 'application/json'
+        
+        print 'no error'
+        # verify that the access token is used for the intended user
+        gplus_id = credentials.id_token['sub']
+        if result['user_id'] != gplus_id:
+            response = make_response(json.dumps("Token's user ID doesn't match given user"), 401)
+            response.headers['Content-Type'] = 'application/json'
+
+            return response
+        
+        print 'correct user'
+        
+        # verify that the access token is valid for this app
+        if result['issued_to'] != CLIENT_ID:
+            response = make_response(json.dumps("Token's client ID doesn't match app's ID"), 401)
+            print "Token's client ID doesn't match match app's ID."
+            response.headers['Content-Type'] = 'application/json'
+
+            return response
+            
+        print 'correct client'
+        # check to see if the user is already logged into the system
+        stored_credentials = login_session.get('credentials')
+        stored_gplus_id = login_session.get('gplus_id')
+        if stored_credentials is not None and gplus_id == stored_gplus_id:
+            response = make_response(json.dumps("Current user is already connected."), 200)
+            response.headers['Content-Type'] = 'application/json'
+        
+        print 'not logged in yet'
+        # store the access token in the sesson for later use
+        login_session['credentials'] = credentials
+        login_session['gplus_id'] = gplus_id
+
+        # get user info
+        userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
+        params = {'access_token': credentials.access_token, 'alt':'json'}
+        answer = requests.get(userinfo_url, params=params)
+        data = json.loads(answer.text)
+
+        login_session['username'] = data["name"]
+        login_session['picture'] = data["picture"]
+        login_session['email'] = data["email"]
+
+        flash("you are now logged in as %s" %login_session['username'])
+
+        print "yay"
+        return redirect(url_for('restaurantManagerIndex'))
 
 
 ### Make a API Endpoints (for GET Requests)
@@ -68,10 +187,18 @@ def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
 
 ### Retrieve and post data
 
+# create a state token to prevent request forgery
+# store it in the session for later validation
 @app.route('/')
 @app.route('/index/')
+@app.route('/login/')
 def restaurantManagerIndex():
-        return render_template("index.html")
+        state = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) 
+                                      for x in xrange(32))
+        login_session['state'] = state
+
+        return render_template("index.html",
+                               state=state)
 
 @app.route('/cuisines/')
 def cuisines():
