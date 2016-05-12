@@ -244,6 +244,8 @@ def cuisines():
 
 @app.route('/cuisines/add/', methods=['GET', 'POST'])
 def addCuisine():
+        if 'username' not in login_session:
+            return redirect('/login')
 
         if request.method == 'POST':
 
@@ -299,6 +301,9 @@ def cuisine(cuisine_id):
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
+        if 'username' not in login_session:
+            return redirect('/login')
+
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         if request.method == 'POST':
@@ -323,6 +328,9 @@ def editCuisine(cuisine_id):
 
 @app.route('/cuisines/<int:cuisine_id>/delete/', methods=['GET', 'POST'])
 def deleteCuisine(cuisine_id):
+        if 'username' not in login_session:
+            return redirect('/login')
+
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         if request.method == 'POST':
@@ -372,6 +380,9 @@ def restaurants():
 
 @app.route('/restaurants/add/', methods=['GET','POST'])
 def addRestaurant():
+        if 'username' not in login_session:
+            return redirect('/login')
+
         if request.method == 'POST':
 
             name = bleach.clean(request.form['name'])
@@ -434,6 +445,9 @@ def restaurant(restaurant_id):
 @app.route('/restaurants/<int:restaurant_id>/edit/',
            methods=['GET','POST'])
 def editRestaurant(restaurant_id):
+        if 'username' not in login_session:
+            return redirect('/login')
+
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         cuisines = RestaurantManager.getCuisines()
         
@@ -480,6 +494,9 @@ def editRestaurant(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
+        if 'username' not in login_session:
+            return redirect('/login')
+
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
         if request.method == 'POST':
@@ -503,6 +520,9 @@ def deleteRestaurant(restaurant_id):
 
 @app.route('/cuisines/<int:cuisine_id>/add/', methods=['GET','POST'])
 def addBaseMenuItem(cuisine_id):
+        if 'username' not in login_session:
+            return redirect('/login')
+
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         if request.method == 'POST':
@@ -538,6 +558,9 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/edit/',
            methods=['POST','GET'])
 def editBaseMenuItem(cuisine_id, baseMenuItem_id):
+        if 'username' not in login_session:
+            return redirect('/login')
+
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
@@ -585,6 +608,9 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/delete/',
            methods=['GET','POST'])
 def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
+        if 'username' not in login_session:
+            return redirect('/login')
+            
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
 
@@ -623,6 +649,9 @@ def restaurantMenu(restaurant_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/add/',
            methods=['GET','POST'])
 def addRestaurantMenuItem(restaurant_id):
+        if 'username' not in login_session:
+            return redirect('/login')
+
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         baseMenuItems = RestaurantManager.getBaseMenuItems()
 
@@ -676,6 +705,8 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/edit/',
            methods=['GET','POST'])
 def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
+        if 'username' not in login_session:
+            return redirect('/login')
 
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
@@ -727,6 +758,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
            methods=['GET','POST'])
 def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
+        if 'username' not in login_session:
+            return redirect('/login')
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
