@@ -37,7 +37,7 @@
 		</ul>
 	</div>
 
-<!-- Google Plus sign in button -->
+<!-- Google+ sign in button -->
 <!-- data-scope is the data we want to have access to -->
 <!-- data-redirect="postmessage" enables the one-time use code flow -->
 <!-- data-accesstype="offline" lets the app access user data even when 
@@ -63,14 +63,14 @@
     <div id='result'></div>
 
 <script>
+// this happens when Google calls back after sending the user the access code
 function signInCallback(authResult) {
 
 	if (authResult['code']) {
 		// hide the sign-in button now that the user is authorized
 		$('#signIn').attr('style', 'display: none');
 		// send the on-time-use code to the server, if the server responds, write
-		// a "login successful" message to the web page and then redirect back
-		// to the main restaurants page
+		// the output of the /gconnect method to the web page then refresh
 		$.ajax({
 			type: 'POST',
 			url:'/gconnect?state={{state}}',
@@ -79,7 +79,6 @@ function signInCallback(authResult) {
 			data: authResult['code'],
 			success: function(result) {
 				if (result) {
-					console.log("result")
 					$('#result').html('Login Sucessful!<br>' + result + '</br>Redirecting...')
 					setTimeout(function() {
 						location.reload();

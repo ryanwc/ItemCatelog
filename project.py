@@ -34,9 +34,6 @@ def gconnect():
         # confirm entity with correct 3rd party credentials is same entity 
         # that is trying to login from the current login page's session.
         if request.args.get('state') != login_session['state']:
-            print 'verify same'
-            print request.args.get('state')
-            print login_session['state']
             response = make_response(json.dumps('Invalid state parameter'), 
                 401)
             response.headers['Content-Type'] = 'application/json'
@@ -50,39 +47,29 @@ def gconnect():
             # i.e., give google the data (one time code) the entity to be 
             # authenticated supposedly got from google and have google 
             # return credentials if the data is correct
-            print 'try upgrade'
             oauth_flow = flow_from_clientsecrets('/vagrant/catalog/client_secrets.json', scope='')
-            print 'load oauth flow'
             oauth_flow.redirect_uri = 'postmessage'
-            print 'about to exchange'
             credentials = oauth_flow.step2_exchange(code)
         except:
-            print traceback.format_exc()
 
-            print 'excepting upgrade'
+            print traceback.format_exc()
             response = make_response(json.dumps('Failed to upgrade the authorization code.'), 401)
             response.headers['Content-Type'] = 'application/json'
 
             return response
 
         # check that the access token from google is valid
-        print 'check token valid'
         access_token = credentials.access_token
         url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
            % access_token)
-        print url
         h = httplib2.Http()
-        print h.request(url, 'GET')[1]
         result = json.loads(h.request(url, 'GET')[1])
-
-        print result
 
         # if there was an error in the access token info, abort
         if result.get('error') is not None:
             response = make_response(json.dumps(result.get('error')), 500)
             response.headers['Content-Type'] = 'application/json'
         
-        print 'no error'
         # verify that the access token is used for the intended user
         gplus_id = credentials.id_token['sub']
         if result['user_id'] != gplus_id:
@@ -90,8 +77,6 @@ def gconnect():
             response.headers['Content-Type'] = 'application/json'
 
             return response
-        
-        print 'correct user'
         
         # verify that the access token is valid for this app
         if result['issued_to'] != CLIENT_ID:
@@ -101,7 +86,6 @@ def gconnect():
 
             return response
             
-        print 'correct client'
         # check to see if the user is already logged into the system
         stored_credentials = login_session.get('credentials')
         stored_gplus_id = login_session.get('gplus_id')
@@ -109,7 +93,6 @@ def gconnect():
             response = make_response(json.dumps("Current user is already connected."), 200)
             response.headers['Content-Type'] = 'application/json'
         
-        print 'not logged in yet'
         # store the access token in the sesson for later use
         login_session['credentials'] = credentials
         login_session['gplus_id'] = gplus_id
@@ -124,13 +107,65 @@ def gconnect():
         login_session['picture'] = data["picture"]
         login_session['email'] = data["email"]
 
-        flash("you are now logged in as %s" %login_session['username'])
+        # HTML output for successful authentication call
+        output = ''
+        output += '<div class="gSignIn">'
+        output += '<h1>Welcome, '
+        output += login_session['username']
+        output += '!</h1>'
+        output += '<img src="'
+        output += login_session['picture']
+        output += ' " style = "width: 200px; height: 200px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
+        output += '</div>'
 
-        print "yay"
-        return redirect(url_for('restaurantManagerIndex'))
+        flash("you are now logged in as %s" % login_session['username'])
+
+        return output
+
+# disconnect - revoke a current user's token and reset their login_session
+@app.route('/gdisconnect')
+def gdisconnect():
+        # only disconnects a connected user
+        credentials = login_session.get('credentials')
+        print credentials
+
+        if credentials is None:
+            response = make_response(json.dumps('Current user not connected'),
+                401)
+            response.headers['Content-Type'] = 'application/json'
+
+            return response
+
+        # execute HTTP GET request to revoke current token
+        access_token = credentials.access_token
+        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+        h = httplib2.Http()
+        result = h.request(url, 'GET')[0]
+
+        if result['status'] == '200':
+            # reset the user's sesion
+            del login_session['credentials']
+            del login_session['gplus_id']
+            del login_session['username']
+            del login_session['email']
+            del login_session['picture']
+
+            response = make_response(json.dumps('Successfully disconnected'),
+                200)
+            response.headers['Content-Type'] = 'application/json'
+
+            return response
+        else:
+            # for whatever reason, the given token was invalid
+            response = make_response(
+                json.dumps('Failed to revoke token for given user'), 
+                400)
+            response.headers['Content-Type'] = 'application/json'
+
+            return response
 
 
-### Make a API Endpoints (for GET Requests)
+### Make JSON API Endpoints
 
 @app.route('/cuisines/JSON/')
 def cuisinesJSON():
