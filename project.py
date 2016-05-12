@@ -123,32 +123,47 @@ def gconnect():
         return output
 
 # disconnect - revoke a current user's token and reset their login_session
-@app.route('/gdisconnect')
+@app.route('/gdisconnect', methods=['POST'])
 def gdisconnect():
-        # only disconnects a connected user
-        credentials = login_session.get('credentials')
-        print credentials
-
-        if credentials is None:
-            response = make_response(json.dumps('Current user not connected'),
+        # only disconnects if valid credentials exist
+        if 'credentials' not in login_session:
+            print 'No credentials; cannot log out nothing'
+            response = make_response(json.dumps('No user connected'),
                 401)
             response.headers['Content-Type'] = 'application/json'
 
             return response
 
+        # only disconnects if current user has access token (i.e., is logged in)
+        access_token = login_session['credentials'].access_token
+        print 'In gdisconnect access token is', access_token
+        print 'User name is: ' 
+        print login_session['username']
+
+        if access_token is None:
+            print 'Access token is None'
+            response = make_response(json.dumps('Current user not connected'),
+                401)
+            response.headers['Content-Type'] = 'application/json'
+
+            return response
+        
         # execute HTTP GET request to revoke current token
-        access_token = credentials.access_token
         url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
         h = httplib2.Http()
         result = h.request(url, 'GET')[0]
 
         if result['status'] == '200':
-            # reset the user's sesion
+            # reset the user's session
+            print 'trying to set access_token to none'
+            login_session['credentials'].access_token = None
+            print 'maybe set it?'
+            print login_session['credentials'].access_token
+            print 'trying to delete credentials'
+            print login_session['credentials']
             del login_session['credentials']
-            del login_session['gplus_id']
-            del login_session['username']
-            del login_session['email']
-            del login_session['picture']
+            if 'credentials' not in login_session:
+                print "deleted credentials"
 
             response = make_response(json.dumps('Successfully disconnected'),
                 200)
@@ -232,8 +247,27 @@ def restaurantManagerIndex():
                                       for x in xrange(32))
         login_session['state'] = state
 
+        userName = None
+        isAccessToken = 1
+        access_token = None
+        print "isAccessToken is", isAccessToken
+
+        if 'credentials' in login_session:
+            print "are credentials"
+            if hasattr(login_session['credentials'], 'access_token'):
+                print "is access_token"
+                if login_session['credentials'].access_token is not None:
+                    print "not none"
+                    print login_session['credentials'].access_token
+                    access_token = login_session['credentials'].access_token
+                    userName = login_session['username']
+                    isAccessToken = 0
+                    print "so isAccessToken is", isAccessToken
+
         return render_template("index.html",
-                               state=state)
+                               state=state,
+                               userName=userName,
+                               isAccessToken=isAccessToken)
 
 @app.route('/cuisines/')
 def cuisines():
@@ -610,7 +644,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
         if 'username' not in login_session:
             return redirect('/login')
-            
+
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
 

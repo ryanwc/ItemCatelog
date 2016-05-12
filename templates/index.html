@@ -5,8 +5,18 @@
 	<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
 	</script>
-	<script src="https://apis.google.com/js/platform.js" async defer></script>
+	<script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
 	<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
+	<script>
+	// detect if logged in, if so hide the login buttons
+    $(document).ready(function() {
+    	// is is an access token for this session
+    	console.log({{isAccessToken}});
+    	if ({{isAccessToken}}==0) { 
+    		$('#signInButtons').html('Signed in as ' + '{{userName}}');
+    	}
+	});
+	</script>
 </head>
 <body> 
 	<h1 class='header'>
@@ -49,17 +59,23 @@
 <!-- data-approvalprompt="force" means user has to log in 
 	each time visit login page // useful for debugging, not so in production -->
 	<div id="signIn">
-		<div class="g-signin"
-			data-scope="openid email"
-            data-redirecturi="postmessage"
-            data-clientid="446362929824-aoa0sov3apqfqin1njstj6hu078e49ap.apps.googleusercontent.com"
-            data-accesstype="offline"
-            data-cookiepolicy="single_host_origin"
-            data-callback="signInCallback"
-            data-approvalprompt="force">
+		<div id='signInButtons'>
+			<div class="g-signin"
+				data-scope="openid email"
+            	data-redirecturi="postmessage"
+            	data-clientid="446362929824-aoa0sov3apqfqin1njstj6hu078e49ap.apps.googleusercontent.com"
+            	data-accesstype="offline"
+            	data-cookiepolicy="single_host_origin"
+            	data-callback="signInCallback"
+            	data-approvalprompt="force">
+    		</div>
+    	</div>
+       	<div class="signOut">
+    		<a class='backLink' href="#" onclick="signOut();">Sign out</a>
     	</div>
     </div>
-    <a href="{{url_for('restaurantManagerIndex')}}" onclick="signOut();">Sign out</a>
+    </br>
+	</br>
     <div id='result'></div>
 
 <script>
@@ -79,7 +95,7 @@ function signInCallback(authResult) {
 			data: authResult['code'],
 			success: function(result) {
 				if (result) {
-					$('#result').html('Login Sucessful!<br>' + result + '</br>Redirecting...')
+					$('#result').html('Login Sucessful!<br>' + result + '</br>Redirecting...');
 					setTimeout(function() {
 						location.reload();
 					}, 4000);
@@ -96,13 +112,22 @@ function signInCallback(authResult) {
 		})
 	}
 }
-</script>
-<script>
-  function signOut() {
-    var auth2 = gapi.auth2.getAuthInstance();
-    auth2.signOut().then(function () {
-      console.log('User signed out.');
-    });
+
+function signOut() {
+
+	$.ajax({
+		type: 'POST',
+		url: '/gdisconnect',
+		success: function(result) {
+			if (result) {
+				window.alert(result);
+				location.reload();
+			}
+			else {
+				$('#result').html('Failed to make a server-side call.  Check your configuration and console.');
+			}
+		}
+	});
   }
 </script>
 </body>
