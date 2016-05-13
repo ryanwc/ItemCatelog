@@ -28,7 +28,7 @@ app = Flask(__name__)
 CLIENT_ID = json.loads(open('/vagrant/catalog/client_secrets.json', 
     'r').read())['web']['client_id']
 
-### ajax enpoint for authentication
+### ajax enpoint for google sign in authentication
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
         # confirm entity with correct 3rd party credentials is same entity 
@@ -131,6 +131,89 @@ def gconnect():
         flash("you are now logged in as %s" % login_session['username'])
 
         return output
+
+### ajax enpoint for facebook sign in authentication
+@app.route('/fbconnect', methods=['POST'])
+def fbconnect():
+        # confirm entity with correct 3rd party credentials is same entity 
+        # that is trying to login from the current login page's session.
+        print "connecting to fbook"
+
+        if request.args.get('state') != login_session['state']:
+            response = make_response(json.dumps('Invalid state parameter'), 
+                401)
+            response.headers['Content-Type'] = 'application/json'
+
+            return response
+
+        access_token = request.data
+
+        # exchange short-lived client token for long-lived server-side token
+        app_id = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_id']
+        print 'app_id is ' + app_id
+        app_secret = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_secret']
+        print 'app_secret is' + app_secret
+        url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id,app_secret,access_token)
+        h = httplib2.Http()
+        result = h.request(url, 'GET')[1]
+
+        # use token to get user info from API [why is this here?]
+        userinfo_url = "https://graph.facebook.com/v2.4/me"
+        # strip expire tag from access token
+        token = result.split("&")[0]
+        print "token is " + token
+
+        url = "https://graph.facebook.com/v2.4/me?%s&fields=name,id,email" % token
+        h = httplib2.Http()
+        result = h.request(url, 'GET')[1]
+        print "url sent for API access: %s" % url
+        print "API JSON result: %s" % result
+        data = json.loads(result)
+
+        login_session['username'] = data['name']
+        login_session['email'] = data['email']
+        login_session['facebook_id'] = data['id']
+
+        # facebook uses separate api call to get pic
+        url = 'https://graph.facebook.com/v2.4/me/picture?%s&redirect=0&height=200&width=200' % token
+        h = httplib2.Http()
+        result = h.request(url, 'GET')[1]
+        data = json.loads(result)
+
+        login_session['picture'] = data['data']['url']
+
+        # create the user if the user doesn't exist
+        user = RestaurantManager.getUser(email=login_session['email'])
+        if user is None:
+            RestaurantManager.addUser(name=login_session['username'],
+                                      email=login_session['email'],
+                                      picture=login_session['picture'])
+            user = RestaurantManager.getUser(email=login_session['email'])
+
+        login_session['user_id'] = user.id
+        # reset these to what the user has for our app
+        login_session['username'] = user.name
+        login_session['picture'] = user.picture
+
+        # this is for my app checking for login status
+        credentials = {'access_token':token}
+        login_session['credentials'] = credentials
+
+        # HTML output for successful authentication call
+        output = ''
+        output += '<div class="fbSignIn">'
+        output += '<h1>Welcome, '
+        output += login_session['username']
+        output += '!</h1>'
+        output += '<img src="'
+        output += login_session['picture']
+        output += ' " style = "width: 200px; height: 200px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
+        output += '</div>'
+
+        flash("you are now logged in as %s" % login_session['username'])
+
+        return output
+
 
 # disconnect - revoke a current user's token and reset their login_session
 @app.route('/gdisconnect', methods=['POST'])
@@ -260,21 +343,29 @@ def restaurantManagerIndex():
         login_session['state'] = state
 
         userName = None
-        isAccessToken = 1
+        isAccessToken = 0
         access_token = None
         print "isAccessToken is", isAccessToken
 
+        # should standardize this for google and other logins
         if 'credentials' in login_session:
             print "are credentials"
+            # check if google login credentials
             if hasattr(login_session['credentials'], 'access_token'):
-                print "is access_token"
+                print "is google access_token"
                 if login_session['credentials'].access_token is not None:
                     print "not none"
                     print login_session['credentials'].access_token
                     access_token = login_session['credentials'].access_token
                     userName = login_session['username']
-                    isAccessToken = 0
+                    isAccessToken = 1
                     print "so isAccessToken is", isAccessToken
+            # check if other login credentials
+            if 'access_token' in login_session['credentials']:
+                print 'is fbook (or other) access token'
+                isAccessToken = 1
+                userName = login_session['username']
+
 
         return render_template("index.html",
                                state=state,

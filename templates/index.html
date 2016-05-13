@@ -5,20 +5,45 @@
 	<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
 	</script>
+
 	<script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
 	<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
-	<script>
+  	<script>
 	// detect if logged in, if so hide the login buttons
     $(document).ready(function() {
     	// is is an access token for this session
     	console.log({{isAccessToken}});
-    	if ({{isAccessToken}}==0) { 
+    	if ({{isAccessToken}}==1) { 
     		$('#signInButtons').html('Signed in as ' + '{{userName}}');
     	}
 	});
 	</script>
 </head>
-<body> 
+<body>
+<!--LOAD PRE-REQUISITES FOR FACEBOOK SIGN IN -->
+<script>
+	window.fbAsyncInit = function() {
+		console.log("trying to init FB");
+    	FB.init({
+      		appId      : '1106203452759411',
+      		xfbml      : true,
+      		version    : 'v2.6'
+    	});
+    	console.log("finished trying");
+  	};
+  	// Load the SDK asynchronously
+  	(function(d, s, id) {
+  		
+  		var js, fjs = d.getElementsByTagName(s)[0];
+    	
+    	if (d.getElementById(id)) return;
+    	js = d.createElement(s); js.id = id;
+    	js.src = "//connect.facebook.net/en_US/sdk.js";
+    	fjs.parentNode.insertBefore(js, fjs);
+    	console.log("loading");
+	}(document, 'script', 'facebook-jssdk'));
+</script>
+<!-- END PRE-REQUISITES FOR FACEBOOK SIGN IN -->
 	<h1 class='header'>
 		Welcome to Restaurant Manager
 	</h1>
@@ -69,6 +94,11 @@
             	data-callback="signInCallback"
             	data-approvalprompt="force">
     		</div>
+    		</br>
+			<fb:login-button scope="public_profile,email"
+				onlogin="sendTokenToServer();">
+				Login with Facebook
+			</fb:login-button>
     	</div>
        	<div class="signOut">
     		<a class='backLink' href="#" onclick="signOut();">Sign out</a>
@@ -77,9 +107,48 @@
     </br>
 	</br>
     <div id='result'></div>
-
 <script>
-// this happens when Google calls back after sending the user the access code
+// called when facebook login button clicked
+function sendTokenToServer() {
+
+	var access_token = FB.getAuthResponse()['accessToken'];
+
+	console.log("Welcome! Fetching your access token...");
+	console.log(access_token);   
+
+    FB.api('/me', function(response) {
+    	console.log('Successfull Facebook login for: ' + response.name);
+    	// hide the login
+		$('#signIn').attr('style', 'display: none');
+    	// send the on-time-use code to the server, if the server responds, write
+		// the output of the /fbconnect method to the web page then refresh
+		$.ajax({
+			type: 'POST',
+			url:'/fbconnect?state={{state}}',
+			processData: false,
+			data: access_token,
+			contentType: 'application/octet-stream; charset=utf-8',
+			success: function(result) {
+				if (result) {
+					$('#result').html('Login Sucessful!<br>' + result + '</br>Redirecting...');
+					setTimeout(function() {
+						location.reload();
+					}, 4000);
+				}
+				else if (authResult['error']) {
+					
+					console.log('There was an error: ' + authResult['error']);
+				}
+				else {
+
+					$('#result').html('Failed to make a server-side call.  Check your configuration and console.');
+				}
+			}
+		});
+    });
+}
+
+// called when Google calls back after sending the user the access code
 function signInCallback(authResult) {
 
 	if (authResult['code']) {
@@ -109,7 +178,7 @@ function signInCallback(authResult) {
 					$('#result').html('Failed to make a server-side call.  Check your configuration and console.');
 				}
 			}
-		})
+		});
 	}
 }
 

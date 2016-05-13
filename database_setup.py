@@ -18,8 +18,8 @@ class User(Base):
 	__tablename__ = 'user'
 
 	id = Column(Integer, primary_key=True)
-	name = Column(String(30), unique=True, nullable=False)
-	email = Column(String(30), nullable=False)
+	name = Column(String(30), nullable=False)
+	email = Column(String(30), unique=True, nullable=False)
 	picture = Column(String(200))
 
 	@property

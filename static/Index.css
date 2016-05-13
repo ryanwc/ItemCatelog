@@ -19,5 +19,7 @@ li				{margin: 0 0 3px 0;}
 				 background-color: #ffffff; width: 70px;}
 .gSignIn		{border: 5px solid; padding: 5px; 
 				 margin: 5px; border-color: #ff0000; background-color: #ffffff;}
+.fbSignIn		{border: 5px solid; padding: 5px; 
+				 margin: 5px; border-color: #0000ff; background-color: #ffffff;}
 
 #result 		{position: absolute;}
