@@ -1,0 +1,29 @@
+<html>
+<head>
+	<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+	<script src="https://apis.google.com/js/platform.js" async defer></script>
+	<meta name="google-signin-client_id" content="YOUR_CLIENT_ID.apps.googleusercontent.com">
+	<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
+</head>
+<body> 
+<!-- Google Plus sign in button -->
+<!-- data-scope is the data we want to have access to -->
+<!-- data-redirect="postmessage" enables the one-time use code flow -->
+<!-- data-accesstype="offline" lets the app access user data even when 
+	the user is offline -->
+<!-- data-cookiepolicy determines scope of URIs that can acces the cookie -->
+<!-- data-callback specifies a callback method 
+	(in this case when the user signs in and Google gives the one-time-use code
+	along with an access code) -->
+<!-- data-approvalprompt="force" means user has to log in 
+	each time visit login page // useful for debugging, not so in production -->
+	<div class="g-signin2"
+			data-scope="openid email"
+            data-redirecturi="postmessage"
+            data-accesstype="offline"
+            data-cookiepolicy="single_host_origin"
+            data-callback="signInCallback"
+            data-approvalprompt="force">
+    </div>
+</body>
+</html>

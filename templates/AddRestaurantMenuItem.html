@@ -3,7 +3,7 @@
 	<link rel=stylesheet type=text/css href="{{url_for('static',
 											           filename='Restaurants.css')}}">
 </head>
-<body onload='setSelectedBaseMenuItem()'>
+<body>
 	<h1 class='header'>
 		Add Restaurant Menu Item
 	</h1>
@@ -73,6 +73,7 @@
     # I've removed unicode and ensured the str for JSON.parse(str) is well-formed
     # JSON, JSON.parse(str) returns a String instead of an Object, and therefore I 
     # could not access any attribute/value pairs after parsing.
+    # Maybe i can use an ajax endpoint to get the relevant info?
 	-->
 	<div id='baseMenuItemInfo' style='display: none;'>
 		{% for baseMenuItem in baseMenuItems %}
@@ -80,7 +81,6 @@
 		  	<div id="{{baseMenuItem.id}}description">{{baseMenuItem.description}}</div>
   			<div id="{{baseMenuItem.id}}price">{{baseMenuItem.price}}</div>
   		{% endfor %}
-  		<div id="selectedBase">-1</div>
 	</div>
 
 	<script>
@@ -88,9 +88,6 @@
 
 		// get the selected item
     	var baseMenuItemID = document.getElementById("baseMenuItemID").value;
-
-    	// set it as the selected one
-    	document.getElementById(baseMenuItemID).innerHTML = baseMenuItemID;
 
     	// get the info
     	placeholderName = document.getElementById(baseMenuItemID + "name").innerHTML;
@@ -101,15 +98,6 @@
     	document.getElementById("name").setAttribute("placeholder", placeholderName);
     	document.getElementById("description").setAttribute("placeholder", placeholderDescription);
     	document.getElementById("price").setAttribute("placeholder", placeholderPrice);	
-	}
-	</script>
-	<script>
-	function setSelectedBaseMenuItem() {
-
-		// get the item that was selected (starts as cuisine-less base item)
-		var selectedID = document.getElementById("selectedBase").innerHTML;
-		// set it to seleted in the dropdown
-		document.getElementById(selectedID).setAttribute("selected", "true");
 	}
 	</script>
 </body>

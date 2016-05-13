@@ -14,7 +14,7 @@ import httplib2
 
 import json
 
-from database_setup import Base, Restaurant, BaseMenuItem, Cuisine, RestaurantMenuItem
+from database_setup import Base, Restaurant, BaseMenuItem, Cuisine, RestaurantMenuItem, User
 
 import RestaurantManager
 
@@ -103,9 +103,19 @@ def gconnect():
         answer = requests.get(userinfo_url, params=params)
         data = json.loads(answer.text)
 
-        login_session['username'] = data["name"]
-        login_session['picture'] = data["picture"]
         login_session['email'] = data["email"]
+
+        # create the user if the user doesn't exist
+        user = RestaurantManager.getUser(email=login_session['email'])
+        if user is None:
+            RestaurantManager.addUser(name=login_session['username'],
+                                      email=login_session['email'],
+                                      picture=login_session['picture'])
+            user = RestaurantManager.getUser(email=login_session['email'])
+
+        login_session['user_id'] = user.id
+        login_session['username'] = user.name
+        login_session['picture'] = user.picture
 
         # HTML output for successful authentication call
         output = ''
@@ -155,15 +165,18 @@ def gdisconnect():
 
         if result['status'] == '200':
             # reset the user's session
-            print 'trying to set access_token to none'
+            print 'setting access_token to none'
             login_session['credentials'].access_token = None
-            print 'maybe set it?'
             print login_session['credentials'].access_token
-            print 'trying to delete credentials'
-            print login_session['credentials']
+            print 'deleting credentials'
             del login_session['credentials']
-            if 'credentials' not in login_session:
-                print "deleted credentials"
+            print 'deleteing restaurant manager details'
+            del login_session['user_id']
+            del login_session['username']
+            del login_session['picture']
+            print 'deleting 3rd party details'
+            if 'gplus_id' in login_session:
+                del login_session['gplus_id']
 
             response = make_response(json.dumps('Successfully disconnected'),
                 200)
@@ -234,7 +247,6 @@ def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
 
         return jsonify(RestaurantMenuItem=restaurantMenuItem.serialize)
 
-
 ### Retrieve and post data
 
 # create a state token to prevent request forgery
@@ -278,8 +290,11 @@ def cuisines():
 
 @app.route('/cuisines/add/', methods=['GET', 'POST'])
 def addCuisine():
-        if 'username' not in login_session:
-            return redirect('/login')
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+
+            flash("You must log in to add a cuisine")
+            return redirect('/login/')
 
         if request.method == 'POST':
 
@@ -335,8 +350,11 @@ def cuisine(cuisine_id):
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
-        if 'username' not in login_session:
-            return redirect('/login')
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in to edit a cuisine")
+            return redirect('/login/')
 
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
@@ -362,8 +380,11 @@ def editCuisine(cuisine_id):
 
 @app.route('/cuisines/<int:cuisine_id>/delete/', methods=['GET', 'POST'])
 def deleteCuisine(cuisine_id):
-        if 'username' not in login_session:
-            return redirect('/login')
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in to delete a cuisine")
+            return redirect('/login/')
 
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
@@ -414,8 +435,11 @@ def restaurants():
 
 @app.route('/restaurants/add/', methods=['GET','POST'])
 def addRestaurant():
-        if 'username' not in login_session:
-            return redirect('/login')
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in to add a restaurant")
+            return redirect('/login/')
 
         if request.method == 'POST':
 
@@ -433,7 +457,8 @@ def addRestaurant():
 
             RestaurantManager.addRestaurant(
                 name=name,
-                cuisine_id=cuisine_id
+                cuisine_id=cuisine_id,
+                user_id=login_session['user_id']
             )
 
             if request.form['cuisineID'] == 'custom':
@@ -479,8 +504,17 @@ def restaurant(restaurant_id):
 @app.route('/restaurants/<int:restaurant_id>/edit/',
            methods=['GET','POST'])
 def editRestaurant(restaurant_id):
-        if 'username' not in login_session:
-            return redirect('/login')
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+        
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in to edit a restaurant")
+            return redirect('/login/')
+        elif restaurant.user_id != login_session['user_id']:
+
+            flash("You do not have permission to edit this restaurant")
+            return redirect('/restaurants/'+str(restaurant.id)+'/')
 
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         cuisines = RestaurantManager.getCuisines()
@@ -528,10 +562,17 @@ def editRestaurant(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
-        if 'username' not in login_session:
-            return redirect('/login')
-
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
+
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in to delete a restaurant")
+            return redirect('/login')
+        elif restaurant.user_id != login_session['user_id']:
+
+            flash("You do not have permission to delete this restaurant")
+            return redirect('/restaurants/'+str(restaurant.id)+'/')
 
         if request.method == 'POST':
 
@@ -554,8 +595,11 @@ def deleteRestaurant(restaurant_id):
 
 @app.route('/cuisines/<int:cuisine_id>/add/', methods=['GET','POST'])
 def addBaseMenuItem(cuisine_id):
-        if 'username' not in login_session:
-            return redirect('/login')
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in to add a base menu item")
+            return redirect('/login/')
 
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
@@ -592,8 +636,11 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/edit/',
            methods=['POST','GET'])
 def editBaseMenuItem(cuisine_id, baseMenuItem_id):
-        if 'username' not in login_session:
-            return redirect('/login')
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in to edit a base menu item")
+            return redirect('/login/')
 
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
@@ -642,8 +689,11 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/delete/',
            methods=['GET','POST'])
 def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
-        if 'username' not in login_session:
-            return redirect('/login')
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in to delete a base menu item")
+            return redirect('/login/')
 
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
@@ -676,17 +726,35 @@ def restaurantMenu(restaurant_id):
         restaurantMenuItems = RestaurantManager.\
             getRestaurantMenuItems(restaurant_id=restaurant_id)
 
-        return render_template('RestaurantMenu.html',
-                               restaurant=restaurant,
-                               items=restaurantMenuItems)
+        if ('credentials' in login_session and
+            login_session['credentials'].access_token is not None and
+            restaurant.user_id == login_session['user_id']):
+    
+            return render_template('PrivateRestaurantMenu.html',
+                                   restaurant=restaurant,
+                                   items=restaurantMenuItems)
+        else:
+
+            return render_template('PublicRestaurantMenu.html',
+                                   restaurant=restaurant,
+                                   items=restaurantMenuItems)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/add/',
            methods=['GET','POST'])
 def addRestaurantMenuItem(restaurant_id):
-        if 'username' not in login_session:
-            return redirect('/login')
-
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
+        
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in add an item to this restaurant's menu")
+            return redirect('/login/')
+        elif restaurant.user_id != login_session['user_id']:
+
+            flash("You do not have permission to add an item to "+\
+                " this restaurant's menu")
+            return redirect('/restaurants/'+str(restaurant.id)+'/menu/')
+
         baseMenuItems = RestaurantManager.getBaseMenuItems()
 
         if request.method == 'POST':
@@ -696,7 +764,7 @@ def addRestaurantMenuItem(restaurant_id):
                 restaurant_id=restaurant_id,
                 description=bleach.clean(request.form['description']),
                 price=bleach.clean(request.form['price']),
-                baseMenuItem_id=request.form['baseMenuItemID'].id
+                baseMenuItem_id=request.form['baseMenuItemID']
             )
 
             flash("menu item '" + bleach.clean(request.form['name']) + \
@@ -712,10 +780,23 @@ def addRestaurantMenuItem(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/')
 def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must be logged in to view the details for this "+\
+                " restaurant menu item")
+            return redirect('/login/')
+        elif restaurant.user_id != login_session['user_id']:
+
+            flash("You do not have permission to view the details for this "+\
+                "restaurant menu item")
+            return redirect('/restaurants/'+str(restaurant.id)+'/menu/')
+
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
 
-        restaurant = RestaurantManager.getRestaurant(restaurant_id)
         restaurantCuisineObj = RestaurantManager.\
                                getCuisine(cuisine_id=restaurant.cuisine_id)
         restaurantCuisine = restaurantCuisineObj.name
@@ -739,12 +820,21 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/edit/',
            methods=['GET','POST'])
 def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
-        if 'username' not in login_session:
-            return redirect('/login')
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in edit this restaurant's menu")
+            return redirect('/login/')
+        elif restaurant.user_id != login_session['user_id']:
+
+            flash("You do not have permission to edit this "+\
+                "restaurant menu item")
+            return redirect('/restaurants/'+str(restaurant.id)+'/menu/')
 
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
-        restaurant = RestaurantManager.getRestaurant(restaurant_id)
         
         if request.method == 'POST':
 
@@ -792,12 +882,21 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
            methods=['GET','POST'])
 def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
-        if 'username' not in login_session:
-            return redirect('/login')
+        restaurant = RestaurantManager.getRestaurant(restaurant_id)
+
+        if ('credentials' not in login_session or
+            login_session['credentials'].access_token is None):
+            
+            flash("You must log in delete this restaurant menu item")
+            return redirect('/login/')
+        elif restaurant.user_id != login_session['user_id']:
+
+            flash("You do not have permission to delete this "+\
+                "restaurant menu item")
+            return redirect('/restaurants/'+str(restaurant.id)+'/menu/')
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
-        restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
         if request.method == 'POST':
 
