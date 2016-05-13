@@ -9,12 +9,15 @@
 	<script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
 	<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
   	<script>
-	// detect if logged in, if so hide the login buttons
+	// detect if logged in, if so hide the appropriate stuff
     $(document).ready(function() {
     	// is is an access token for this session
     	console.log({{isAccessToken}});
     	if ({{isAccessToken}}==1) { 
     		$('#signInButtons').html('Signed in as ' + '{{userName}}');
+    	}
+    	else {
+       		$('.signOut').css("cssText", "display: none !important;");
     	}
 	});
 	</script>
@@ -94,14 +97,15 @@
             	data-callback="signInCallback"
             	data-approvalprompt="force">
     		</div>
-    		</br>
+    		<div>
 			<fb:login-button scope="public_profile,email"
 				onlogin="sendTokenToServer();">
 				Login with Facebook
 			</fb:login-button>
+			</div>
     	</div>
-       	<div class="signOut">
-    		<a class='backLink' href="#" onclick="signOut();">Sign out</a>
+    	<div class='signOut'>
+    		<a class="backLink" href="#" onclick="signOut();">Sign out</a>
     	</div>
     </div>
     </br>
@@ -152,7 +156,7 @@ function sendTokenToServer() {
 function signInCallback(authResult) {
 
 	if (authResult['code']) {
-		// hide the sign-in button now that the user is authorized
+		// hide the sign-in button
 		$('#signIn').attr('style', 'display: none');
 		// send the on-time-use code to the server, if the server responds, write
 		// the output of the /gconnect method to the web page then refresh
@@ -186,7 +190,7 @@ function signOut() {
 
 	$.ajax({
 		type: 'POST',
-		url: '/gdisconnect',
+		url: '/disconnect',
 		success: function(result) {
 			if (result) {
 				window.alert(result);

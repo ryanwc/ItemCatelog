@@ -12,6 +12,7 @@ def populateMenuWithBaseItems(restaurant_id):
     session = getRestaurantDBSession()
 
     restaurant = getRestaurant(restaurant_id)
+    print restaurant.name
 
     # do not add any menu items if the restaurant has no specific cuisine
     if restaurant.cuisine_id is -1:
@@ -95,14 +96,19 @@ def addCuisine(name):
 
 def addRestaurant(name, cuisine_id, user_id):
     """Add a restaurant to the database
+
+    Returns the id of the restaurant
     """
     session = getRestaurantDBSession()
 
     restaurant = Restaurant(name=name, cuisine_id=cuisine_id, user_id=user_id)
-
     session.add(restaurant)
+    session.flush()
+    restaurant_id = restaurant.id
     session.commit()
     session.close()
+
+    return restaurant_id
 
 def getRestaurantDBSession():
     """Return an interactive session with the restaurant menu database
@@ -301,7 +307,7 @@ def getCuisine(cuisine_id=None, name=None):
         cuisine  = session.query(Cuisine).filter_by(id=cuisine_id).first()
     elif name is not None:
         cuisine = session.query(Cuisine).filter_by(name=name).first()
-        
+
     session.close()
     return cuisine
 

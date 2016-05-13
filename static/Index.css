@@ -9,17 +9,17 @@ li				{margin: 0 0 3px 0;}
 				 background-color: #737373; color: #e6e6e6;}
 
 .forwardLink	{color: #e6e6e6;}
-.backLink 		{color: #a52600;}
+.backLink		{color: #a52600;}
 
 #signIn			{border: 2px solid; border-radius: 5px; padding: 5px; 
 				 margin: 5px; border-color: #262626; position: absolute;
 				 background-color: #b3b3b3;}
-.signOut		{border: 2px solid; border-radius: 5px; padding: 5px; 
-				 margin: 5px; border-color: #262626;
-				 background-color: #ffffff; width: 70px;}
 .gSignIn		{border: 5px solid; padding: 5px; 
 				 margin: 5px; border-color: #ff0000; background-color: #ffffff;}
 .fbSignIn		{border: 5px solid; padding: 5px; 
 				 margin: 5px; border-color: #0000ff; background-color: #ffffff;}
 
+.signOut		{border: 2px solid; border-radius: 5px; padding: 5px; 
+				 margin: 5px; border-color: #262626;
+				 background-color: #ffffff; width: 70px;}
 #result 		{position: absolute;}

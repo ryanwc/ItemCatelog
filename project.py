@@ -93,8 +93,9 @@ def gconnect():
             response = make_response(json.dumps("Current user is already connected."), 200)
             response.headers['Content-Type'] = 'application/json'
         
-        # store the access token in the sesson for later use
-        login_session['credentials'] = credentials
+        # store the access token in the session for later use
+        login_session['g_credentials'] = credentials
+        login_session['credentials'] = {'access_token':access_token}
         login_session['gplus_id'] = gplus_id
 
         # get user info
@@ -103,7 +104,12 @@ def gconnect():
         answer = requests.get(userinfo_url, params=params)
         data = json.loads(answer.text)
 
-        login_session['email'] = data["email"]
+
+        #### DONE WITH GOOGLE STUFF needs own method combine with fbook
+
+        login_session['email'] = data['email']
+        login_session['username'] = data['name']
+        login_session['picture'] = data['picture']
 
         # create the user if the user doesn't exist
         user = RestaurantManager.getUser(email=login_session['email'])
@@ -137,7 +143,7 @@ def gconnect():
 def fbconnect():
         # confirm entity with correct 3rd party credentials is same entity 
         # that is trying to login from the current login page's session.
-        print "connecting to fbook"
+        print "connecting to facebook"
 
         if request.args.get('state') != login_session['state']:
             response = make_response(json.dumps('Invalid state parameter'), 
@@ -150,24 +156,19 @@ def fbconnect():
 
         # exchange short-lived client token for long-lived server-side token
         app_id = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_id']
-        print 'app_id is ' + app_id
         app_secret = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-        print 'app_secret is' + app_secret
         url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id,app_secret,access_token)
         h = httplib2.Http()
         result = h.request(url, 'GET')[1]
 
-        # use token to get user info from API [why is this here?]
+        # use token to get user info from API [why is this next line here?]
         userinfo_url = "https://graph.facebook.com/v2.4/me"
         # strip expire tag from access token
         token = result.split("&")[0]
-        print "token is " + token
 
         url = "https://graph.facebook.com/v2.4/me?%s&fields=name,id,email" % token
         h = httplib2.Http()
         result = h.request(url, 'GET')[1]
-        print "url sent for API access: %s" % url
-        print "API JSON result: %s" % result
         data = json.loads(result)
 
         login_session['username'] = data['name']
@@ -214,66 +215,95 @@ def fbconnect():
 
         return output
 
-
-# disconnect - revoke a current user's token and reset their login_session
-@app.route('/gdisconnect', methods=['POST'])
-def gdisconnect():
+# disconnect - logout a user that is currently logged in
+@app.route('/disconnect', methods=['POST'])
+def disconnect():
         # only disconnects if valid credentials exist
         if 'credentials' not in login_session:
-            print 'No credentials; cannot log out nothing'
-            response = make_response(json.dumps('No user connected'),
-                401)
-            response.headers['Content-Type'] = 'application/json'
+            if 'access_token' not in login_session['credentials']:
 
-            return response
+                response = make_response(json.dumps('No user logged in'), 401)
+                response.headers['Content-Type'] = 'application/json'
 
-        # only disconnects if current user has access token (i.e., is logged in)
-        access_token = login_session['credentials'].access_token
-        print 'In gdisconnect access token is', access_token
-        print 'User name is: ' 
-        print login_session['username']
+                return response
 
-        if access_token is None:
-            print 'Access token is None'
-            response = make_response(json.dumps('Current user not connected'),
-                401)
-            response.headers['Content-Type'] = 'application/json'
+        disconnectResult = None
 
-            return response
+        if 'gplus_id' in login_session:
+
+            disconnectResult = gdisconnect()
+        elif 'facebook_id' in login_session:
+
+            disconnectResult = fbdisconnect()
+
+        logoutMessage = ""
+
+        if disconnectResult is not None:
+            if disconnectResult['success']:
+
+                logoutMessage += disconnectResult['message']
+                logoutMessage += ";  "
+            else:
+
+                response = make_response(json.dumps('Failed to revoke '+\
+                    'third party authorization'), 401)
+                response.headers['Content-Type'] = 'application/json'
+
+                return response
+
+        username = login_session['username']
+
+        del login_session['credentials']
+        del login_session['user_id']
+        del login_session['username']
+        del login_session['picture']
+        del login_session['email']
+        
+        logoutMessage += "Logged " + username + \
+                         " out of Restaurant Manager"
+
+        return logoutMessage
+
+# disconnect - revoke a current user's google access token
+@app.route('/gdisconnect', methods=['POST'])
+def gdisconnect():
+        access_token = login_session['credentials']['access_token']
         
         # execute HTTP GET request to revoke current token
         url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
         h = httplib2.Http()
         result = h.request(url, 'GET')[0]
 
+        disconnectResult = {'success':False, 
+                            'message':'Failed to disconnect from Google'}
+
         if result['status'] == '200':
-            # reset the user's session
-            print 'setting access_token to none'
-            login_session['credentials'].access_token = None
-            print login_session['credentials'].access_token
-            print 'deleting credentials'
-            del login_session['credentials']
-            print 'deleteing restaurant manager details'
-            del login_session['user_id']
-            del login_session['username']
-            del login_session['picture']
-            print 'deleting 3rd party details'
-            if 'gplus_id' in login_session:
-                del login_session['gplus_id']
 
-            response = make_response(json.dumps('Successfully disconnected'),
-                200)
-            response.headers['Content-Type'] = 'application/json'
+            del login_session['g_credentials']
+            del login_session['gplus_id']
+            disconnectResult['success'] = True
+            disconnectResult['message'] = 'Disconnected from Google'
 
-            return response
-        else:
-            # for whatever reason, the given token was invalid
-            response = make_response(
-                json.dumps('Failed to revoke token for given user'), 
-                400)
-            response.headers['Content-Type'] = 'application/json'
+        return disconnectResult
 
-            return response
+# disconnect - revoke a current user's fb access token
+@app.route('/fbdisconnect', methods=['POST'])
+def fbdisconnect():
+        # only disconnects if current user has access token (i.e., is logged in)
+        access_token = login_session['credentials']['access_token']
+        
+        # execute HTTP GET request to revoke current token
+        facebook_id = login_session['facebook_id']
+        url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
+        h = httplib2.Http()
+        result = h.request(url, 'DELETE')[1]
+        ## I guess the above line never fails?
+
+        del login_session['facebook_id']
+        disconnectResult = {'success':True, 
+                            'message':'Disconnected from Facebook'}
+
+        return disconnectResult
 
 
 ### Make JSON API Endpoints
@@ -345,27 +375,12 @@ def restaurantManagerIndex():
         userName = None
         isAccessToken = 0
         access_token = None
-        print "isAccessToken is", isAccessToken
 
-        # should standardize this for google and other logins
+        # check if logged in
         if 'credentials' in login_session:
-            print "are credentials"
-            # check if google login credentials
-            if hasattr(login_session['credentials'], 'access_token'):
-                print "is google access_token"
-                if login_session['credentials'].access_token is not None:
-                    print "not none"
-                    print login_session['credentials'].access_token
-                    access_token = login_session['credentials'].access_token
-                    userName = login_session['username']
-                    isAccessToken = 1
-                    print "so isAccessToken is", isAccessToken
-            # check if other login credentials
             if 'access_token' in login_session['credentials']:
-                print 'is fbook (or other) access token'
-                isAccessToken = 1
                 userName = login_session['username']
-
+                isAccessToken = 1
 
         return render_template("index.html",
                                state=state,
@@ -382,10 +397,10 @@ def cuisines():
 @app.route('/cuisines/add/', methods=['GET', 'POST'])
 def addCuisine():
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
 
-            flash("You must log in to add a cuisine")
-            return redirect('/login/')
+                flash("You must log in to add a cuisine")
+                return redirect('/login/')
 
         if request.method == 'POST':
 
@@ -442,7 +457,7 @@ def cuisine(cuisine_id):
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in to edit a cuisine")
             return redirect('/login/')
@@ -472,7 +487,7 @@ def editCuisine(cuisine_id):
 @app.route('/cuisines/<int:cuisine_id>/delete/', methods=['GET', 'POST'])
 def deleteCuisine(cuisine_id):
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in to delete a cuisine")
             return redirect('/login/')
@@ -527,7 +542,7 @@ def restaurants():
 @app.route('/restaurants/add/', methods=['GET','POST'])
 def addRestaurant():
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in to add a restaurant")
             return redirect('/login/')
@@ -546,15 +561,18 @@ def addRestaurant():
 
             cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
-            RestaurantManager.addRestaurant(
-                name=name,
-                cuisine_id=cuisine_id,
-                user_id=login_session['user_id']
-            )
+            restaurant_id = RestaurantManager.addRestaurant(
+                                name=name,
+                                cuisine_id=cuisine_id,
+                                user_id=login_session['user_id']
+                            )
 
             if request.form['cuisineID'] == 'custom':
                 flash("cuisine '" + cuisine.name + "' added to the " +\
                     "database!")
+            else:
+                RestaurantManager.\
+                    populateMenuWithBaseItems(restaurant_id)
 
             flash("restaurant '" + name + "' with cuisine '" + cuisine.name +\
                 "' added to the database!")
@@ -598,7 +616,7 @@ def editRestaurant(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in to edit a restaurant")
             return redirect('/login/')
@@ -656,7 +674,7 @@ def deleteRestaurant(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in to delete a restaurant")
             return redirect('/login')
@@ -687,7 +705,7 @@ def deleteRestaurant(restaurant_id):
 @app.route('/cuisines/<int:cuisine_id>/add/', methods=['GET','POST'])
 def addBaseMenuItem(cuisine_id):
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in to add a base menu item")
             return redirect('/login/')
@@ -728,7 +746,7 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
            methods=['POST','GET'])
 def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in to edit a base menu item")
             return redirect('/login/')
@@ -781,7 +799,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
            methods=['GET','POST'])
 def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in to delete a base menu item")
             return redirect('/login/')
@@ -818,7 +836,7 @@ def restaurantMenu(restaurant_id):
             getRestaurantMenuItems(restaurant_id=restaurant_id)
 
         if ('credentials' in login_session and
-            login_session['credentials'].access_token is not None and
+            'access_token' in login_session['credentials'] and
             restaurant.user_id == login_session['user_id']):
     
             return render_template('PrivateRestaurantMenu.html',
@@ -836,7 +854,7 @@ def addRestaurantMenuItem(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in add an item to this restaurant's menu")
             return redirect('/login/')
@@ -874,7 +892,7 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must be logged in to view the details for this "+\
                 " restaurant menu item")
@@ -914,7 +932,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in edit this restaurant's menu")
             return redirect('/login/')
@@ -976,7 +994,7 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
         if ('credentials' not in login_session or
-            login_session['credentials'].access_token is None):
+            'access_token' not in login_session['credentials']):
             
             flash("You must log in delete this restaurant menu item")
             return redirect('/login/')
