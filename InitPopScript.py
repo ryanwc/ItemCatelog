@@ -4,8 +4,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from RestaurantManager import getRestaurants, populateMenuWithBaseItems, addCuisine, addBaseMenuItem, addRestaurant, getCuisine
-from database_setup import Base, Cuisine, Restaurant, BaseMenuItem, RestaurantMenuItem
+from RestaurantManager import getRestaurants, populateMenuWithBaseItems, addCuisine, addBaseMenuItem, addRestaurant, getCuisine, addUser, getUsers
+from database_setup import Base, Cuisine, Restaurant, BaseMenuItem, RestaurantMenuItem, User
 
 import random
 
@@ -34,6 +34,24 @@ session.commit()
 session.close()
 
 ### add eight popular cuisines and four of their signature dishes
+
+# add some dummy users
+addUser(name="Robo Barista", email="tinnyTim@udacity.com", 
+  picture='https://pbs.twimg.com/profile_images/2671170543/18debd694829ed78203a5a36dd364160_400x400.png')
+addUser(name="Der Koch", email="ichbinkoch@example.com", 
+  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Mendel_I_142_r.jpg/173px-Mendel_I_142_r.jpg')
+addUser(name="Masayoshi Kazato", email="sushichef@example.com", 
+  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Sushi_chef_Masayoshi_Kazato_02.JPG/320px-Sushi_chef_Masayoshi_Kazato_02.JPG')
+addUser(name="Master Chef", email="master@example.com", 
+  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Chef_pr%C3%A9parant_une_truffe.jpg/320px-Chef_pr%C3%A9parant_une_truffe.jpg')
+addUser(name="Tandor", email="tandor@example.com", 
+  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Tandoor_chef_2.jpg/251px-Tandoor_chef_2.jpg')
+addUser(name="Peking Chef", email="peking@example.com", 
+  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Preparing_Peking_duck.JPG/180px-Preparing_Peking_duck.JPG')
+addUser(name="Romantic Chef", email="romantic@example.com", 
+  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Ribot_Theodule_The_Cook_And_The_Cat-1.jpg/183px-Ribot_Theodule_The_Cook_And_The_Cat-1.jpg')
+addUser(name="Kramer", email="kramer@example.com")
+addUser(name="George", email="george@example.com")
 
 # prepare dishes
 tomYum = {'name':'Tom Yum Koong',
@@ -164,17 +182,21 @@ adjectives = ['Great','Best','Blazin','Happy','Delicious','Elegant',\
 cuisines = ['Thai', 'Burgers','Delicatessen','Italian','Waffles','Ice Cream',\
             'Salad','Fried Chicken']
 
-
-### add 40 restaurants to the database (names not unique)
-for restaurant in range(0,40):
+### add 50 restaurants to the database (names not unique)
+numUsers = len(getUsers())
+for restaurant in range(0,50):
     poss = possPros[int(round(random.uniform(0,len(possPros)-1)))]
     adj = adjectives[int(round(random.uniform(0,len(adjectives)-1)))]
     thisCuisine = cuisines[int(round(random.uniform(0,len(cuisines)-1)))]
 
+    user_id = round(random.uniform(0,numUsers)-1)
+
     thisCuisineObj = getCuisine(name=thisCuisine)
 
     restaurantName = poss+" "+adj+" "+thisCuisine
-    addRestaurant(name=restaurantName, cuisine_id=thisCuisineObj.id)
+    addRestaurant(name=restaurantName, 
+                  cuisine_id=thisCuisineObj.id, 
+                  user_id=user_id)
 
 
 ### add base cuisine items to each restaurant's menu

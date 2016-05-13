@@ -14,6 +14,23 @@ Base = declarative_base()
 
 # define tables for the database in Python classes
 
+class User(Base):
+	__tablename__ = 'user'
+
+	id = Column(Integer, primary_key=True)
+	name = Column(String(30), unique=True, nullable=False)
+	email = Column(String(30), nullable=False)
+	picture = Column(String(200))
+
+	@property
+	def serialize(self):
+                return {
+                        'name': self.name,
+                        'id': self.id,
+                        'email': self.email,
+                        'picture': self.picture,
+                }
+
 class Cuisine(Base):
 	__tablename__ = 'cuisine'
 
@@ -34,7 +51,9 @@ class Restaurant(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String(250), nullable=False)
 	cuisine_id = Column(Integer, ForeignKey('cuisine.id'))
+	user_id = Column(Integer, ForeignKey('user.id'))
 	cuisine = relationship(Cuisine)
+	user = relationship(User)
 
 	@property
 	def serialize(self):
@@ -42,6 +61,7 @@ class Restaurant(Base):
                         'name': self.name,
                         'id': self.id,
                         'cuisine_id': self.cuisine_id,
+                        'user_id': self.user_id,
                 }
 
 class BaseMenuItem(Base):
@@ -90,7 +110,7 @@ class RestaurantMenuItem(Base):
                         'restaurant_id':self.restaurant_id,
                         'baseMenuItem_id':self.baseMenuItem_id,
                 }
-	
+
 
 # connect to database engine
 engine = create_engine('sqlite:///restaurants.db')
