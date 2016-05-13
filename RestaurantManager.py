@@ -122,14 +122,10 @@ def getUser(user_id=None, email=None):
     """
     session = getRestaurantDBSession()
 
-    try:
-        if user_id is not None:
-            user = session.query(User).filter_by(id=user_id).one()
-        elif email is not None:
-            user = session.query(User).filter_by(email=email).one()
-    except:
-        print traceback.format_exc()
-        user = None
+    if user_id is not None:
+        user = session.query(User).filter_by(id=user_id).first()
+    elif email is not None:
+        user = session.query(User).filter_by(email=email).first()
 
     session.close()
     return user
@@ -154,16 +150,12 @@ def getRestaurants(cuisine_id=None):
     """
     session = getRestaurantDBSession()
     
-    try:
-        if cuisine_id is not None:
-            restaurants = session.query(Restaurant).\
-                          filter_by(cuisine_id=cuisine_id).all()
-        else:
-            restaurants = session.query(Restaurant).\
-                          order_by(Restaurant.id).all()
-    except:
-        print traceback.format_exc()
-        restaurants = None
+    if cuisine_id is not None:
+        restaurants = session.query(Restaurant).\
+                      filter_by(cuisine_id=cuisine_id).all()
+    else:
+        restaurants = session.query(Restaurant).\
+                      order_by(Restaurant.id).all()
     
     session.close()
     return restaurants
@@ -176,11 +168,8 @@ def getRestaurant(rest_id):
     """
     session = getRestaurantDBSession()
 
-    try:
-        restaurant = session.query(Restaurant).filter_by(id=rest_id).one()
-    except:
-        print traceback.format_exc()
-        restaurant = None
+    restaurant = session.query(Restaurant).\
+                 filter_by(id=rest_id).first()
 
     session.close()
     return restaurant
@@ -203,26 +192,22 @@ def getRestaurantMenuItems(restaurant_id=None, baseMenuItem_id=None,
     """
     session = getRestaurantDBSession()
 
-    try:
-        if restaurant_id is not None:
-            restaurantMenuItems = session.query(RestaurantMenuItem).\
-                                 filter_by(restaurant_id=restaurant_id).all()
-        elif baseMenuItem_id is not None:
-            restaurantMenuItems = session.query(RestaurantMenuItem).\
-                                  filter_by(baseMenuItem_id=baseMenuItem_id).\
-                                  all()
-        elif cuisine_id is not None:
-            restaurantMenuItems = session.query(RestaurantMenuItem).\
-                                  join(BaseMenuItem).\
-                                  filter(BaseMenuItem.cuisine_id==cuisine_id).\
-                                  all()
-        else:
-            restaurantMenuItems = session.query(RestaurantMenuItem).\
-                                  order_by(RestaurantMenuItem.restaurant_id).\
-                                  all()
-    except:
-        print traceback.format_exc()
-        restaurantMenuItems = None
+    if restaurant_id is not None:
+        restaurantMenuItems = session.query(RestaurantMenuItem).\
+                              filter_by(restaurant_id=restaurant_id).all()
+    elif baseMenuItem_id is not None:
+        restaurantMenuItems = session.query(RestaurantMenuItem).\
+                              filter_by(baseMenuItem_id=baseMenuItem_id).\
+                              all()
+    elif cuisine_id is not None:
+        restaurantMenuItems = session.query(RestaurantMenuItem).\
+                              join(BaseMenuItem).\
+                              filter(BaseMenuItem.cuisine_id==cuisine_id).\
+                              all()
+    else:
+        restaurantMenuItems = session.query(RestaurantMenuItem).\
+                              order_by(RestaurantMenuItem.restaurant_id).\
+                              all()
 
     session.close()
     return restaurantMenuItems
@@ -235,12 +220,8 @@ def getRestaurantMenuItem(restaurantMenuItem_id):
     """
     session = getRestaurantDBSession()
 
-    try:
-        restaurantMenuItem = session.query(RestaurantMenuItem).\
-                             filter_by(id=restaurantMenuItem_id).one()
-    except:
-        print traceback.format_exc()
-        restaurantMenuItem = None
+    restaurantMenuItem = session.query(RestaurantMenuItem).\
+                         filter_by(id=restaurantMenuItem_id).first()
 
     session.close()
     return restaurantMenuItem
@@ -253,12 +234,8 @@ def getBaseMenuItem(baseMenuItem_id):
     """
     session = getRestaurantDBSession()
 
-    try:
-        baseMenuItem = session.query(BaseMenuItem).\
-                       filter_by(id=baseMenuItem_id).one()
-    except:
-        print traceback.format_exc()
-        baseMenuItem = None
+    baseMenuItem = session.query(BaseMenuItem).\
+                   filter_by(id=baseMenuItem_id).first()
 
     session.close()
     return baseMenuItem
@@ -274,16 +251,12 @@ def getBaseMenuItems(cuisine_id=None):
     """
     session = getRestaurantDBSession()
 
-    try:
-        if cuisine_id is not None:
-            baseMenuItems = session.query(BaseMenuItem).\
-                            filter_by(cuisine_id=cuisine_id).all()
-        else:
-            baseMenuItems = session.query(BaseMenuItem).\
-                            order_by(BaseMenuItem.id).all()
-    except:
-        print traceback.format_exc()
-        baseMenuItems = None
+    if cuisine_id is not None:
+        baseMenuItems = session.query(BaseMenuItem).\
+                        filter_by(cuisine_id=cuisine_id).all()
+    else:
+        baseMenuItems = session.query(BaseMenuItem).\
+                        order_by(BaseMenuItem.id).all()
 
     session.close()
     return baseMenuItems
@@ -299,21 +272,17 @@ def getCuisines(onlyPopular=False):
     """
     session = getRestaurantDBSession()
 
-    try:
-        if onlyPopular:
-            numPerCuisine = session.query(Restaurant.foodType,
-                            func.count(Restaurant.foodType).label('No')).\
-                            group_by(Restaurant.foodType).all()
-            cuisines = []
+    if onlyPopular:
+        numPerCuisine = session.query(Restaurant.foodType,
+                        func.count(Restaurant.foodType).label('No')).\
+                        group_by(Restaurant.foodType).all()
+        cuisines = []
 
-            for cuisine in numPerCuisine:
-                if cuisine.No > 3:
-                    cuisines.append(cuisine)
-        else:
-            cuisines  = session.query(Cuisine).order_by(Cuisine.id).all()
-    except:
-        print traceback.format_exc()
-        cuisines = None
+        for cuisine in numPerCuisine:
+            if cuisine.No > 3:
+                cuisines.append(cuisine)
+    else:
+        cuisines  = session.query(Cuisine).order_by(Cuisine.id).all()
 
     session.close()
     return cuisines
@@ -328,15 +297,11 @@ def getCuisine(cuisine_id=None, name=None):
     """
     session = getRestaurantDBSession()
 
-    try:
-        if cuisine_id is not None:
-            cuisine  = session.query(Cuisine).filter_by(id=cuisine_id).one()
-        elif name is not None:
-            cuisine = session.query(Cuisine).filter_by(name=name).one()
-    except:
-        print traceback.format_exc()
-        cuisine = None
-
+    if cuisine_id is not None:
+        cuisine  = session.query(Cuisine).filter_by(id=cuisine_id).first()
+    elif name is not None:
+        cuisine = session.query(Cuisine).filter_by(name=name).first()
+        
     session.close()
     return cuisine
 
