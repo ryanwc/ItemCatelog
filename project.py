@@ -398,11 +398,20 @@ def cuisines():
 def addCuisine():
         if ('credentials' not in login_session or
             'access_token' not in login_session['credentials']):
+            # not logged in
 
                 flash("You must log in to add a cuisine")
                 return redirect('/login/')
 
         if request.method == 'POST':
+
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
 
             name = bleach.clean(request.form['name'])
 
@@ -413,7 +422,8 @@ def addCuisine():
             return redirect(url_for('cuisines'))
         else:
 
-            return render_template('AddCuisine.html')
+            return render_template('AddCuisine.html',
+                                   hiddenToken=login_session['state'])
 
 @app.route('/cuisines/<int:cuisine_id>/')
 def cuisine(cuisine_id):
@@ -466,6 +476,14 @@ def editCuisine(cuisine_id):
 
         if request.method == 'POST':
 
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
+
             oldName = cuisine.name
             newName = None
 
@@ -482,7 +500,8 @@ def editCuisine(cuisine_id):
                                     cuisine_id=cuisine_id))
         else:
             return render_template("EditCuisine.html",
-                               cuisine=cuisine)
+                                   cuisine=cuisine,
+                                   hiddenToken=login_session['state'])
 
 @app.route('/cuisines/<int:cuisine_id>/delete/', methods=['GET', 'POST'])
 def deleteCuisine(cuisine_id):
@@ -495,6 +514,14 @@ def deleteCuisine(cuisine_id):
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         if request.method == 'POST':
+
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
 
             cuisineName = cuisine.name
             cuisineID = cuisine.id
@@ -530,7 +557,8 @@ def deleteCuisine(cuisine_id):
             return redirect(url_for('cuisines'))
         else:
             return render_template("DeleteCuisine.html",
-                                   cuisine=cuisine)
+                                   cuisine=cuisine,
+                                   hiddenToken=login_session['state'])
 
 @app.route('/restaurants/')
 def restaurants():
@@ -548,6 +576,14 @@ def addRestaurant():
             return redirect('/login/')
 
         if request.method == 'POST':
+
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
 
             name = bleach.clean(request.form['name'])
 
@@ -581,7 +617,9 @@ def addRestaurant():
         else:
 
             cuisines = RestaurantManager.getCuisines()
-            return render_template('AddRestaurant.html', cuisines=cuisines)
+            return render_template('AddRestaurant.html', 
+                                    cuisines=cuisines,
+                                    hiddenToken=login_session['state'])
 
 @app.route('/restaurants/<int:restaurant_id>/')
 def restaurant(restaurant_id):
@@ -630,6 +668,14 @@ def editRestaurant(restaurant_id):
         
         if request.method == 'POST':
 
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
+
             oldName = restaurant.name
             oldCuisine = RestaurantManager.\
                          getCuisine(cuisine_id=restaurant.cuisine_id)
@@ -667,7 +713,8 @@ def editRestaurant(restaurant_id):
 
             return render_template('EditRestaurant.html',
                                    restaurant=restaurant,
-                                   cuisines=cuisines)
+                                   cuisines=cuisines,
+                                   hiddenToken=login_session['state'])
 
 @app.route('/restaurants/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
@@ -685,6 +732,14 @@ def deleteRestaurant(restaurant_id):
 
         if request.method == 'POST':
 
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
+
             restaurantMenuItems = RestaurantManager.\
                                   getRestaurantMenuItems(restaurant_id=restaurant_id)
 
@@ -700,7 +755,8 @@ def deleteRestaurant(restaurant_id):
         else:   
             
             return render_template('DeleteRestaurant.html',
-                                   restaurant=restaurant)
+                                   restaurant=restaurant,
+                                   hiddenToken=login_session['state'])
 
 @app.route('/cuisines/<int:cuisine_id>/add/', methods=['GET','POST'])
 def addBaseMenuItem(cuisine_id):
@@ -713,6 +769,14 @@ def addBaseMenuItem(cuisine_id):
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         if request.method == 'POST':
+
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
 
             name = bleach.clean(request.form['name'])
             description = bleach.clean(request.form['description'])
@@ -740,7 +804,8 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
                                 baseMenuItem=baseMenuItem,
                                 restaurantMenuItems=restaurantMenuItems,
                                 cuisine=cuisine,
-                                timesOrdered=timesOrdered)
+                                timesOrdered=timesOrdered,
+                                hiddenToken=login_session['state'])
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/edit/',
            methods=['POST','GET'])
@@ -756,6 +821,14 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         if request.method == 'POST':
+
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
 
             oldName = baseMenuItem.name
             oldDescription = baseMenuItem.description
@@ -793,7 +866,8 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         else:
             return render_template("EditBaseMenuItem.html",
                                    baseMenuItem=baseMenuItem,
-                                   cuisine=cuisine)
+                                   cuisine=cuisine,
+                                   hiddenToken=login_session['state'])
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/delete/',
            methods=['GET','POST'])
@@ -808,6 +882,14 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
 
         if request.method == 'POST':
+
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
 
             cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
             restaurantMenuItems = RestaurantManager.\
@@ -827,7 +909,8 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
 
             return render_template("DeleteBaseMenuItem.html",
                                    baseMenuItem=baseMenuItem,
-                                   cuisine_id=cuisine_id)
+                                   cuisine_id=cuisine_id,
+                                   hiddenToken=login_session['state'])
 
 @app.route('/restaurants/<int:restaurant_id>/menu/')
 def restaurantMenu(restaurant_id):
@@ -868,6 +951,14 @@ def addRestaurantMenuItem(restaurant_id):
 
         if request.method == 'POST':
 
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
+
             RestaurantManager.addRestaurantMenuItem(
                 name=bleach.clean(request.form['name']),
                 restaurant_id=restaurant_id,
@@ -885,7 +976,8 @@ def addRestaurantMenuItem(restaurant_id):
 
             return render_template('AddRestaurantMenuItem.html',
                                    restaurant=restaurant,
-                                   baseMenuItems=baseMenuItems)
+                                   baseMenuItems=baseMenuItems,
+                                   hiddenToken=login_session['state'])
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/')
 def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
@@ -947,6 +1039,14 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         
         if request.method == 'POST':
 
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
+
             oldName = restaurantMenuItem.name
             oldDescription = restaurantMenuItem.description
             oldPrice = restaurantMenuItem.price
@@ -986,7 +1086,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
             return render_template('EditRestaurantMenuItem.html',
                                    restaurant=restaurant,
-                                   restaurantMenuItem=restaurantMenuItem)
+                                   restaurantMenuItem=restaurantMenuItem,
+                                   hiddenToken=login_session['state'])
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
            methods=['GET','POST'])
@@ -1009,6 +1110,14 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         if request.method == 'POST':
 
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
+
             restaurantMenuItemName = restaurantMenuItem.name
 
             RestaurantManager.\
@@ -1022,7 +1131,8 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         else:
             return render_template('DeleteRestaurantMenuItem.html',
                                    restaurant=restaurant,
-                                   restaurantMenuItem=restaurantMenuItem)
+                                   restaurantMenuItem=restaurantMenuItem,
+                                   hiddenToken=login_session['state'])
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
