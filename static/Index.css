@@ -23,3 +23,5 @@ li				{margin: 0 0 3px 0;}
 				 margin: 5px; border-color: #262626;
 				 background-color: #ffffff; width: 70px;}
 #result 		{position: absolute;}
+#title			{color: #8000ff; font-family: 'Impact', sans-serif; 
+				 font-style: italic;}
