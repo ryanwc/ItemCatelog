@@ -376,7 +376,7 @@ def editRestaurant(restaurant_id, newName=None,
         restaurant_id: the id of the restaurant to edit
         newName: a new name of the restaurant to edit
         newCuisine_id: the id of the restaurant's new cuisine
-        picture: the picture for the restaurant
+        newPicture: the picture for the restaurant
     """
     session = getRestaurantDBSession()
 

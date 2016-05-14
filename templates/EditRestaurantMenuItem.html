@@ -5,7 +5,7 @@
 </head>
 <body>
 	<h1 class='header'>
-		Edit {{restaurantMenuItem.name}}
+		Edit '{{restaurantMenuItem.name}}'
 	</h1>
 	
 	<div class='homeLinks'>
@@ -60,14 +60,24 @@
 		<input type='text' size='30' name='price' 
 			placeholder='{{restaurantMenuItem.price}}'>
 
+		<p>
+			Current Picture:
+		</p>
+		<div class='photo'>
+			<img id='photo' src='{{restaurantMenuItem.picture}}' alt='[picture of {{restaurantMenuItem.name}}]' max-width=100%>
+		</div>
+
 		<p>Change Item Picture to:</p>
-		<input type='file' name='picture' accept='image/*'>
-		<or provide link:>
-		<input type='text' size='60' name='pictureLink'
+		<input type='file' name='pictureFile' accept='image/*'>
+		<div id='photoOr'>or provide link:</div>
+		<input type='text' name='pictureLink' size='60'
 			placeholder='{{restaurantMenuItem.picture}}'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
+		</br>
+		</br>
+		</br>
 		<input type='submit' value='Submit Changes'>
 
 	</form>

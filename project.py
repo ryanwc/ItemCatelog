@@ -605,7 +605,8 @@ def addRestaurant():
             restaurant_id = RestaurantManager.addRestaurant(
                                 name=name,
                                 cuisine_id=cuisine_id,
-                                user_id=login_session['user_id']
+                                user_id=login_session['user_id'],
+                                picture=request.form['picture']
                             )
 
             if request.form['cuisineID'] == 'custom':
@@ -686,21 +687,27 @@ def editRestaurant(restaurant_id):
             oldName = restaurant.name
             oldCuisine = RestaurantManager.\
                          getCuisine(cuisine_id=restaurant.cuisine_id)
+            oldPicture = restaurant.picture
             newName = None
             newCuisine = None
             newCuisineID = None
+            newPicture = None
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
                 
             if request.form['cuisineID'] != "noNewCuisine":
-                print "it was not -2"
                 newCuisineID = request.form['cuisineID']
                 newCuisine = RestaurantManager.\
                              getCuisine(cuisine_id=newCuisineID)
 
+            if request.form['pictureLink'] or request.form['pictureFile']:
+                if request.form['pictureLink']:
+                    newPicture = request.form['pictureLink']
+
             RestaurantManager.editRestaurant(restaurant.id,
-                newName=newName, newCuisine_id=newCuisineID)
+                newName=newName, newCuisine_id=newCuisineID,
+                newPicture=newPicture)
 
             restaruant = RestaurantManager.getRestaurant(restaurant_id)
 
@@ -713,6 +720,9 @@ def editRestaurant(restaurant_id):
                 flash("changed " + restaurant.name + "'s (ID " + \
                     str(restaurant.id) + ") cuisine from '"+ \
                     oldCuisine.name + "' to '" + newCuisine.name + "'")
+
+            if newPicture is not None:
+                flash("updated " + restaurant.name + "'s picture!")
             
             return redirect(url_for('restaurant',
                                     restaurant_id=restaurant_id))
@@ -802,6 +812,7 @@ def addBaseMenuItem(cuisine_id):
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/')
 def baseMenuItem(cuisine_id, baseMenuItem_id):
         baseMenuItem = RestaurantManager.getBaseMenuItem(baseMenuItem_id)
+        baseMenuItem.price = Decimal(baseMenuItem.price).quantize(Decimal('0.01'))
         cuisine = RestaurantManager.getCuisine(cuisine_id=baseMenuItem.cuisine_id)
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(baseMenuItem_id=baseMenuItem.id)
@@ -1071,9 +1082,12 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             oldName = restaurantMenuItem.name
             oldDescription = restaurantMenuItem.description
             oldPrice = restaurantMenuItem.price
+            oldPicture = restaurantMenuItem.picture
             newName = None
             newDescription = None
             newPrice = None
+            newPicture = None
+
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
@@ -1084,8 +1098,13 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
 
+            if request.form['pictureLink'] or request.form['pictureFile']:
+                if request.form['pictureLink']:
+                    newPicture = request.form['pictureLink']
+
             RestaurantManager.editRestaurantMenuItem(restaurantMenuItem.id,
-                newName=newName, newDescription=newDescription, newPrice=newPrice)
+                newName=newName, newDescription=newDescription, 
+                newPrice=newPrice, newPicture=newPicture)
 
             if newName is not None:
                 flash("changed restaurant menu item " + str(restaurantMenuItem.id) + \
@@ -1101,6 +1120,9 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                     "'s price from '" + oldPrice + "' to '" + \
                     newPrice + "'")
             
+            if newPicture is not None:
+                flash("updated restaurant menu item picture!")
+
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
         else:

@@ -9,6 +9,8 @@ li				{margin: 0 0 3px 0;}
 
 .flash          {background: #F2F2F2;}
 
+.photo			{max-width: 300px; max-height: 300px;}
+
 .list    		{border: 2px solid; border-radius: 5px; padding: 5px; 
 				 margin: 5px; border-color: #262626;
 				 background-color: #737373; color: #e6e6e6;}
@@ -23,3 +25,8 @@ li				{margin: 0 0 3px 0;}
 .actionLink     {color: #ffcc99;}
 .forwardLink	{color: #e6e6e6;}
 .homeLinks a    {font-family: 'Georgia', serif; color: #ffffff; font-size: .75em;}
+
+#photoOr		{padding: 5px;}
+#submitButton	{align: center;}
+#photo			{max-width: 100%; max-height: 300px;
+				 border: 1px solid; border-color: #000000;}
