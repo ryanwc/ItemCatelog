@@ -358,7 +358,7 @@ for cuisine in baseMenus:
     for baseMenuItem in baseMenus[cuisine]:
         addBaseMenuItem(name=baseMenuItem['name'],
                         description=baseMenuItem['description'],
-                        price=round(Decimal(baseMenuItem['price']), 2),
+                        price=Decimal(baseMenuItem['price']).quantize(Decimal('0.01')),
                         cuisine_id=cuisineObj.id,
                         menuSection_id=baseMenuItem['menuSection'],
                         picture=baseMenuItem['picture'])

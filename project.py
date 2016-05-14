@@ -18,6 +18,8 @@ from database_setup import Base, Restaurant, BaseMenuItem, Cuisine, RestaurantMe
 
 import RestaurantManager
 
+from decimal import *
+
 import bleach
 
 import random, string, decimal
@@ -435,10 +437,12 @@ def cuisine(cuisine_id):
                               getRestaurantMenuItems(cuisine_id=cuisine_id)
 
         if len(baseMenuItems) > 0:
+            # also put in normal dollar format
             mostExpensiveBaseMenuItem = baseMenuItems[0]
             for item in baseMenuItems:
                 if item.price > mostExpensiveBaseMenuItem.price:
                     mostExpensiveBaseMenuItem = item
+            mostExpensiveBaseMenuItem.price = Decimal(mostExpensiveBaseMenuItem.price).quantize(Decimal('0.01'))
         else:
             ## got to be a better way to do this
             mostExpensiveBaseMenuItem = RestaurantManager.getBaseMenuItem(-1)
@@ -450,6 +454,7 @@ def cuisine(cuisine_id):
             for item in restaurantMenuItems:
                 if item.price > mostExpensiveRestaurantMenuItem.price:
                     mostExpensiveRestaurantMenuItem = item
+            mostExpensiveRestaurantMenuItem.price = Decimal(mostExpensiveRestaurantMenuItem.price).quantize(Decimal('0.01'))
         else:
             ## got to be a better way to do this
             mostExpensiveRestaurantMenuItem = RestaurantManager.getBaseMenuItem(-1)
@@ -635,6 +640,8 @@ def restaurant(restaurant_id):
             for item in restaurantMenuItems:
                 if item.price > mostExpensiveItem.price:
                     mostExpensiveItem = item
+                    mostExpensiveItem.price = Decimal(mostExpensiveItem.price).quantize(Decimal('0.01'))
+            mostExpensiveItem.price = Decimal(mostExpensiveItem.price).quantize(Decimal('0.01'))
         else:
             ## got to be a better way to do this
             mostExpensiveItem = RestaurantManager.\
@@ -820,6 +827,8 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
+        baseMenuItem.price = Decimal(baseMenuItem.price).quantize(Decimal('0.01'))
+
         if request.method == 'POST':
 
             if request.form['hiddenToken'] != login_session['state']:
@@ -918,6 +927,10 @@ def restaurantMenu(restaurant_id):
         restaurantMenuItems = RestaurantManager.\
             getRestaurantMenuItems(restaurant_id=restaurant_id)
 
+        # display nicely formatted
+        for item in restaurantMenuItems:
+            item.price = Decimal(item.price).quantize(Decimal('0.01'))
+
         if ('credentials' in login_session and
             'access_token' in login_session['credentials'] and
             restaurant.user_id == login_session['user_id']):
@@ -948,6 +961,10 @@ def addRestaurantMenuItem(restaurant_id):
             return redirect('/restaurants/'+str(restaurant.id)+'/menu/')
 
         baseMenuItems = RestaurantManager.getBaseMenuItems()
+
+        # display nicely
+        for item in baseMenuItems:
+            item.price = Decimal(item.price).quantize(Decimal('0.01'))
 
         if request.method == 'POST':
 
@@ -997,6 +1014,7 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
+        restaurantMenuItem.price = Decimal(restaurantMenuItem.price).quantize(Decimal('0.01'))
 
         restaurantCuisineObj = RestaurantManager.\
                                getCuisine(cuisine_id=restaurant.cuisine_id)
@@ -1004,6 +1022,7 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(restaurantMenuItem.baseMenuItem_id)
+        baseMenuItem.price = Decimal(baseMenuItem.price).quantize(Decimal('0.01'))
         baseMenuItemCuisineObj = RestaurantManager.\
                                  getCuisine(cuisine_id=baseMenuItem.cuisine_id)
         baseMenuItemCuisine = baseMenuItemCuisineObj.name
@@ -1036,6 +1055,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
+
+        restaurantMenuItem.price = Decimal(restaurantMenuItem.price).quantize(Decimal('0.01'))
         
         if request.method == 'POST':
 

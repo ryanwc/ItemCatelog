@@ -77,7 +77,7 @@ def addRestaurantMenuItem(restaurant_id, baseMenuItem_id,
     restaurantMenuItem = RestaurantMenuItem(
             name=name,
             description=description,
-            price=round(Decimal(price), 2),
+            price=Decimal(price).quantize(Decimal('0.01')),
             picture=picture,
             menuSection_id=menuSection_id,
             restaurant_id=restaurant_id,
@@ -97,7 +97,7 @@ def addBaseMenuItem(name, cuisine_id, description,
     baseMenuItem = BaseMenuItem(
             name=name, 
             description=description,
-            price=round(Decimal(price), 2),
+            price=Decimal(price).quantize(Decimal('0.01')),
             cuisine_id=cuisine_id,
             menuSection_id=menuSection_id,
             picture=picture
@@ -424,7 +424,7 @@ def editRestaurantMenuItem(restaurantMenuItem_id, newName=None,
 
     if newPrice is not None:
         session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
-            update({'price':round(Decimal(newPrice),2)})
+            update({'price':Decimal(newPrice).quantize(Decimal('0.01'))})
 
     if newMenuSection_id is not None:
         session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
@@ -488,7 +488,7 @@ def editBaseMenuItem(baseMenuItem_id, newName=None,
 
     if newPrice is not None:
         session.query(BaseMenuItem).filter_by(id=baseMenuItem_id).\
-            update({'price':round(Decimal(newPrice), 2)})
+            update({'price':Decimal(newPrice).quantize(Decimal('0.01'))})
 
     if newMenuSection_id is not None:
         session.query(BaseMenuItem).filter_by(id=baseMenuItem_id).\

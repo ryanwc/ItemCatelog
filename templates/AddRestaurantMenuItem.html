@@ -52,12 +52,21 @@
   			<option id="{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
   		{% endfor %}
 		</select>
+
 		<p>Item Name:</p>
 		<input id='name' type='text' size='30' name='name' placeholder='Name'>
+
 		<p>Item Description:</p>
 		<input id='description' type='text' size='60' name='description' placeholder='Description'>
+
 		<p>Item Price:</p>
 		<input id='price' type='text' size='30' name='price' placeholder='Price'>
+
+		<p>Item Picture:</p>
+		<input type='file' name='picture' accept='image/*'>
+		<or provide link:>
+		<input type='text' size='60' name='pictureLink' placeholder='Link to
+			restaurant picture'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
