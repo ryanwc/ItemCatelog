@@ -2,7 +2,7 @@ import sys
 
 # import functionality from sqlalchemy
 # these let you do SQL stuff in Python
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Table, Column, ForeignKey, Integer, Float, LargeBinary, String, CheckConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
@@ -20,7 +20,7 @@ class User(Base):
 	id = Column(Integer, primary_key=True)
 	name = Column(String(30), nullable=False)
 	email = Column(String(30), unique=True, nullable=False)
-	picture = Column(String(200))
+	picture = Column(LargeBinary, nullable=False)
 
 	@property
 	def serialize(self):
@@ -44,7 +44,19 @@ class Cuisine(Base):
                         'id': self.id,
                 }
 
-        
+class MenuSection(Base):
+	__tablename__ = 'menu_section'
+
+	id = Column(Integer, primary_key=True)
+	name = Column(String(80), nullable=False, unique=True)
+
+	@property
+	def serialize(self):
+                return {
+                        'name': self.name,
+                        'id': self.id,
+                }
+
 class Restaurant(Base):
 	__tablename__ = 'restaurant'
 
@@ -52,6 +64,8 @@ class Restaurant(Base):
 	name = Column(String(250), nullable=False)
 	cuisine_id = Column(Integer, ForeignKey('cuisine.id'))
 	user_id = Column(Integer, ForeignKey('user.id'))
+	picture = Column(LargeBinary, nullable=False)
+
 	cuisine = relationship(Cuisine)
 	user = relationship(User)
 
@@ -61,6 +75,7 @@ class Restaurant(Base):
                         'name': self.name,
                         'id': self.id,
                         'cuisine_id': self.cuisine_id,
+                        'picture': self.picture,
                         'user_id': self.user_id,
                 }
 
@@ -69,11 +84,16 @@ class BaseMenuItem(Base):
 
 	name = Column(String(80), nullable=False, unique=True)
 	id = Column(Integer, primary_key=True)
-	description = Column(String(250))
-	price = Column(String(8))
-	course = Column(String(250))
+	description = Column(String(250), nullable=False)
+	price = Column(Float, nullable=False)
+	picture = Column(LargeBinary, nullable=False)
 	cuisine_id = Column(Integer, ForeignKey('cuisine.id'))
+	menuSection_id = Column(Integer, ForeignKey('menu_section.id'))
+
 	cuisine = relationship(Cuisine)
+	menuSection = relationship(MenuSection)
+
+	CheckConstraint('price >= 0')
 
 	@property
 	def serialize(self):
@@ -82,6 +102,7 @@ class BaseMenuItem(Base):
                         'description': self.description,
                         'id': self.id,
                         'price': self.price,
+                        'picture': self.picture,
                         'course': self.course,
                         'cuisine_id':self.cuisine_id,
                 }
@@ -91,13 +112,18 @@ class RestaurantMenuItem(Base):
 
 	name = Column(String(80), nullable=False)
 	id = Column(Integer, primary_key=True)
-	description = Column(String(250))
-	price = Column(String(8))
-	course = Column(String(250))
+	description = Column(String(250), nullable=False)
+	price = Column(Float, nullable=False)
+	picture = Column(LargeBinary, nullable=False)
 	restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
 	baseMenuItem_id = Column(Integer, ForeignKey('base_menu_item.id'))
+	menuSection_id = Column(Integer, ForeignKey('menu_section.id'))
+
 	restaurant = relationship(Restaurant)
 	baseMenuItem = relationship(BaseMenuItem)
+	menuSection = relationship(MenuSection)
+
+	CheckConstraint('price >= 0')
 
 	@property
 	def serialize(self):
@@ -107,6 +133,7 @@ class RestaurantMenuItem(Base):
                         'id': self.id,
                         'price': self.price,
                         'course': self.course,
+                        'picture': self.picture,
                         'restaurant_id':self.restaurant_id,
                         'baseMenuItem_id':self.baseMenuItem_id,
                 }

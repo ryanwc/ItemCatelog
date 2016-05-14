@@ -20,7 +20,7 @@ import RestaurantManager
 
 import bleach
 
-import random, string
+import random, string, decimal
 
 
 app = Flask(__name__)

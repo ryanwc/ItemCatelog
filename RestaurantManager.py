@@ -2,8 +2,9 @@ from sqlalchemy import create_engine, select, func
 from sqlalchemy.orm import sessionmaker
 
 import traceback
+from decimal import *
 
-from database_setup import Base, Restaurant, BaseMenuItem, RestaurantMenuItem, Cuisine, User
+from database_setup import Base, Restaurant, BaseMenuItem, RestaurantMenuItem, Cuisine, User, MenuSection
 
 
 def populateMenuWithBaseItems(restaurant_id):
@@ -12,7 +13,6 @@ def populateMenuWithBaseItems(restaurant_id):
     session = getRestaurantDBSession()
 
     restaurant = getRestaurant(restaurant_id)
-    print restaurant.name
 
     # do not add any menu items if the restaurant has no specific cuisine
     if restaurant.cuisine_id is -1:
@@ -23,19 +23,12 @@ def populateMenuWithBaseItems(restaurant_id):
                     filter_by(cuisine_id=restaurant.cuisine_id).all()
         
     for baseMenuItem in baseMenuItems:
-        restaurantMenuItem = RestaurantMenuItem(
-                name=baseMenuItem.name,
-                description=baseMenuItem.description,
-                price=baseMenuItem.price,
-                baseMenuItem_id=baseMenuItem.id,
-                restaurant_id=restaurant.id
-            )
-        session.add(restaurantMenuItem)
+        addRestaurantMenuItem(restaurant_id=restaurant.id,
+            baseMenuItem_id=baseMenuItem.id)
 
-    session.commit()
     session.close()
 
-def addUser(name, email, picture='https://upload.wikimedia.org/wikipedia/commons/1/1e/Tom%27s_Restaurant%2C_NYC.jpg'):
+def addUser(name, email, picture):
     """Add a user to the database
     """
     session = getRestaurantDBSession()
@@ -46,17 +39,47 @@ def addUser(name, email, picture='https://upload.wikimedia.org/wikipedia/commons
     session.commit()
     session.close()
 
-def addRestaurantMenuItem(name, restaurant_id, baseMenuItem_id,
-                          description=None, price=None, course=None):
+def addMenuSection(name):
+    """Add a menu section to the database
+    """
+    session = getRestaurantDBSession()
+
+    menuSection = MenuSection(name=name)
+
+    session.add(menuSection)
+    session.commit()
+    session.close()
+
+def addRestaurantMenuItem(restaurant_id, baseMenuItem_id,
+                          name=None, description=None, price=None, 
+                          picture=None, menuSection_id=None):
     """Add an item to a restaurant's menu
     """
     session = getRestaurantDBSession()
 
+    baseMenuItem = getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
+
+    if name is None:
+        name = baseMenuItem.name
+
+    if description is None:
+        description = baseMenuItem.description
+
+    if price is None:
+        price = baseMenuItem.price
+
+    if menuSection_id is None:
+        menuSection_id = baseMenuItem.menuSection_id
+
+    if picture is None:
+        picture = baseMenuItem.picture
+
     restaurantMenuItem = RestaurantMenuItem(
             name=name,
             description=description,
-            price=price,
-            course=course,
+            price=round(Decimal(price), 2),
+            picture=picture,
+            menuSection_id=menuSection_id,
             restaurant_id=restaurant_id,
             baseMenuItem_id=baseMenuItem_id
         )
@@ -65,8 +88,8 @@ def addRestaurantMenuItem(name, restaurant_id, baseMenuItem_id,
     session.commit()
     session.close()
 
-def addBaseMenuItem(name, cuisine_id,
-                    description=None, price=None, course=None):
+def addBaseMenuItem(name, cuisine_id, description, 
+                    price, menuSection_id, picture):
     """Add an item to a cuisine's base item list
     """
     session = getRestaurantDBSession()
@@ -74,9 +97,10 @@ def addBaseMenuItem(name, cuisine_id,
     baseMenuItem = BaseMenuItem(
             name=name, 
             description=description,
-            price=price,
-            course=course,
-            cuisine_id=cuisine_id
+            price=round(Decimal(price), 2),
+            cuisine_id=cuisine_id,
+            menuSection_id=menuSection_id,
+            picture=picture
         )
 
     session.add(baseMenuItem)
@@ -94,14 +118,15 @@ def addCuisine(name):
     session.commit()
     session.close()
 
-def addRestaurant(name, cuisine_id, user_id):
+def addRestaurant(name, cuisine_id, user_id, picture):
     """Add a restaurant to the database
 
     Returns the id of the restaurant
     """
     session = getRestaurantDBSession()
 
-    restaurant = Restaurant(name=name, cuisine_id=cuisine_id, user_id=user_id)
+    restaurant = Restaurant(name=name, cuisine_id=cuisine_id, 
+                            user_id=user_id, picture=picture)
     session.add(restaurant)
     session.flush()
     restaurant_id = restaurant.id
@@ -145,6 +170,36 @@ def getUsers():
 
     session.close()
     return users
+
+def getMenuSection(menuSection_id=None, name=None):
+    """Return the menu section with the given ID or name
+
+    Args:
+      menuSection_id: the id of the menu section to get
+      name: the name of the menu section to get
+    """
+    session = getRestaurantDBSession()
+
+    if menuSection_id is not None:
+        menuSection = session.query(MenuSection).\
+                      filter_by(id=menuSection_id).first()
+    elif name is not None:
+        menuSection = session.query(MenuSection).\
+                      filter_by(name=name).first()
+
+    session.close()
+    return menuSection
+
+def getMenuSections():
+    """Return a list of all menu sections ordered by id
+    """
+    session = getRestaurantDBSession()
+
+    menuSections = session.query(MenuSection).\
+                   order_by(MenuSection.id).all()
+
+    session.close()
+    return menuSections
 
 def getRestaurants(cuisine_id=None):
     """If no arguments are given, return a list of all restaurants 
@@ -311,15 +366,17 @@ def getCuisine(cuisine_id=None, name=None):
     session.close()
     return cuisine
 
-def editRestaurant(restaurant_id, newName=None, newCuisine_id=None):
+def editRestaurant(restaurant_id, newName=None, 
+                   newCuisine_id=None, newPicture=None):
     """Edit a restaurant
 
     Pass none for any attribute to leave it unchanged.
 
     Args:
         restaurant_id: the id of the restaurant to edit
-        newName: a new name of the restaurant to edit.
-        newCuisine_id: the id of the restaurant's new cuisine.
+        newName: a new name of the restaurant to edit
+        newCuisine_id: the id of the restaurant's new cuisine
+        picture: the picture for the restaurant
     """
     session = getRestaurantDBSession()
 
@@ -327,19 +384,21 @@ def editRestaurant(restaurant_id, newName=None, newCuisine_id=None):
         session.query(Restaurant).filter_by(id=restaurant_id).\
             update({'name':newName})
 
-    print "updated name"
-
     if newCuisine_id is not None:
         session.query(Restaurant).filter_by(id=restaurant_id).\
             update({'cuisine_id':newCuisine_id})
+
+    if newPicture is not None:
+        session.query(Restaurant).filter_by(id=restaurant_id).\
+            update({'picture':newPicture})        
 
     session.commit()
     session.close()
 
 def editRestaurantMenuItem(restaurantMenuItem_id, newName=None, 
                            newDescription=None, newPrice=None,
-                           newCourse=None, newRestaurant_id=None,
-                           newBaseMenuItem_id=None):
+                           newMenuSection_id=None, newBaseMenuItem_id=None,
+                           newPicture=None):
     """Edit a restaurant menu item.
 
     Pass none for any attribute to leave it unchanged.
@@ -349,9 +408,9 @@ def editRestaurantMenuItem(restaurantMenuItem_id, newName=None,
         newName: a new name for the restaurant menu item.
         newDescription: a new description for the restaurant menu item.
         newPrice: a new price for the restaurant menu item.
-        newCourse: the restaurant menu item's new course.
-        newRestaurant_id: the id of the restaurant menu item's new restaurant.
+        newMenuSection_id: the id of the restaurant menu item's new menu section.
         newBaseMenuItem_id: the id of the restaurant menu item's new
+        newPicture: the id of the restaurant menu item's new restaurant.
     """
     session = getRestaurantDBSession()
 
@@ -365,15 +424,15 @@ def editRestaurantMenuItem(restaurantMenuItem_id, newName=None,
 
     if newPrice is not None:
         session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
-            update({'price':newPrice})
+            update({'price':round(Decimal(newPrice),2)})
 
-    if newCourse is not None:
+    if newMenuSection_id is not None:
         session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
-            update({'course':newCourse})
+            update({'menuSection_id':newMenuSection_id})
 
-    if newRestaurant_id is not None:
+    if newPicture is not None:
         session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
-            update({'restaurant_id':newRestaurant_id})
+            update({'picture':newPicture})
 
     if newBaseMenuItem_id is not None:
         session.query(RestaurantMenuItem).filter_by(id=restaurantMenuItem_id).\
@@ -401,18 +460,20 @@ def editCuisine(cuisine_id, newName=None):
 
 def editBaseMenuItem(baseMenuItem_id, newName=None, 
                      newDescription=None, newPrice=None,
-                     newCourse=None, newCuisine_id=None):
+                     newCuisine_id=None, newMenuSection_id=None,
+                     newPicture=None):
     """Edit a base menu item
 
     Pass none for an attribute to leave it unchanged.
 
     Args:
         baseMenuItem_id: the id of the base menu item to edit
-        newName: a new name for the base menu item.
-        newDescription: a new description for the base menu item.
-        newPrice: a new price for the base menu item.
-        newCourse: the base menu item's new course.
-        newCuisine_id: the id of the base menu item's new cuisine.
+        newName: a new name for the base menu item
+        newDescription: a new description for the base menu item
+        newPrice: a new price for the base menu item
+        newCuisine_id: the id of the base menu item's new cuisine
+        newMenuSection_id: the id of the base menu item's new menu section
+        newPicture: the base menu item's new picture
     """
     session = getRestaurantDBSession()
 
@@ -427,15 +488,19 @@ def editBaseMenuItem(baseMenuItem_id, newName=None,
 
     if newPrice is not None:
         session.query(BaseMenuItem).filter_by(id=baseMenuItem_id).\
-            update({'price':newPrice})
+            update({'price':round(Decimal(newPrice), 2)})
 
-    if newCourse is not None:
+    if newMenuSection_id is not None:
         session.query(BaseMenuItem).filter_by(id=baseMenuItem_id).\
-            update({'course':newCourse})
+            update({'menuSection_id':newMenuSection_id})
 
     if newCuisine_id is not None:
         session.query(BaseMenuItem).filter_by(id=baseMenuItem_id).\
             update({'cuisine_id':newCuisine_id})
+
+    if newPicture is not None:
+        session.query(BaseMenuItem).filter_by(id=baseMenuItem_id).\
+            update({'picture':newPicture})
 
     session.commit()
     session.close()
@@ -542,3 +607,12 @@ def deleteCuisine(cuisine_id=None):
         session.commit()
 
     session.close()
+
+def dropAllRecords():
+    """Drop all records from the database
+    """
+    engine = create_engine('sqlite:///restaurants.db')
+    Base.metadata.bind = engine
+
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
