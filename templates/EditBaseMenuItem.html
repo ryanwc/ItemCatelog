@@ -63,10 +63,10 @@
 			Current Picture:
 		</p>
 		<div class='photo'>
-			<img id='photo' src='{{baseMenuItem.picture}}' alt='[picture of {{baseMenuItem.name}}]' max-width=100%>
+			<img id='photo' src="{{picture.text}}" alt='[picture of {{restaurant.name}}]' max-width=100%>
 		</div>
 
-		<p>Change Item Picture to:</p>
+		<p>Change Item Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input type='file' name='pictureFile' accept='image/*'>
 		<div id='photoOr'>or provide link:</div>
 		<input type='text' name='pictureLink' size='60'
@@ -80,5 +80,13 @@
 		<input id='submitButton' type='submit' value='Submit Changes'>
 
 	</form>
+  	<script>
+  	// if appropriate, changes src of #photo from link to served file
+    if ('{{picture.serve_type}}' === 'upload') {
+
+    	console.log("is upload");
+		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
+    }
+	</script>
 </body>
 </html>

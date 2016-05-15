@@ -26,7 +26,7 @@
 
 	<form class='form' action="{{url_for('editRestaurant', 
 							restaurant_id=restaurant.id)}}"
-		method='post'>
+		method='post' enctype=multipart/form-data>
 
 		<h3 class='header'>
 			Restaurant Attributes to Edit
@@ -63,14 +63,14 @@
 			Current Picture:
 		</p>
 		<div class='photo'>
-			<img id='photo' src='{{restaurant.picture}}' alt='[picture of {{restaurant.name}}]' max-width=100%>
+			<img id='photo' src="{{picture.text}}" alt='[picture of {{restaurant.name}}]' max-width=100%>
 		</div>
 
-		<p>Change Restaurant Picture to:</p>
-		<input type='file' name='picture' accept='image/*'>
+		<p>Change Restaurant Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
+		<input type='file' name='pictureFile' accept='image/*'>
 		<div id='photoOr'>or provide link:</div>
-		<input type='text' size='60' name='pictureLink'
-			placeholder='{{restaurant.picture}}'>
+		<input id='pictureLinkText' type='text' size='60' name='pictureLink'
+			placeholder='{{picture.text}}'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
@@ -80,5 +80,13 @@
 		<input type='submit' value='Submit Changes'>
 
 	</form>
+  	<script>
+  	// if appropriate, changes src of #photo from link to served file
+    if ('{{picture.serve_type}}' === 'upload') {
+
+		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
+		document.getElementById("pictureLinkText").setAttribute("placeholder", "Link to picture");
+    }
+	</script>
 </body>
 </html>

@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from RestaurantManager import *
-from database_setup import Base, Cuisine, Restaurant, BaseMenuItem, RestaurantMenuItem, User, MenuSection
+from database_setup import Base, Cuisine, Restaurant, BaseMenuItem, RestaurantMenuItem, User, MenuSection, Picture
 
 import random
 from decimal import *
@@ -16,21 +16,28 @@ dropAllRecords()
 
 ### add some users
 addUser(name="Robo Barista", email="tinnyTim@udacity.com", 
-  picture='https://pbs.twimg.com/profile_images/2671170543/18debd694829ed78203a5a36dd364160_400x400.png')
+  picture_id=addPicture('https://pbs.twimg.com/profile_images/2671170543/18debd694829ed78203a5a36dd364160_400x400.png', 'link')
+  )
 addUser(name="Der Koch", email="ichbinkoch@example.com", 
-  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Mendel_I_142_r.jpg/173px-Mendel_I_142_r.jpg')
+  picture_id=addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Mendel_I_142_r.jpg/173px-Mendel_I_142_r.jpg', 'link')
+  )
 addUser(name="Masayoshi Kazato", email="sushichef@example.com", 
-  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Sushi_chef_Masayoshi_Kazato_02.JPG/320px-Sushi_chef_Masayoshi_Kazato_02.JPG')
+  picture_id=addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Sushi_chef_Masayoshi_Kazato_02.JPG/320px-Sushi_chef_Masayoshi_Kazato_02.JPG', 'link')
+  )
 addUser(name="Master Chef", email="master@example.com", 
-  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Chef_pr%C3%A9parant_une_truffe.jpg/320px-Chef_pr%C3%A9parant_une_truffe.jpg')
+  picture_id=addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Chef_pr%C3%A9parant_une_truffe.jpg/320px-Chef_pr%C3%A9parant_une_truffe.jpg', 'link')
+  )
 addUser(name="Tandor", email="tandor@example.com", 
-  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Tandoor_chef_2.jpg/251px-Tandoor_chef_2.jpg')
+  picture_id=addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Tandoor_chef_2.jpg/251px-Tandoor_chef_2.jpg', 'link')
+  )
 addUser(name="Peking Chef", email="peking@example.com", 
-  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Preparing_Peking_duck.JPG/180px-Preparing_Peking_duck.JPG')
+  picture_id=addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Preparing_Peking_duck.JPG/180px-Preparing_Peking_duck.JPG', 'link')
+  )
 addUser(name="Romantic Chef", email="romantic@example.com", 
-  picture='https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Ribot_Theodule_The_Cook_And_The_Cat-1.jpg/183px-Ribot_Theodule_The_Cook_And_The_Cat-1.jpg')
-addUser(name="Kramer", email="kramer@example.com", picture='https://upload.wikimedia.org/wikipedia/en/b/b7/Cosmo_Kramer.jpg')
-addUser(name="George", email="george@example.com", picture='https://upload.wikimedia.org/wikipedia/en/7/70/George_Costanza.jpg')
+  picture_id=addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Ribot_Theodule_The_Cook_And_The_Cat-1.jpg/183px-Ribot_Theodule_The_Cook_And_The_Cat-1.jpg', 'link')
+  )
+addUser(name="Kramer", email="kramer@example.com", picture_id=addPicture('https://upload.wikimedia.org/wikipedia/en/b/b7/Cosmo_Kramer.jpg', 'link'))
+addUser(name="George", email="george@example.com", picture_id=addPicture('https://upload.wikimedia.org/wikipedia/en/7/70/George_Costanza.jpg', 'link'))
 
 ### create menu sections
 addMenuSection("Appetizer")
@@ -58,7 +65,7 @@ session = getRestaurantDBSession()
 dummyBaseMenuItem = BaseMenuItem(id=-1, 
   name="Base Item with no Specific Cuisine", 
   description="This item has no specific cuisine", cuisine_id=-1,
-  menuSection_id=otherID, price='0.00', picture="")
+  menuSection_id=otherID, price='0.00', picture_id=addPicture("", "link"))
 session.add(dummyBaseMenuItem)
 session.commit()
 session.close()
@@ -356,12 +363,13 @@ for cuisine in baseMenus:
     cuisineObj = getCuisine(name=cuisine)
 
     for baseMenuItem in baseMenus[cuisine]:
+
         addBaseMenuItem(name=baseMenuItem['name'],
                         description=baseMenuItem['description'],
                         price=Decimal(baseMenuItem['price']).quantize(Decimal('0.01')),
                         cuisine_id=cuisineObj.id,
                         menuSection_id=baseMenuItem['menuSection'],
-                        picture=baseMenuItem['picture'])
+                        picture_id=addPicture(baseMenuItem['picture'], 'link'))
 
 
 ### generate names and pics restaurants; we've manually ensured the
@@ -374,27 +382,27 @@ adjectives = ['Great','Lip-Smacking','Blazin\'','Happy','Delicious','Elegant',\
               'Big','Yummy','Authentic','Homestyle']
 cuisines = ['Thai', 'Burgers','Delicatessen','Italian','Waffles','Ice Cream',\
             'Salad','Fried Chicken']
-restaurantPics = ['https://upload.wikimedia.org/wikipedia/commons/a/a6/6x8_80dpi_-_Piment_rouge_-_view_of_cellar_fm_mezz_stairs_to_Peel.JPG',
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Petrus_%28London%29_Kitchen.jpg/1024px-Petrus_%28London%29_Kitchen.jpg',
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Chef%27s_table_at_Marcus.jpg/800px-Chef%27s_table_at_Marcus.jpg',
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Inside_Le_Procope.jpg/1024px-Inside_Le_Procope.jpg',
-                  'https://upload.wikimedia.org/wikipedia/commons/5/52/PerSe.jpg',
-                  'https://upload.wikimedia.org/wikipedia/commons/1/1e/Tom%27s_Restaurant%2C_NYC.jpg',
-                  'https://s-media-cache-ak0.pinimg.com/736x/05/0e/03/050e033f834f3e50bc251be37f828839.jpg',
-                  'https://s-media-cache-ak0.pinimg.com/736x/03/15/c4/0315c45e007e7d8e417ed8bc904df7c9.jpg',
-                  'https://s-media-cache-ak0.pinimg.com/736x/84/32/86/843286f54381695e73deeb4d264c9f67.jpg',
-                  'https://s-media-cache-ak0.pinimg.com/736x/77/72/a6/7772a69c4e416b3ccbb2f7852eab9ccd.jpg']
+restaurantPicIDs = [addPicture('https://upload.wikimedia.org/wikipedia/commons/a/a6/6x8_80dpi_-_Piment_rouge_-_view_of_cellar_fm_mezz_stairs_to_Peel.JPG', 'link'),
+                    addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Petrus_%28London%29_Kitchen.jpg/1024px-Petrus_%28London%29_Kitchen.jpg', 'link'),
+                    addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Chef%27s_table_at_Marcus.jpg/800px-Chef%27s_table_at_Marcus.jpg', 'link'),
+                    addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Inside_Le_Procope.jpg/1024px-Inside_Le_Procope.jpg', 'link'),
+                    addPicture('https://upload.wikimedia.org/wikipedia/commons/5/52/PerSe.jpg', 'link'),
+                    addPicture('https://upload.wikimedia.org/wikipedia/commons/1/1e/Tom%27s_Restaurant%2C_NYC.jpg', 'link'),
+                    addPicture('https://s-media-cache-ak0.pinimg.com/736x/05/0e/03/050e033f834f3e50bc251be37f828839.jpg', 'link'),
+                    addPicture('https://s-media-cache-ak0.pinimg.com/736x/03/15/c4/0315c45e007e7d8e417ed8bc904df7c9.jpg', 'link'),
+                    addPicture('https://s-media-cache-ak0.pinimg.com/736x/84/32/86/843286f54381695e73deeb4d264c9f67.jpg', 'link'),
+                    addPicture('https://s-media-cache-ak0.pinimg.com/736x/77/72/a6/7772a69c4e416b3ccbb2f7852eab9ccd.jpg', 'link')]
 
 ### add 50 restaurants to the database (names not unique)
 numUsers = len(getUsers())
-numRestaurantPics = len(restaurantPics)
+numRestaurantPics = len(restaurantPicIDs)
 for restaurant in range(0,50):
     poss = possivesAndAdverbs[int(round(random.uniform(0,len(possivesAndAdverbs)-1)))]
     adj = adjectives[int(round(random.uniform(0,len(adjectives)-1)))]
     thisCuisine = cuisines[int(round(random.uniform(0,len(cuisines)-1)))]
 
     user_id = int(round(random.uniform(0,numUsers)-1))
-    picture = restaurantPics[int(round(random.uniform(0,numRestaurantPics)-1))]
+    picture_id = restaurantPicIDs[int(round(random.uniform(0,numRestaurantPics)-1))]
 
     thisCuisineObj = getCuisine(name=thisCuisine)
 
@@ -402,7 +410,7 @@ for restaurant in range(0,50):
     addRestaurant(name=restaurantName, 
                   cuisine_id=thisCuisineObj.id, 
                   user_id=user_id,
-                  picture=picture)
+                  picture_id=picture_id)
 
 
 ### add base cuisine items to each restaurant's menu

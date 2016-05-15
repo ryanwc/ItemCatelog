@@ -35,7 +35,7 @@
 	<div class='stats'>
 
 		<div class='photo'>
-			<img id='photo' src="{{url_for('uploaded_file', filename=restaurant.picture)}}" alt='[picture of {{restaurant.name}}]' max-width=100%>
+			<img id='photo' src="{{picture.text}}" alt='[picture of {{restaurant.name}}]' max-width=100%>
 		</div>
 
 		<p>
@@ -66,5 +66,13 @@
 			Delete Restaurant</a>
 		</li>
 	</ul>
+  	<script>
+  	// if appropriate, changes src of #photo from link to served file
+    if ('{{picture.serve_type}}' === 'upload') {
+
+    	console.log("is upload");
+		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
+    }
+	</script>
 </body>
 </html>

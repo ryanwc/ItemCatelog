@@ -14,13 +14,32 @@ Base = declarative_base()
 
 # define tables for the database in Python classes
 
+class Picture(Base):
+	__tablename__ = 'picture'
+
+	id = Column(Integer, primary_key=True)
+	text = Column(String(300), nullable=False)
+	serve_type = Column(String(80), nullable=False)
+
+	CheckConstraint('serve_type in ("link", "upload")')
+
+	@property
+	def serialize(self):
+				return {
+						'id': self.id,
+						'text': self.text,
+						'serve_type': self.type,
+				}
+
 class User(Base):
 	__tablename__ = 'user'
 
 	id = Column(Integer, primary_key=True)
 	name = Column(String(30), nullable=False)
 	email = Column(String(30), unique=True, nullable=False)
-	picture = Column(LargeBinary, nullable=False)
+	picture_id = Column(Integer, ForeignKey('picture.id'))
+
+	picture = relationship(Picture)
 
 	@property
 	def serialize(self):
@@ -28,7 +47,7 @@ class User(Base):
                         'name': self.name,
                         'id': self.id,
                         'email': self.email,
-                        'picture': self.picture,
+                        'picture_id': self.picture,
                 }
 
 class Cuisine(Base):
@@ -64,10 +83,11 @@ class Restaurant(Base):
 	name = Column(String(250), nullable=False)
 	cuisine_id = Column(Integer, ForeignKey('cuisine.id'))
 	user_id = Column(Integer, ForeignKey('user.id'))
-	picture = Column(LargeBinary, nullable=False)
+	picture_id = Column(Integer, ForeignKey('picture.id'))
 
 	cuisine = relationship(Cuisine)
 	user = relationship(User)
+	picture = relationship(Picture)
 
 	@property
 	def serialize(self):
@@ -75,7 +95,7 @@ class Restaurant(Base):
                         'name': self.name,
                         'id': self.id,
                         'cuisine_id': self.cuisine_id,
-                        'picture': self.picture,
+                        'picture_id': self.picture_id,
                         'user_id': self.user_id,
                 }
 
@@ -86,12 +106,13 @@ class BaseMenuItem(Base):
 	id = Column(Integer, primary_key=True)
 	description = Column(String(250), nullable=False)
 	price = Column(Float, nullable=False)
-	picture = Column(LargeBinary, nullable=False)
+	picture_id = Column(Integer, ForeignKey('picture.id'))
 	cuisine_id = Column(Integer, ForeignKey('cuisine.id'))
 	menuSection_id = Column(Integer, ForeignKey('menu_section.id'))
 
 	cuisine = relationship(Cuisine)
 	menuSection = relationship(MenuSection)
+	picture = relationship(Picture)
 
 	CheckConstraint('price >= 0')
 
@@ -102,8 +123,8 @@ class BaseMenuItem(Base):
                         'description': self.description,
                         'id': self.id,
                         'price': self.price,
-                        'picture': self.picture,
-                        'course': self.course,
+                        'picture_id': self.picture,
+                        'menuSection_id': self.menuSection_id,
                         'cuisine_id':self.cuisine_id,
                 }
 
@@ -114,7 +135,7 @@ class RestaurantMenuItem(Base):
 	id = Column(Integer, primary_key=True)
 	description = Column(String(250), nullable=False)
 	price = Column(Float, nullable=False)
-	picture = Column(LargeBinary, nullable=False)
+	picture_id = Column(Integer, ForeignKey('picture.id'))
 	restaurant_id = Column(Integer, ForeignKey('restaurant.id'))
 	baseMenuItem_id = Column(Integer, ForeignKey('base_menu_item.id'))
 	menuSection_id = Column(Integer, ForeignKey('menu_section.id'))
@@ -122,6 +143,7 @@ class RestaurantMenuItem(Base):
 	restaurant = relationship(Restaurant)
 	baseMenuItem = relationship(BaseMenuItem)
 	menuSection = relationship(MenuSection)
+	picture = relationship(Picture)
 
 	CheckConstraint('price >= 0')
 
@@ -132,8 +154,8 @@ class RestaurantMenuItem(Base):
                         'description': self.description,
                         'id': self.id,
                         'price': self.price,
-                        'course': self.course,
-                        'picture': self.picture,
+                        'menuSection_id': self.menuSection_id,
+                        'picture_id': self.picture_id,
                         'restaurant_id':self.restaurant_id,
                         'baseMenuItem_id':self.baseMenuItem_id,
                 }

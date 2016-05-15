@@ -4,8 +4,6 @@ from flask import make_response
 from werkzeug import secure_filename
 import requests
 
-from wand.image import Image
-
 import os
 
 from sqlalchemy import create_engine
@@ -19,7 +17,7 @@ import httplib2
 
 import json
 
-from database_setup import Base, Restaurant, BaseMenuItem, Cuisine, RestaurantMenuItem, User
+from database_setup import Base, Restaurant, BaseMenuItem, Cuisine, RestaurantMenuItem, User, Picture
 
 import RestaurantManager
 
@@ -32,7 +30,8 @@ import random, string, decimal
 
 app = Flask(__name__)
 
-CLIENT_ID = json.loads(open('/vagrant/catalog/client_secrets.json', 
+# set google client secrets
+CLIENT_ID = json.loads(open('client_secrets.json', 
     'r').read())['web']['client_id']
 
 # This is the path to the upload directory
@@ -42,9 +41,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # These are the extentions we allow to be uploaded
 ALLOWED_PIC_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
-### for returning uloaded images to the browser
-@app.route('/pics/<filename>/')
-def uploaded_file(filename):
+### for returning user-uploaded images to the browser
+@app.route(app.config['UPLOAD_FOLDER']+'/<filename>/')
+def uploaded_picture(filename):
         return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 
 
 ### ajax enpoint for google sign in authentication
@@ -622,11 +621,20 @@ def addRestaurant():
 
             if picFile:
                 if allowed_file(picFile.filename):
+                    # this name will be overwritten.
+                    # can't provide proper name now because don't have restaurant_id
                     picFile.filename = secure_filename(picFile.filename)
-                    # because we need to store the id of the restaurant with the upload
-                    picture = 'temp'
+                    picture_id = RestaurantManager.addPicture(text=picFile.filename,
+                                                              serve_type='upload')
+                else:
+
+                    flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
+                        '.jpg.  Please edit the restaurant to add a picture.')
             elif request.form['pictureLink']:
-                picture = bleach.clean(request.form['pictureLink'])
+
+                pictureLink = bleach.clean(request.form['pictureLink'])
+                picture_id = RestaurantManager.addPicture(text=pictureLink, 
+                                                          serve_type='link')
             else:
                 picture = "[No picture provided]"
 
@@ -634,14 +642,16 @@ def addRestaurant():
                                 name=name,
                                 cuisine_id=cuisine_id,
                                 user_id=login_session['user_id'],
-                                picture=""
+                                picture_id=picture_id
                             )
 
+            # if pic was uploaded, save actual file for serving
+            # set the appropriate name in the database
             if picFile:
                 picfilename = 'restaurant' + str(restaurant_id)
                 picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], picfilename))
-                RestaurantManager.editRestaurant(restaurant_id=restaurant_id,
-                                                 newPicture=picfilename)
+                RestaurantManager.editPicture(picture_id=picture_id,
+                                              newText=picfilename)
 
             if request.form['cuisineID'] == 'custom':
                 flash("cuisine '" + cuisine.name + "' added to the " +\
@@ -668,16 +678,19 @@ def restaurant(restaurant_id):
                               getRestaurantMenuItems(restaurant_id=restaurant_id)
         cuisine = RestaurantManager.getCuisine(cuisine_id=restaurant.cuisine_id)
 
+        picture = RestaurantManager.getPicture(restaurant.picture_id)
+
         numMenuItems = len(restaurantMenuItems)
 
-        #pictureBinary = restaurant.picture
-        #picture = Image(blob=pictureBinary)
-        #picture.save(filename='restaurantPicture.png')
-        #pictureFile = open('restaurantPicture.png')
-        #print pictureFile
-        print restaurant.picture
+        userName = None
+        isAccessToken = 0
+        access_token = None
 
-        #pictureFile.save(os.path.join(app.config['UPLOAD_FOLDER'], pictureFile.filename))
+        # check if logged in
+        if 'credentials' in login_session:
+            if 'access_token' in login_session['credentials']:
+                userName = login_session['username']
+                isAccessToken = 1
 
         if numMenuItems > 0:
             mostExpensiveItem = restaurantMenuItems[0]
@@ -687,7 +700,6 @@ def restaurant(restaurant_id):
                     mostExpensiveItem.price = Decimal(mostExpensiveItem.price).quantize(Decimal('0.01'))
             mostExpensiveItem.price = Decimal(mostExpensiveItem.price).quantize(Decimal('0.01'))
         else:
-            ## got to be a better way to do this
             mostExpensiveItem = RestaurantManager.\
                                 getBaseMenuItem(baseMenuItem_id=-1)
             mostExpensiveItem.name = 'N/A'
@@ -697,7 +709,9 @@ def restaurant(restaurant_id):
                                restaurant=restaurant, 
                                numMenuItems=numMenuItems,
                                mostExpensiveItem=mostExpensiveItem,
-                               cuisine=cuisine)
+                               cuisine=cuisine,
+                               picture=picture,
+                               isAccessToken=isAccessToken)
 
 @app.route('/restaurants/<int:restaurant_id>/edit/',
            methods=['GET','POST'])
@@ -716,6 +730,7 @@ def editRestaurant(restaurant_id):
 
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         cuisines = RestaurantManager.getCuisines()
+        picture = RestaurantManager.getPicture(restaurant.picture_id)
         
         if request.method == 'POST':
 
@@ -730,11 +745,9 @@ def editRestaurant(restaurant_id):
             oldName = restaurant.name
             oldCuisine = RestaurantManager.\
                          getCuisine(cuisine_id=restaurant.cuisine_id)
-            oldPicture = restaurant.picture
             newName = None
             newCuisine = None
             newCuisineID = None
-            newPicture = None
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
@@ -744,15 +757,49 @@ def editRestaurant(restaurant_id):
                 newCuisine = RestaurantManager.\
                              getCuisine(cuisine_id=newCuisineID)
 
-            if request.form['pictureLink'] or request.form['pictureFile']:
-                if request.form['pictureLink']:
-                    newPicture = bleach.clean(request.form['pictureLink'])
+            if request.form['pictureLink'] or request.files['pictureFile']:
+                newText = None
+                newServe_Type = None
 
+                if request.files['pictureFile']: 
+                    print "user provided file"
+                    # user uploaded a file
+                    picFile = request.files['pictureFile']
+
+                    if allowed_file(picFile.filename):
+                        # overwrites pic for restaurant if already there
+                        newText = 'restaurant' + str(restaurant.id)
+                        picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], newText))
+                    else:
+
+                        flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
+                                '.jpg.  Did not change picture.')
+
+                    if picture.serve_type == 'link':
+
+                        newServe_Type = 'upload'
+                else:
+                    # user gave a link
+                    newText = bleach.clean(request.form['pictureLink'])
+
+                    if picture.serve_type == 'upload':
+                        # change serve type and delete old, uploaded pic
+                        newServe_Type = 'link'
+                        relPath = 'pics/'+picture.text
+                        os.remove(relPath)
+                
+                RestaurantManager.editPicture(restaurant.picture_id,
+                                              newText=newText,
+                                              newServe_Type=newServe_Type)
+
+                if (newText is not None or newServe_Type is not None):
+                    flash("updated " + restaurant.name + "'s picture!")
+
+            # we edited the pic directly, no need to include here
             RestaurantManager.editRestaurant(restaurant.id,
-                newName=newName, newCuisine_id=newCuisineID,
-                newPicture=newPicture)
+                newName=newName, newCuisine_id=newCuisineID)
 
-            restaruant = RestaurantManager.getRestaurant(restaurant_id)
+            restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
             if newName is not None:
                 flash("changed " + restaurant.name + "'s (ID " + \
@@ -763,9 +810,6 @@ def editRestaurant(restaurant_id):
                 flash("changed " + restaurant.name + "'s (ID " + \
                     str(restaurant.id) + ") cuisine from '"+ \
                     oldCuisine.name + "' to '" + newCuisine.name + "'")
-
-            if newPicture is not None:
-                flash("updated " + restaurant.name + "'s picture!")
             
             return redirect(url_for('restaurant',
                                     restaurant_id=restaurant_id))
@@ -774,7 +818,8 @@ def editRestaurant(restaurant_id):
             return render_template('EditRestaurant.html',
                                    restaurant=restaurant,
                                    cuisines=cuisines,
-                                   hiddenToken=login_session['state'])
+                                   hiddenToken=login_session['state'],
+                                   picture=picture)
 
 @app.route('/restaurants/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
@@ -859,6 +904,7 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
         cuisine = RestaurantManager.getCuisine(cuisine_id=baseMenuItem.cuisine_id)
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(baseMenuItem_id=baseMenuItem.id)
+        picture = RestaurantManager.getPicture(baseMenuItem.picture_id)
         timesOrdered = 0
 
         return render_template("BaseMenuItem.html",
@@ -866,7 +912,8 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
                                 restaurantMenuItems=restaurantMenuItems,
                                 cuisine=cuisine,
                                 timesOrdered=timesOrdered,
-                                hiddenToken=login_session['state'])
+                                hiddenToken=login_session['state'],
+                                picture=picture)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/edit/',
            methods=['POST','GET'])
@@ -882,6 +929,8 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
         baseMenuItem.price = Decimal(baseMenuItem.price).quantize(Decimal('0.01'))
+
+        picture = RestaurantManager.getPicture(baseMenuItem.picture_id)
 
         if request.method == 'POST':
 
@@ -930,7 +979,8 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
             return render_template("EditBaseMenuItem.html",
                                    baseMenuItem=baseMenuItem,
                                    cuisine=cuisine,
-                                   hiddenToken=login_session['state'])
+                                   hiddenToken=login_session['state'],
+                                   picture=picture)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/delete/',
            methods=['GET','POST'])
@@ -1081,6 +1131,8 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                  getCuisine(cuisine_id=baseMenuItem.cuisine_id)
         baseMenuItemCuisine = baseMenuItemCuisineObj.name
 
+        picture = RestaurantManager.getPicture(restaurantMenuItem.picture_id)
+
         timesOrdered = 0
 
         return render_template("RestaurantMenuItem.html",
@@ -1089,7 +1141,8 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                restaurantCuisine=restaurantCuisine,
                                baseMenuItem=baseMenuItem,
                                baseMenuItemCuisine=baseMenuItemCuisine,
-                               timesOrdered=timesOrdered)
+                               timesOrdered=timesOrdered,
+                               picture=picture)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/edit/',
            methods=['GET','POST'])
@@ -1112,6 +1165,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         restaurantMenuItem.price = Decimal(restaurantMenuItem.price).quantize(Decimal('0.01'))
         
+        picture = RestaurantManager.getPicture(restaurantMenuItem.picture_id)
+
         if request.method == 'POST':
 
             if request.form['hiddenToken'] != login_session['state']:
@@ -1173,7 +1228,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             return render_template('EditRestaurantMenuItem.html',
                                    restaurant=restaurant,
                                    restaurantMenuItem=restaurantMenuItem,
-                                   hiddenToken=login_session['state'])
+                                   hiddenToken=login_session['state'],
+                                   picture=picture)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
            methods=['GET','POST'])
