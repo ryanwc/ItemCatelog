@@ -30,7 +30,7 @@
 	<form class='form' action="{{url_for('editRestaurantMenuItem', 
 							restaurant_id=restaurant.id,
 							restaurantMenuItem_id=restaurantMenuItem.id)}}"
-		method='post'>
+		method='post' enctype=multipart/form-data>
 
 		<h3 class='header'>
 			Restaurant Menu Item Attributes to Edit
@@ -70,8 +70,8 @@
 		<p>Change Item Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input type='file' name='pictureFile' accept='image/*'>
 		<div id='photoOr'>or provide link:</div>
-		<input type='text' name='pictureLink' size='60'
-			placeholder='{{restaurantMenuItem.picture}}'>
+		<input id='pictureLinkText' type='text' name='pictureLink' size='60'
+			placeholder='{{picture.text}}'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
@@ -85,8 +85,8 @@
   	// if appropriate, changes src of #photo from link to served file
     if ('{{picture.serve_type}}' === 'upload') {
 
-    	console.log("is upload");
 		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
+		document.getElementById("pictureLinkText").setAttribute("placeholder", "Link to picture");
     }
 	</script>
 </body>

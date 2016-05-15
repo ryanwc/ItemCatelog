@@ -617,9 +617,9 @@ def addRestaurant():
 
             cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
-            picFile = request.files['pictureFile']
+            if request.files['pictureFile']:
+                picFile = request.files['pictureFile']
 
-            if picFile:
                 if allowed_file(picFile.filename):
                     # this name will be overwritten.
                     # can't provide proper name now because don't have restaurant_id
@@ -636,7 +636,9 @@ def addRestaurant():
                 picture_id = RestaurantManager.addPicture(text=pictureLink, 
                                                           serve_type='link')
             else:
-                picture = "[No picture provided]"
+                pictureLink = "[no pic provided]"
+                picture_id = RestaurantManager.addPicture(text=pictureLink, 
+                                                          serve_type='link')
 
             restaurant_id = RestaurantManager.addRestaurant(
                                 name=name,
@@ -1080,16 +1082,62 @@ def addRestaurantMenuItem(restaurant_id):
 
                 return redirect(url_for('login'))
 
+            name = None
+            description = None
+            price = None
+            picture_id = None
+
+            if request.form['name']:
+                name = bleach.clean(request.form['name'])
+
+            if request.form['description']:
+                description = bleach.clean(request.form['description'])
+
+            if request.form['price']:
+                price = bleach.clean(request.form['price'])
+
+            if request.files['pictureFile']:
+                picFile = request.files['pictureFile']
+
+                if allowed_file(picFile.filename):
+                    # this name will be overwritten.
+                    # can't provide proper name now because don't have restaurant_id
+                    picFile.filename = secure_filename(picFile.filename)
+                    picture_id = RestaurantManager.addPicture(text=picFile.filename,
+                                                              serve_type='upload')
+                else:
+
+                    flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
+                        '.jpg.  Please edit the restaurant to change the picture.')
+            elif request.form['pictureLink']:
+
+                pictureLink = bleach.clean(request.form['pictureLink'])
+                picture_id = RestaurantManager.addPicture(text=pictureLink, 
+                                                          serve_type='link')
+
+            # don't need to provide scenario for no pic provided
+            # defaults to base menu item pic
             RestaurantManager.addRestaurantMenuItem(
-                name=bleach.clean(request.form['name']),
+                name=name,
                 restaurant_id=restaurant_id,
-                description=bleach.clean(request.form['description']),
-                price=bleach.clean(request.form['price']),
-                baseMenuItem_id=request.form['baseMenuItemID']
+                description=description,
+                price=price,
+                baseMenuItem_id=request.form['baseMenuItemID'],
+                picture_id=picture_id
             )
 
-            flash("menu item '" + bleach.clean(request.form['name']) + \
-                "' added to the menu!")
+            # if pic was uploaded, save actual file for serving
+            # set the appropriate name in the database
+            if request.files['pictureFile']:
+                picfilename = 'restaurantMenuItem' + str(restaurant_id)
+                picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], picfilename))
+                RestaurantManager.editPicture(picture_id=picture_id,
+                                              newText=picfilename)
+
+            if name is not None:
+                flash("menu item '" + name + "' added to the menu!")
+            else:
+                flash("added an item to the menu!")
 
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
@@ -1180,13 +1228,11 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             oldName = restaurantMenuItem.name
             oldDescription = restaurantMenuItem.description
             oldPrice = restaurantMenuItem.price
-            oldPicture = restaurantMenuItem.picture
             newName = None
             newDescription = None
             newPrice = None
             newPicture = None
 
-            
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
                 
@@ -1196,13 +1242,47 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
 
-            if request.form['pictureLink'] or request.form['pictureFile']:
-                if request.form['pictureLink']:
-                    newPicture = bleach.clean(request.form['pictureLink'])
+            if request.form['pictureLink'] or request.files['pictureFile']:
+                newText = None
+                newServe_Type = None
 
+                if request.files['pictureFile']: 
+                    # user uploaded a file
+                    picFile = request.files['pictureFile']
+
+                    if allowed_file(picFile.filename):
+                        # overwrites pic for restaurant if already there
+                        newText = 'restaurantMenuItem' + str(restaurantMenuItem.id)
+                        picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], newText))
+                    else:
+
+                        flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
+                                '.jpg.  Did not change picture.')
+
+                    if picture.serve_type == 'link':
+
+                        newServe_Type = 'upload'
+                else:
+                    # user gave a link
+                    newText = bleach.clean(request.form['pictureLink'])
+
+                    if picture.serve_type == 'upload':
+                        # change serve type and delete old, uploaded pic
+                        newServe_Type = 'link'
+                        relPath = 'pics/'+picture.text
+                        os.remove(relPath)
+                
+                RestaurantManager.editPicture(restaurantMenuItem.picture_id,
+                                              newText=newText,
+                                              newServe_Type=newServe_Type)
+
+                if (newText is not None or newServe_Type is not None):
+                    flash("updated " + restaurantMenuItem.name + "'s picture!")
+
+            # we edited the pic directly, no need to include here
             RestaurantManager.editRestaurantMenuItem(restaurantMenuItem.id,
                 newName=newName, newDescription=newDescription, 
-                newPrice=newPrice, newPicture=newPicture)
+                newPrice=newPrice)
 
             if newName is not None:
                 flash("changed restaurant menu item " + str(restaurantMenuItem.id) + \

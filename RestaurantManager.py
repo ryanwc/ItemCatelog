@@ -599,12 +599,22 @@ def editBaseMenuItem(baseMenuItem_id, newName=None,
 def deleteRestaurantMenuItem(restaurantMenuItem_id=None):
     """Remove a restaurant menu item from the database.
 
+    Also deletes the restaurant menu item's picture, but only if 
+    that picture is different from its base menu item's picture.
+
     Args:
         restaurantMenuItem_id: the id of the restaurant menu item to remove
     """
     session = getRestaurantDBSession()
 
     if restaurantMenuItem_id is not None:
+
+        restaurantMenuItem = getRestaurantMenuItem(restaurantMenuItem_id)
+        baseMenuItem = getBaseMenuItem(restaurantMenuItem.baseMenuItem_id)
+
+        if restaurantMenuItem.picture_id != baseMenuItem.picture_id:
+            deletePicture(restaurantMenuItem.picture_id)
+
         session.query(RestaurantMenuItem).\
             filter_by(id=restaurantMenuItem_id).\
             delete(synchronize_session=False)
