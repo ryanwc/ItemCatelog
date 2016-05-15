@@ -35,7 +35,7 @@
 	<div class='stats'>
 
 		<div class='photo'>
-			<img id='photo' src='{{restaurant.picture}}' alt='[picture of {{restaurant.name}}]' max-width=100%>
+			<img id='photo' src="{{url_for('uploaded_file', filename=restaurant.picture)}}" alt='[picture of {{restaurant.name}}]' max-width=100%>
 		</div>
 
 		<p>

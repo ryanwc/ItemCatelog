@@ -1,7 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask import session as login_session
 from flask import make_response
+from werkzeug import secure_filename
 import requests
+
+from wand.image import Image
+
+import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -30,6 +35,18 @@ app = Flask(__name__)
 CLIENT_ID = json.loads(open('/vagrant/catalog/client_secrets.json', 
     'r').read())['web']['client_id']
 
+# This is the path to the upload directory
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(APP_ROOT, 'pics')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# These are the extentions we allow to be uploaded
+ALLOWED_PIC_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+
+### for returning uloaded images to the browser
+@app.route('/pics/<filename>/')
+def uploaded_file(filename):
+        return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 
+
 ### ajax enpoint for google sign in authentication
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -54,7 +71,6 @@ def gconnect():
             credentials = oauth_flow.step2_exchange(code)
         except:
 
-            print traceback.format_exc()
             response = make_response(json.dumps('Failed to upgrade the authorization code.'), 401)
             response.headers['Content-Type'] = 'application/json'
 
@@ -602,12 +618,30 @@ def addRestaurant():
 
             cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
+            picFile = request.files['pictureFile']
+
+            if picFile:
+                if allowed_file(picFile.filename):
+                    picFile.filename = secure_filename(picFile.filename)
+                    # because we need to store the id of the restaurant with the upload
+                    picture = 'temp'
+            elif request.form['pictureLink']:
+                picture = bleach.clean(request.form['pictureLink'])
+            else:
+                picture = "[No picture provided]"
+
             restaurant_id = RestaurantManager.addRestaurant(
                                 name=name,
                                 cuisine_id=cuisine_id,
                                 user_id=login_session['user_id'],
-                                picture=request.form['picture']
+                                picture=""
                             )
+
+            if picFile:
+                picfilename = 'restaurant' + str(restaurant_id)
+                picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], picfilename))
+                RestaurantManager.editRestaurant(restaurant_id=restaurant_id,
+                                                 newPicture=picfilename)
 
             if request.form['cuisineID'] == 'custom':
                 flash("cuisine '" + cuisine.name + "' added to the " +\
@@ -635,6 +669,15 @@ def restaurant(restaurant_id):
         cuisine = RestaurantManager.getCuisine(cuisine_id=restaurant.cuisine_id)
 
         numMenuItems = len(restaurantMenuItems)
+
+        #pictureBinary = restaurant.picture
+        #picture = Image(blob=pictureBinary)
+        #picture.save(filename='restaurantPicture.png')
+        #pictureFile = open('restaurantPicture.png')
+        #print pictureFile
+        print restaurant.picture
+
+        #pictureFile.save(os.path.join(app.config['UPLOAD_FOLDER'], pictureFile.filename))
 
         if numMenuItems > 0:
             mostExpensiveItem = restaurantMenuItems[0]
@@ -703,7 +746,7 @@ def editRestaurant(restaurant_id):
 
             if request.form['pictureLink'] or request.form['pictureFile']:
                 if request.form['pictureLink']:
-                    newPicture = request.form['pictureLink']
+                    newPicture = bleach.clean(request.form['pictureLink'])
 
             RestaurantManager.editRestaurant(restaurant.id,
                 newName=newName, newCuisine_id=newCuisineID,
@@ -1100,7 +1143,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
             if request.form['pictureLink'] or request.form['pictureFile']:
                 if request.form['pictureLink']:
-                    newPicture = request.form['pictureLink']
+                    newPicture = bleach.clean(request.form['pictureLink'])
 
             RestaurantManager.editRestaurantMenuItem(restaurantMenuItem.id,
                 newName=newName, newDescription=newDescription, 
@@ -1176,6 +1219,11 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                    restaurant=restaurant,
                                    restaurantMenuItem=restaurantMenuItem,
                                    hiddenToken=login_session['state'])
+
+# for checking picture filename input
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_PIC_EXTENSIONS
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
