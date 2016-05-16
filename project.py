@@ -148,7 +148,8 @@ def gconnect():
         # reset these to what the user has for our app
         picture = RestaurantManager.getPicture(user.picture_id)
         login_session['username'] = user.name
-        login_session['picture'] = picture
+        login_session['picture'] = picture.text
+        login_session['picture_serve_type'] = picture.serve_type
 
         print 'this is the login session: ', login_session
         # HTML output for successful authentication call
@@ -158,8 +159,10 @@ def gconnect():
         output += login_session['username']
         output += '!</h1>'
         output += '<img src="'
-        if login_session['picture'].serve_type == 'link':
-            output += login_session['picture'].text
+        if login_session['picture_serve_type'] == 'link':
+            output += login_session['picture']
+        elif login_session['picture_serve_type'] == 'upload':
+            output += "{{url_for('uploaded_picture', filename='"+login_session['picture']+"'}}"
         output += '" style = "width: 200px; height: 200px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
         output += '</div>'
 
@@ -230,7 +233,8 @@ def fbconnect():
         # reset these to what the user has for our app
         picture = RestaurantManager.getPicture(user.picture_id)
         login_session['username'] = user.name
-        login_session['picture'] = picture
+        login_session['picture'] = picture.text
+        login_session['picture_serve_type'] = picture.serve_type
 
         # this is for my app checking for login status
         credentials = {'access_token':token}
@@ -243,10 +247,10 @@ def fbconnect():
         output += login_session['username']
         output += '!</h1>'
         output += '<img src="'
-        if login_session['picture'].serve_type == 'link':
-            output += login_session['picture'].text
-        elif login_session['picture'].serve_type == 'upload':
-            output += "{{url_for('uploaded_picture', filename=picture.text)}}"
+        if login_session['picture_serve_type'] == 'link':
+            output += login_session['picture']
+        elif login_session['picture_serve_type'] == 'upload':
+            output += "{{url_for('uploaded_picture', filename='"+login_session['picture']+"'}}"
         output += ' " style = "width: 200px; height: 200px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
         output += '</div>'
 
