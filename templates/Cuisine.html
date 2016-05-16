@@ -48,16 +48,86 @@
 		<p>
 			Base menu items with this cuisine:
 		</p>
-		<ol>
-			{% for item in baseMenuItems %}
+		<ul>
 			<li>
-			<a class='forwardLink' href="{{url_for('baseMenuItem',
-							   cuisine_id=cuisine.id,
-							   baseMenuItem_id=item.id)}}">
-				{{item.name}}</a>
+				Appetizers:
+				<ol>
+					{% for item in sectionedBaseMenuItems['Appetizer'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id,
+							baseMenuItem_id=item.id)}}">
+						{{item.name}}</a>
+					</li>
+					{% endfor %}
+				</ol>
 			</li>
-			{% endfor %}
-		</ol>
+			<li>
+				Main Courses:
+				<ol>
+					{% for item in sectionedBaseMenuItems['Main Course'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id,
+							baseMenuItem_id=item.id)}}">
+						{{item.name}}</a>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+			<li>
+				Side Dishes:
+				<ol>
+					{% for item in sectionedBaseMenuItems['Side Dish'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id,
+							baseMenuItem_id=item.id)}}">
+						{{item.name}}</a>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+			<li>
+				Drinks:
+				<ol>
+					{% for item in sectionedBaseMenuItems['Drink'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id,
+							baseMenuItem_id=item.id)}}">
+						{{item.name}}</a>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+			<li>
+				Desserts:
+				<ol>
+					{% for item in sectionedBaseMenuItems['Dessert'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id,
+							baseMenuItem_id=item.id)}}">
+						{{item.name}}</a>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+			<li>
+				Other:
+				<ol>
+					{% for item in sectionedBaseMenuItems['Other'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id,
+							baseMenuItem_id=item.id)}}">
+						{{item.name}}</a>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+		</ul>
 		<ul>
 			<li><a class='actionLink' href="{{url_for('addBaseMenuItem', 
 							   	   cuisine_id=cuisine.id)}}">

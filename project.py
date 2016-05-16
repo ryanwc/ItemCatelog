@@ -482,6 +482,8 @@ def cuisine(cuisine_id):
                         getBaseMenuItems(cuisine_id=cuisine_id)
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(cuisine_id=cuisine_id)
+        sectionedBaseMenuItems = RestaurantManager.getBaseMenuItems(cuisine_id=cuisine_id,
+                                                                    byMenuSection=True)
 
         if len(baseMenuItems) > 0:
             # also put in normal dollar format
@@ -514,7 +516,8 @@ def cuisine(cuisine_id):
                                mostExpensiveRestaurantMenuItem=mostExpensiveRestaurantMenuItem,
                                restaurants=restaurants,
                                baseMenuItems=baseMenuItems,
-                               restaurantMenuItems=restaurantMenuItems)
+                               restaurantMenuItems=restaurantMenuItems,
+                               sectionedBaseMenuItems=sectionedBaseMenuItems)
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):

@@ -368,11 +368,15 @@ def getBaseMenuItem(baseMenuItem_id):
     session.close()
     return baseMenuItem
 
-def getBaseMenuItems(cuisine_id=None):
-    """If no arguments are given, return all base menu items ordered by id.
-    If an argument is given, returns the base menu items matching the argument.
-
-    NOTE: Exactly zero or one argument should be given.
+def getBaseMenuItems(cuisine_id=None, byMenuSection=False):
+    """If cuisie_id is none and byMenuSection is false, 
+        return all base menu items ordered by id.
+    If cuisine_id is none and byMenuSection is true, 
+        return a dictionary of 'menu section':[list of all items].
+    If cuisine_id is given and byMenuSection is False, 
+         return the base menu items for the given cuisine.
+    If cuisine_id is given and byMenuSection is True,
+        return a dictionary of 'menu section':[list of given cuisine's items].
 
     Args:
         cuisine_id: the id of the cuisine to match
@@ -380,11 +384,41 @@ def getBaseMenuItems(cuisine_id=None):
     session = getRestaurantDBSession()
 
     if cuisine_id is not None:
-        baseMenuItems = session.query(BaseMenuItem).\
-                        filter_by(cuisine_id=cuisine_id).all()
+
+        if not byMenuSection:
+
+            baseMenuItems = session.query(BaseMenuItem).\
+                            filter_by(cuisine_id=cuisine_id).all()
+        else:
+
+            menuSections = getMenuSections()
+            baseMenuItemList = session.query(BaseMenuItem).\
+                               filter_by(cuisine_id=cuisine_id).all()
+
+            baseMenuItems = {}
+
+            for menuSection in menuSections:
+                baseMenuItems[menuSection.name] = []
+            for baseMenuItem in baseMenuItemList:
+                menuSection = getMenuSection(menuSection_id=baseMenuItem.menuSection_id)
+                baseMenuItems[menuSection.name].append(baseMenuItem)
     else:
-        baseMenuItems = session.query(BaseMenuItem).\
-                        order_by(BaseMenuItem.id).all()
+        if not byMenuSection:
+
+            baseMenuItems = session.query(BaseMenuItem).\
+                            order_by(BaseMenuItem.id).all()
+        else:
+
+            baseMenuItems = {}
+
+            menuSections = getMenuSections()
+            baseMenuItemList = session.query(BaseMenuItem).all()
+
+            for menuSection in menuSections:
+                baseMenuItems[menuSection.name] = []
+            for baseMenuItem in baseMenuItemList:
+                menuSection = getMenuSection(menuSection_id=baseMenuItem.menuSection_id)
+                baseMenuItems[menuSection.name].append(baseMenuItem)
 
     session.close()
     return baseMenuItems
