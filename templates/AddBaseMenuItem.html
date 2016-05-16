@@ -26,7 +26,7 @@
 
 	<form class='form'action="{{url_for('addBaseMenuItem', 
 							cuisine_id=cuisine.id)}}"
-		method='post'>
+		method='post' enctype=multipart/form-data>
 
 		<h3 class='header'>
 			Info for New Base Menu Item
@@ -42,7 +42,7 @@
 		<input type='text' size='30' name='price'>
 
 		<p>Item Picture (uploaded pics must be .jpg, .jpeg, or .png):</p>
-		<input type='file' name='picture' accept='image/*'>
+		<input type='file' name='pictureFile' accept='image/*'>
 		<div id='photoOr'>or provide link:</div>
 		<input type='text' size='60' name='pictureLink' placeholder='Link to
 			restaurant picture'>

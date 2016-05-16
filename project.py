@@ -49,6 +49,7 @@ def uploaded_picture(filename):
 ### ajax enpoint for google sign in authentication
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+        print 'trying state'
         # confirm entity with correct 3rd party credentials is same entity 
         # that is trying to login from the current login page's session.
         if request.args.get('state') != login_session['state']:
@@ -58,6 +59,7 @@ def gconnect():
 
             return response
 
+        print 'state is correct'
         code = request.data
 
         try:
@@ -111,6 +113,7 @@ def gconnect():
             response.headers['Content-Type'] = 'application/json'
         
         # store the access token in the session for later use
+        print 'storing access token and credentials'
         login_session['g_credentials'] = credentials
         login_session['credentials'] = {'access_token':access_token}
         login_session['gplus_id'] = gplus_id
@@ -131,15 +134,20 @@ def gconnect():
         # create the user if the user doesn't exist
         user = RestaurantManager.getUser(email=login_session['email'])
         if user is None:
+            picture_id = RestaurantManager.addPicture(text=login_session['picture'],
+                                                      serve_type='link')
             RestaurantManager.addUser(name=login_session['username'],
                                       email=login_session['email'],
-                                      picture=login_session['picture'])
+                                      picture_id=picture_id)
             user = RestaurantManager.getUser(email=login_session['email'])
 
         login_session['user_id'] = user.id
+        # reset these to what the user has for our app
+        picture = RestaurantManager.getPicture(user.picture_id)
         login_session['username'] = user.name
-        login_session['picture'] = user.picture
+        login_session['picture'] = picture
 
+        print 'this is the login session: ', login_session
         # HTML output for successful authentication call
         output = ''
         output += '<div class="gSignIn">'
@@ -147,11 +155,14 @@ def gconnect():
         output += login_session['username']
         output += '!</h1>'
         output += '<img src="'
-        output += login_session['picture']
-        output += ' " style = "width: 200px; height: 200px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
+        if login_session['picture'].serve_type == 'link':
+            output += login_session['picture'].text
+        output += '" style = "width: 200px; height: 200px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
         output += '</div>'
 
         flash("you are now logged in as %s" % login_session['username'])
+
+        print 'this is the login session: ', login_session
 
         return output
 
@@ -203,15 +214,20 @@ def fbconnect():
         # create the user if the user doesn't exist
         user = RestaurantManager.getUser(email=login_session['email'])
         if user is None:
+            picture_id = RestaurantManager.addPicture(text=login_session['picture'],
+                                                      serve_type='link')
+            RestaurantManager.addPicture(text=login_session['picture'],
+                                         serve_type='link')
             RestaurantManager.addUser(name=login_session['username'],
                                       email=login_session['email'],
-                                      picture=login_session['picture'])
+                                      picture_id=picture_id)
             user = RestaurantManager.getUser(email=login_session['email'])
 
         login_session['user_id'] = user.id
         # reset these to what the user has for our app
+        picture = RestaurantManager.getPicture(user.picture_id)
         login_session['username'] = user.name
-        login_session['picture'] = user.picture
+        login_session['picture'] = picture
 
         # this is for my app checking for login status
         credentials = {'access_token':token}
@@ -224,7 +240,10 @@ def fbconnect():
         output += login_session['username']
         output += '!</h1>'
         output += '<img src="'
-        output += login_session['picture']
+        if login_session['picture'].serve_type == 'link':
+            output += login_session['picture'].text
+        elif login_session['picture'].serve_type == 'upload':
+            output += "{{url_for('uploaded_picture', filename=picture.text)}}"
         output += ' " style = "width: 200px; height: 200px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
         output += '</div>'
 
@@ -275,7 +294,8 @@ def disconnect():
         del login_session['username']
         del login_session['picture']
         del login_session['email']
-        
+
+        print 'deleted login session'
         logoutMessage += "Logged " + username + \
                          " out of Restaurant Manager"
 
@@ -389,13 +409,18 @@ def restaurantManagerIndex():
                                       for x in xrange(32))
         login_session['state'] = state
 
+        print 'this is the login session: ', login_session
+
         userName = None
         isAccessToken = 0
         access_token = None
 
         # check if logged in
+        print 'check login'
         if 'credentials' in login_session:
+            print 'credentials'
             if 'access_token' in login_session['credentials']:
+                print 'access token'
                 userName = login_session['username']
                 isAccessToken = 1
 
@@ -885,12 +910,50 @@ def addBaseMenuItem(cuisine_id):
 
                 return redirect(url_for('login'))
 
+            if (not request.form['name'] or
+                not request.form['description'] or
+                not request.form['price']):
+
+                flash('You must provide a name, description, and price.')
+                return redirect(url_for('cuisine', cuisine_id=cuisine.id))
+
             name = bleach.clean(request.form['name'])
             description = bleach.clean(request.form['description'])
             price = bleach.clean(request.form['price'])
 
+            if request.files['pictureFile']:
+                picFile = request.files['pictureFile']
+
+                if allowed_file(picFile.filename):
+                    # this name will be overwritten.
+                    # can't provide proper name now because don't have restaurant_id
+                    picFile.filename = secure_filename(picFile.filename)
+                    picture_id = RestaurantManager.addPicture(text=picFile.filename,
+                                                              serve_type='upload')
+                else:
+
+                    flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
+                        '.jpg.  Please edit the restaurant to change the picture.')
+            elif request.form['pictureLink']:
+
+                pictureLink = bleach.clean(request.form['pictureLink'])
+                picture_id = RestaurantManager.addPicture(text=pictureLink, 
+                                                          serve_type='link')
+            else:
+                
+                flash('You must provide a picture.')
+                return redirect(url_for('cuisine', cuisine_id=cuisine.id))
+
             RestaurantManager. addBaseMenuItem(name, cuisine_id,
-                description=description, price=price)
+                description=description, price=price, picture_id=picture_id)
+
+            # if pic was uploaded, save actual file for serving
+            # set the appropriate name in the database
+            if request.files['pictureFile']:
+                picfilename = 'baseMenuItem' + str(restaurant_id)
+                picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], picfilename))
+                RestaurantManager.editPicture(picture_id=picture_id,
+                                              newText=picfilename)
 
             flash("added '" + name + "'' to " + cuisine.name + "'s base menu")
 

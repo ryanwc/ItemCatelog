@@ -157,6 +157,7 @@ function signInCallback(authResult) {
 		$('#signIn').attr('style', 'display: none');
 		// send the on-time-use code to the server, if the server responds, write
 		// the output of the /gconnect method to the web page then refresh
+		console.log("trying")
 		$.ajax({
 			type: 'POST',
 			url:'/gconnect?state={{state}}',
