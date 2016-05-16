@@ -12,6 +12,7 @@
 	// detect if logged in, if so hide the appropriate stuff
     $(document).ready(function() {
     	// is is an access token for this session
+    	console.log({{isAccessToken}});
     	if ({{isAccessToken}}==1) { 
     		$('#signInButtons').html('Signed in as ' + '{{userName}}');
     	}
@@ -25,11 +26,13 @@
 <!--LOAD PRE-REQUISITES FOR FACEBOOK SIGN IN -->
 <script>
 	window.fbAsyncInit = function() {
+		console.log("trying to init FB");
     	FB.init({
       		appId      : '1106203452759411',
       		xfbml      : true,
       		version    : 'v2.6'
     	});
+    	console.log("finished trying");
   	};
   	// Load the SDK asynchronously
   	(function(d, s, id) {
@@ -157,7 +160,7 @@ function signInCallback(authResult) {
 		$('#signIn').attr('style', 'display: none');
 		// send the on-time-use code to the server, if the server responds, write
 		// the output of the /gconnect method to the web page then refresh
-		console.log("trying")
+		console.log("trying");
 		$.ajax({
 			type: 'POST',
 			url:'/gconnect?state={{state}}',

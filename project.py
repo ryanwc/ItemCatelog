@@ -46,6 +46,7 @@ ALLOWED_PIC_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 def uploaded_picture(filename):
         return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 
 
+
 ### ajax enpoint for google sign in authentication
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -107,7 +108,9 @@ def gconnect():
             
         # check to see if the user is already logged into the system
         stored_credentials = login_session.get('credentials')
+        print 'stored crendentials: ', login_session.get('credentials')
         stored_gplus_id = login_session.get('gplus_id')
+        print 'stored gplus id: ', login_session.get('gplus_id')
         if stored_credentials is not None and gplus_id == stored_gplus_id:
             response = make_response(json.dumps("Current user is already connected."), 200)
             response.headers['Content-Type'] = 'application/json'
