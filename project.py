@@ -1009,6 +1009,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 
         picture = RestaurantManager.getPicture(baseMenuItem.picture_id)
 
+
         if request.method == 'POST':
 
             if request.form['hiddenToken'] != login_session['state']:
@@ -1105,12 +1106,15 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
 @app.route('/restaurants/<int:restaurant_id>/menu/')
 def restaurantMenu(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
-        restaurantMenuItems = RestaurantManager.\
-            getRestaurantMenuItems(restaurant_id=restaurant_id)
 
-        # display nicely formatted
-        for item in restaurantMenuItems:
-            item.price = Decimal(item.price).quantize(Decimal('0.01'))
+        sectionedItems = RestaurantManager.\
+                         getRestaurantMenuItems(restaurant_id=restaurant_id,
+                                                byMenuSection=True)
+
+        for menuSection, items in sectionedItems.iteritems():
+            for item in items:
+                # display nicely formatted
+                item.price = Decimal(item.price).quantize(Decimal('0.01'))
 
         if ('credentials' in login_session and
             'access_token' in login_session['credentials'] and
@@ -1118,12 +1122,12 @@ def restaurantMenu(restaurant_id):
     
             return render_template('PrivateRestaurantMenu.html',
                                    restaurant=restaurant,
-                                   items=restaurantMenuItems)
+                                   sectionedItems=sectionedItems)
         else:
 
             return render_template('PublicRestaurantMenu.html',
                                    restaurant=restaurant,
-                                   items=restaurantMenuItems)
+                                   sectionedItems=sectionedItems)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/add/',
            methods=['GET','POST'])

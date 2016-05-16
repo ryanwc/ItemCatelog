@@ -19,18 +19,116 @@
 		{% endwith %}
 		</div>
 
-		<h3 class='header'>Menu</h3>
+		<h2 class='header'>Menu</h2>
 
-		{% for i in items %}
+		<!-- apps -->
+		{% if sectionedItems['Appetizer']|length > 0 %}
 
-		<div class='name'>{{i.name}}</div>
-		</br>
-		<div class='description'>{{i.description}}</div>
-		</br>
-		<div class='price'>{{i.price}}</div>
-		</br>
-		</br>
-		{% endfor %}
+			<h4 class='header'>Appetizers</h4>
+
+			{% for i in sectionedItems['Appetizer'] %}
+
+				<div class='name'>{{i.name}}</div>
+				</br>
+				<div class='description'>{{i.description}}</div>
+				</br>
+				<div class='price'>{{i.price}}</div>
+				</br>
+				</br>
+			{% endfor %}
+
+		{% endif %}
+
+		<!-- mains -->
+		{% if sectionedItems['Main Course']|length > 0 %}
+
+			<h4 class='header'>Main Courses</h4>
+
+			{% for i in sectionedItems['Main Course'] %}
+
+				<div class='name'>{{i.name}}</div>
+				</br>
+				<div class='description'>{{i.description}}</div>
+				</br>
+				<div class='price'>{{i.price}}</div>
+				</br>
+				</br>
+			{% endfor %}
+
+		{% endif %}
+
+		<!-- sides -->
+		{% if sectionedItems['Side Dish']|length > 0 %}
+
+			<h4 class='header'>Side Dishes</h4>
+
+			{% for i in sectionedItems['Side Dish'] %}
+
+				<div class='name'>{{i.name}}</div>
+				</br>
+				<div class='description'>{{i.description}}</div>
+				</br>
+				<div class='price'>{{i.price}}</div>
+				</br>
+				</br>
+			{% endfor %}
+
+		{% endif %}
+
+		<!-- desserts -->
+		{% if sectionedItems['Dessert']|length > 0 %}
+
+			<h4 class='header'>Desserts</h4>
+
+			{% for i in sectionedItems['Dessert'] %}
+
+				<div class='name'>{{i.name}}</div>
+				</br>
+				<div class='description'>{{i.description}}</div>
+				</br>
+				<div class='price'>{{i.price}}</div>
+				</br>
+				</br>
+			{% endfor %}
+
+		{% endif %}
+
+		<!-- drinks -->
+		{% if sectionedItems['Drink']|length > 0 %}
+
+			<h4 class='header'>Drinks</h4>
+
+			{% for i in sectionedItems['Drink'] %}
+
+				<div class='name'>{{i.name}}</div>
+				</br>
+				<div class='description'>{{i.description}}</div>
+				</br>
+				<div class='price'>{{i.price}}</div>
+				</br>
+				</br>
+			{% endfor %}
+
+		{% endif %}
+
+		<!-- other -->
+		{% if sectionedItems['Other']|length > 0 %}
+
+			<h4 class='header'>Other</h4>
+
+			{% for i in sectionedItems['Other'] %}
+
+				<div class='name'>{{i.name}}</div>
+				</br>
+				<div class='description'>{{i.description}}</div>
+				</br>
+				<div class='price'>{{i.price}}</div>
+				</br>
+				</br>
+			{% endfor %}
+
+		{% endif %}
+
 		<a class='backLink' href="{{url_for('restaurant', 
 						   restaurant_id=restaurant.id)}}">
 			Back to restaurant
