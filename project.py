@@ -980,6 +980,7 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(baseMenuItem_id=baseMenuItem.id)
         picture = RestaurantManager.getPicture(baseMenuItem.picture_id)
+        menuSection = RestaurantManager.getMenuSection(menuSection_id=baseMenuItem.menuSection_id)
         timesOrdered = 0
 
         return render_template("BaseMenuItem.html",
@@ -988,7 +989,8 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
                                 cuisine=cuisine,
                                 timesOrdered=timesOrdered,
                                 hiddenToken=login_session['state'],
-                                picture=picture)
+                                picture=picture,
+                                menuSection=menuSection)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/edit/',
            methods=['POST','GET'])
