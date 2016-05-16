@@ -47,26 +47,42 @@
 				ID: {{restaurantMenuItem.id}}
 			</li>
 			<li>
-				Restaurant: {{restaurant.name}} (ID {{restaurant.id}}, cuisine {{restaurantCuisine}})
-			</li>
-			<li>
 				Description: {{restaurantMenuItem.description}}
 			</li>
 			<li>
 				Price: {{restaurantMenuItem.price}}
 			</li>
 			<li>
+				Menu Section: {{restaurantMenuItemSection.name}}
+			</li>
+			<li>
 				Times ordered: {{timesOrdered}}
 			</li>
-			</br>
 			<li>
-				Base menu item: {{baseMenuItem.name}} (ID {{baseMenuItem.id}}, cuisine {{baseMenuItemCuisine}})
+				Restaurant: {{restaurant.name}} (ID {{restaurant.id}})
 			</li>
 			<li>
-				Base menu item description: {{baseMenuItem.description}}
+				Restaurant Cuisine: {{restaurantCuisine}}
+			</li>
+		</ul>
+		<p>
+			Stats for base menu item '<a class='forwardLink' href="{{url_for('baseMenuItem', cuisine_id=baseMenuItem.cuisine_id, baseMenuItem_id=baseMenuItem.id)}}">{{baseMenuItem.name}}</a>':
+		</p>
+		<ul>
+			<li>
+				ID: {{baseMenuItem.id}}
 			</li>
 			<li>
-				Base menu item price: {{baseMenuItem.price}}
+				Cuisine: {{baseMenuItemCuisine}}
+			</li>
+			<li>
+				Description: {{baseMenuItem.description}}
+			</li>
+			<li>
+				Base Menu Item Price: {{baseMenuItem.price}}
+			</li>
+			<li>
+				Base Menu Item Menu Section: {{baseMenuItemSection.name}}
 			</li>
 		</ul>
 	</div>

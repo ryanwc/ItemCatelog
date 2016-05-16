@@ -1250,6 +1250,8 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         restaurantCuisineObj = RestaurantManager.\
                                getCuisine(cuisine_id=restaurant.cuisine_id)
         restaurantCuisine = restaurantCuisineObj.name
+        restaurantMenuItemSection = RestaurantManager.\
+                                    getMenuSection(menuSection_id=restaurantMenuItem.menuSection_id)
 
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(restaurantMenuItem.baseMenuItem_id)
@@ -1257,6 +1259,9 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         baseMenuItemCuisineObj = RestaurantManager.\
                                  getCuisine(cuisine_id=baseMenuItem.cuisine_id)
         baseMenuItemCuisine = baseMenuItemCuisineObj.name
+
+        baseMenuItemSection = RestaurantManager.\
+                              getMenuSection(menuSection_id=baseMenuItem.menuSection_id)
 
         picture = RestaurantManager.getPicture(restaurantMenuItem.picture_id)
 
@@ -1269,7 +1274,9 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                baseMenuItem=baseMenuItem,
                                baseMenuItemCuisine=baseMenuItemCuisine,
                                timesOrdered=timesOrdered,
-                               picture=picture)
+                               picture=picture,
+                               restaurantMenuItemSection=restaurantMenuItemSection,
+                               baseMenuItemSection=baseMenuItemSection)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/edit/',
            methods=['GET','POST'])
