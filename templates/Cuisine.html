@@ -149,7 +149,7 @@
 				<ol>
 					{% for itemID in sectionedBaseItemsWithChildren['Side Dish'] %}
 					<li>
-						<a class='forwardLink' href="{{url_for('baseMenuItem', cuisine_id=cuisine.id, baseMenuItem_id=itemID)}}">
+						<a class='forwardLink' href="{{url_for('baseMenuItem', cuisine_id=cuisine.id, baseMenuItem_id=sectionedBaseItemsWithChildren['Side Dish'][itemID]['item'].id)}}">
 						{{sectionedBaseItemsWithChildren['Side Dish'][itemID]['item'].name}}</a>
 						<ol>
 							{% for childID in sectionedBaseItemsWithChildren['Side Dish'][itemID]['children'] %}
@@ -250,39 +250,11 @@
 	</ul>
 	</div>
 </div>
-<script>
-// hide/show according to whether logged in.  need to do it with JS because setting the display='none' property in the HTML with passed variable from Python does not work because it is overridden by a "display='in-line'" property given by ???
-if ({{booleanLoggedIn}}==1) { 
-
-	hide = document.getElementsByClassName("hideLoggedIn");
-}
-else {
-
-	hide = document.getElementsByClassName("hideLoggedOut");
-}
-
-for (i = 0; i < hide.length; i++) {
-	hide[i].style.display = "none";
-}
+<script src="{{url_for('static', filename='login.js')}}">
 </script>
-
-<script>
-function signOut() {
-
-	var xhttp = new XMLHttpRequest();
-
-	xhttp.onreadystatechange = function() {
-    	if (xhttp.readyState == 4 && xhttp.status == 200) {
-    		console.log(xhttp.readyState);
-    		console.log(xhttp.status);
-     		window.alert(xhttp.responseText);
-     		location.reload();
-    	}
-    }
-
-    xhttp.open("POST", "/disconnect", true);
-	xhttp.send();
-};
+<script src="{{url_for('static', filename='signOut.js')}}">
+</script>
+<script>displayBasedOnLogin({{intBooleanLoggedIn}});
 </script>
 </body>
 </html>

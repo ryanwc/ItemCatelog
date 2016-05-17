@@ -627,7 +627,7 @@ def editCuisine(cuisine_id, newName=None):
 def editBaseMenuItem(baseMenuItem_id, newName=None, 
                      newDescription=None, newPrice=None,
                      newCuisine_id=None, newMenuSection_id=None,
-                     newPictur_ide=None):
+                     newPicture_id=None):
     """Edit a base menu item
 
     Pass none for an attribute to leave it unchanged.

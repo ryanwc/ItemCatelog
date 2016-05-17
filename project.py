@@ -488,14 +488,13 @@ def cuisine(cuisine_id):
                                                   byMenuSection=True)
         
          # set login HTML
-        booleanLoggedIn = 0
+        intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
         if isLoggedIn():
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
-            loginStatusLinkText = "View/edit profile"
-            booleanLoggedIn = 1
+            intBooleanLoggedIn = 1
 
         # get the base items with their children 
         # in format that plays nice with jinja
@@ -506,6 +505,8 @@ def cuisine(cuisine_id):
             sectionedBaseItemsWithChildren[section] = {}
 
             for baseItem in baseItemList:
+
+                baseItemID = baseItem.id
 
                 childrenItems = RestaurantManager.\
                     getRestaurantMenuItems(baseMenuItem_id=baseItem.id)
@@ -530,7 +531,7 @@ def cuisine(cuisine_id):
                     children[item.id] = child
 
                 itemWithChildren = {'item':item, 'children':children}
-                sectionedBaseItemsWithChildren[section][item.id] = \
+                sectionedBaseItemsWithChildren[section][baseItem.id] = \
                     itemWithChildren
 
         if len(baseMenuItems) > 0:
@@ -572,7 +573,7 @@ def cuisine(cuisine_id):
             sectionedBaseItemsWithChildren=sectionedBaseItemsWithChildren,
             displayNoneIfLoggedIn=displayNoneIfLoggedIn,
             loginStatusMessage=loginStatusMessage,
-            booleanLoggedIn=booleanLoggedIn)
+            intBooleanLoggedIn=intBooleanLoggedIn)
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
@@ -1038,6 +1039,15 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
         menuSection = RestaurantManager.getMenuSection(menuSection_id=baseMenuItem.menuSection_id)
         timesOrdered = 0
 
+        # set login HTML
+        intBooleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
+        if isLoggedIn():
+            displayNoneIfLoggedIn = "none"
+            loginStatusMessage = "Logged in as " + login_session['username']
+            intBooleanLoggedIn = 1
+
         return render_template("BaseMenuItem.html",
                                 baseMenuItem=baseMenuItem,
                                 restaurantMenuItems=restaurantMenuItems,
@@ -1045,7 +1055,10 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
                                 timesOrdered=timesOrdered,
                                 hiddenToken=login_session['state'],
                                 picture=picture,
-                                menuSection=menuSection)
+                                menuSection=menuSection,
+                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                                loginStatusMessage=loginStatusMessage,
+                                intBooleanLoggedIn=intBooleanLoggedIn)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/edit/',
            methods=['POST','GET'])
@@ -1064,6 +1077,15 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 
         picture = RestaurantManager.getPicture(baseMenuItem.picture_id)
 
+        # set login HTML
+        intBooleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
+        if isLoggedIn():
+            displayNoneIfLoggedIn = "none"
+            loginStatusMessage = "Logged in as " + login_session['username']
+            loginStatusLinkText = "View/edit profile"
+            intBooleanLoggedIn = 1
 
         if request.method == 'POST':
 
@@ -1091,8 +1113,48 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
 
+            if request.form['pictureLink'] or request.files['pictureFile']:
+
+                newText = None
+                newServe_Type = None
+
+                if request.files['pictureFile']: 
+                    # user uploaded a file
+                    picFile = request.files['pictureFile']
+
+                    if allowed_file(picFile.filename):
+                        # overwrites pic for base menu item if already there
+                        newText = 'baseMenuItem' + str(baseMenuItem.id)
+                        picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], newText))
+                    else:
+
+                        flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
+                                '.jpg.  Did not change picture.')
+
+                    if picture.serve_type == 'link':
+
+                        newServe_Type = 'upload'
+                else:
+                    # user gave a link
+                    newText = bleach.clean(request.form['pictureLink'])
+
+                    if picture.serve_type == 'upload':
+                        # change serve type and delete old, uploaded pic
+                        newServe_Type = 'link'
+                        relPath = 'pics/'+picture.text
+                        os.remove(relPath)
+                
+                RestaurantManager.editPicture(baseMenuItem.picture_id,
+                                              newText=newText,
+                                              newServe_Type=newServe_Type)
+
+                if (newText is not None or newServe_Type is not None):
+                    flash("updated " + baseMenuItem.name + "'s picture!")
+
+            # we edited the pic directly, no need to include here
             RestaurantManager.editBaseMenuItem(baseMenuItem.id,
-                newName=newName, newDescription=newDescription, newPrice=newPrice)
+                newName=newName, newDescription=newDescription, 
+                newPrice=newPrice)
 
             if newName is not None:
                 flash("changed name from '"+oldName+"' to '"+newName+"'")
@@ -1113,7 +1175,10 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                                    baseMenuItem=baseMenuItem,
                                    cuisine=cuisine,
                                    hiddenToken=login_session['state'],
-                                   picture=picture)
+                                   picture=picture,
+                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                                   loginStatusMessage=loginStatusMessage,
+                                   intBooleanLoggedIn=intBooleanLoggedIn)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/delete/',
            methods=['GET','POST'])
@@ -1392,7 +1457,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                     picFile = request.files['pictureFile']
 
                     if allowed_file(picFile.filename):
-                        # overwrites pic for restaurant if already there
+                        # overwrites pic for restaurant menu item if already there
                         newText = 'restaurantMenuItem' + str(restaurantMenuItem.id)
                         picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], newText))
                     else:

@@ -47,5 +47,39 @@
 		<input type='submit' value='Delete Cuisine'>
 	
 	</form>
+<script>
+// hide/show according to whether logged in.  need to do it with JS because setting the display='none' property in the HTML with passed variable from Python does not work because it is overridden by a "display='in-line'" property given by ???
+if ({{intBooleanLoggedIn}}==1) { 
+
+	hide = document.getElementsByClassName("hideLoggedIn");
+}
+else {
+
+	hide = document.getElementsByClassName("hideLoggedOut");
+}
+
+for (i = 0; i < hide.length; i++) {
+	hide[i].style.display = "none";
+}
+</script>
+
+<script>
+function signOut() {
+
+	var xhttp = new XMLHttpRequest();
+
+	xhttp.onreadystatechange = function() {
+    	if (xhttp.readyState == 4 && xhttp.status == 200) {
+    		console.log(xhttp.readyState);
+    		console.log(xhttp.status);
+     		window.alert(xhttp.responseText);
+     		location.reload();
+    	}
+    }
+
+    xhttp.open("POST", "/disconnect", true);
+	xhttp.send();
+};
+</script>
 </body>
 </html>
