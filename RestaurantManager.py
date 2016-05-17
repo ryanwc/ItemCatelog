@@ -32,6 +32,26 @@ def populateMenuWithBaseItems(restaurant_id):
 
     session.close()
 
+def getUserThings(user_id):
+    """Currently, return structure with the form: 
+        {'<restaurant_id>':{'restaurant':'<restaurant Object>',
+            'items':{'<menuSection>':<list of restaurantMenuItem Objects>}}}
+
+    Args:
+        user_id: the id of the user whose things to get
+    """
+    userThings = {}
+
+    restaurants = getRestaurants(user_id=user_id)
+
+    for restaurant in restaurants:
+        userThings[restaurant.id]['restaurant'] = restaurant
+        sectionedItems = getRestaurantMenuItems(restaurant_id=restaurant.id,
+                                                byMenuSection=True)
+        userThings[restaurant.id]['items'] = sectionedItems
+
+    return userThings
+
 def addPicture(text, serve_type):
     """Add a picture to the database
 
@@ -268,19 +288,23 @@ def getMenuSections():
     session.close()
     return menuSections
 
-def getRestaurants(cuisine_id=None):
+def getRestaurants(cuisine_id=None, user_id=None):
     """If no arguments are given, return a list of all restaurants 
-    ordered by ID.  Otherwise, return a list of all restaurants that match
-    the given argument.
+    ordered by ID.  Otherwise, return a list of all restaurants that 
+    match the given argument.
 
     Args:
         cuisine_id: the id of the cuisine to match
+        user_id: the id of the user to match
     """
     session = getRestaurantDBSession()
     
     if cuisine_id is not None:
         restaurants = session.query(Restaurant).\
                       filter_by(cuisine_id=cuisine_id).all()
+    elif user_id is not None:
+        restaurants = session.query(Restaurant).\
+                      filter_by(user_id=user_id).all()
     else:
         restaurants = session.query(Restaurant).\
                       order_by(Restaurant.id).all()
@@ -322,56 +346,39 @@ def getRestaurantMenuItems(restaurant_id=None, baseMenuItem_id=None,
     """
     session = getRestaurantDBSession()
 
-    if not byMenuSection:
-        if restaurant_id is not None:
-            restaurantMenuItems = session.query(RestaurantMenuItem).\
-                              filter_by(restaurant_id=restaurant_id).all()
-        elif baseMenuItem_id is not None:
-            restaurantMenuItems = session.query(RestaurantMenuItem).\
-                                  filter_by(baseMenuItem_id=baseMenuItem_id).\
-                                  all()
-        elif cuisine_id is not None:
-            restaurantMenuItems = session.query(RestaurantMenuItem).\
-                                  join(BaseMenuItem).\
-                                  filter(BaseMenuItem.cuisine_id==cuisine_id).\
-                                  all()
-        else:
-            restaurantMenuItems = session.query(RestaurantMenuItem).\
-                                  order_by(RestaurantMenuItem.restaurant_id).\
-                                  all()
+    # get the relevant items
+    if restaurant_id is not None:
+        restaurantMenuItemList = session.query(RestaurantMenuItem).\
+                                 filter_by(restaurant_id=restaurant_id).all()
+    elif baseMenuItem_id is not None:
+        restaurantMenuItemList = session.query(RestaurantMenuItem).\
+                                 filter_by(baseMenuItem_id=baseMenuItem_id).\
+                                 all()
+    elif cuisine_id is not None:
+        restaurantMenuItemList = session.query(RestaurantMenuItem).\
+                                 join(BaseMenuItem).\
+                                 filter(BaseMenuItem.cuisine_id==cuisine_id).\
+                                 all()
     else:
+        restaurantMenuItemList = session.query(RestaurantMenuItem).\
+                                 order_by(RestaurantMenuItem.restaurant_id).\
+                                 all()
+
+    # section items if required
+    if byMenuSection:
 
         menuSections = getMenuSections()
 
         restaurantMenuItems = {}
-
-        # get the relevant list
-        for menuSection in menuSections:
-            restaurantMenuItems[menuSection.name] = []
-
-        if restaurant_id is not None:
-            restaurantMenuItemList = session.query(RestaurantMenuItem).\
-                                     filter_by(restaurant_id=restaurant_id).all()
-        elif baseMenuItem_id is not None:
-            restaurantMenuItemList = session.query(RestaurantMenuItem).\
-                                     filter_by(baseMenuItem_id=baseMenuItem_id).\
-                                     all()
-        elif cuisine_id is not None:
-            restaurantMenuItemList = session.query(RestaurantMenuItem).\
-                                     join(BaseMenuItem).\
-                                     filter(BaseMenuItem.cuisine_id==cuisine_id).\
-                                     all()
-        else:
-            restaurantMenuItemList = session.query(RestaurantMenuItem).\
-                                     order_by(RestaurantMenuItem.restaurant_id).\
-                                     all()
         
-        # section the list
         for restaurantMenuItem in restaurantMenuItemList:
             menuSection = getMenuSection(menuSection_id=restaurantMenuItem.menuSection_id)
             restaurantMenuItems[menuSection.name].append(restaurantMenuItem)
+    else:
+        restaurantMenuItems = restaurantMenuItemList
 
     session.close()
+
     return restaurantMenuItems
 
 def getRestaurantMenuItem(restaurantMenuItem_id):

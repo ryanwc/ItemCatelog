@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect
+from flask import url_for, flash, jsonify, send_from_directory
 from flask import session as login_session
 from flask import make_response
 from werkzeug import secure_filename
@@ -17,7 +18,8 @@ import httplib2
 
 import json
 
-from database_setup import Base, Restaurant, BaseMenuItem, Cuisine, RestaurantMenuItem, User, Picture
+from database_setup import Base, Restaurant, BaseMenuItem, Cuisine
+from database_setup import RestaurantMenuItem, User, Picture
 
 import RestaurantManager
 
@@ -54,6 +56,7 @@ def gconnect():
         # confirm entity with correct 3rd party credentials is same entity 
         # that is trying to login from the current login page's session.
         if request.args.get('state') != login_session['state']:
+            print 'state'
             response = make_response(json.dumps('Invalid state parameter'), 
                 401)
             response.headers['Content-Type'] = 'application/json'
@@ -68,11 +71,11 @@ def gconnect():
             # i.e., give google the data (one time code) the entity to be 
             # authenticated supposedly got from google and have google 
             # return credentials if the data is correct
-            oauth_flow = flow_from_clientsecrets('/vagrant/catalog/client_secrets.json', scope='')
+            oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
             oauth_flow.redirect_uri = 'postmessage'
             credentials = oauth_flow.step2_exchange(code)
         except:
-
+            traceback.print_exc()
             response = make_response(json.dumps('Failed to upgrade the authorization code.'), 401)
             response.headers['Content-Type'] = 'application/json'
 
@@ -93,6 +96,7 @@ def gconnect():
         # verify that the access token is used for the intended user
         gplus_id = credentials.id_token['sub']
         if result['user_id'] != gplus_id:
+            print 'gplus'
             response = make_response(json.dumps("Token's user ID doesn't match given user"), 401)
             response.headers['Content-Type'] = 'application/json'
 
@@ -100,6 +104,7 @@ def gconnect():
         
         # verify that the access token is valid for this app
         if result['issued_to'] != CLIENT_ID:
+            print 'client id'
             response = make_response(json.dumps("Token's client ID doesn't match app's ID"), 401)
             print "Token's client ID doesn't match match app's ID."
             response.headers['Content-Type'] = 'application/json'
@@ -151,7 +156,6 @@ def gconnect():
         login_session['picture'] = picture.text
         login_session['picture_serve_type'] = picture.serve_type
 
-        print 'this is the login session: ', login_session
         # HTML output for successful authentication call
         output = ''
         output += '<div class="gSignIn">'
@@ -167,8 +171,6 @@ def gconnect():
         output += '</div>'
 
         flash("you are now logged in as %s" % login_session['username'])
-
-        print 'this is the login session: ', login_session
 
         return output
 
@@ -412,11 +414,9 @@ def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
 @app.route('/index/')
 @app.route('/login/')
 def restaurantManagerIndex():
-        state = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) 
-                                      for x in xrange(32))
+        state = ''.join(random.choice(string.ascii_uppercase + \
+            string.ascii_lowercase + string.digits) for x in xrange(32))
         login_session['state'] = state
-
-        print 'this is the login session: ', login_session
 
         userName = None
         isAccessToken = 0
@@ -477,13 +477,50 @@ def addCuisine():
 @app.route('/cuisines/<int:cuisine_id>/')
 def cuisine(cuisine_id):
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
-        restaurants = RestaurantManager.getRestaurants(cuisine_id=cuisine_id)
+        restaurants = RestaurantManager.\
+                      getRestaurants(cuisine_id=cuisine_id)
         baseMenuItems = RestaurantManager.\
                         getBaseMenuItems(cuisine_id=cuisine_id)
         restaurantMenuItems = RestaurantManager.\
-                              getRestaurantMenuItems(cuisine_id=cuisine_id)
-        sectionedBaseMenuItems = RestaurantManager.getBaseMenuItems(cuisine_id=cuisine_id,
-                                                                    byMenuSection=True)
+                        getRestaurantMenuItems(cuisine_id=cuisine_id)
+        sectionedBaseMenuItems = RestaurantManager.\
+                                 getBaseMenuItems(cuisine_id=cuisine_id,
+                                                  byMenuSection=True)
+
+        # get the base items with their children 
+        # in format that plays nice with jinja
+        # and labels things user or non-user
+        sectionedBaseItemsWithChildren = {}
+        for section, baseItemList in sectionedBaseMenuItems.iteritems():
+
+            sectionedBaseItemsWithChildren[section] = {}
+
+            for baseItem in baseItemList:
+
+                childrenItems = RestaurantManager.\
+                    getRestaurantMenuItems(baseMenuItem_id=baseItem.id)
+                children = {}
+
+                for item in childrenItems:
+
+                    itemRestaurant = RestaurantManager.\
+                                     getRestaurant(item.restaurant_id)
+                    itemUserID = itemRestaurant.user_id
+                    child = {}
+                    child['item'] = item
+
+                    if (isLoggedIn() and
+                        itemUserID == login_session['user_id']):
+                        child['ownership'] = 'user'
+
+                    else:
+                        child['ownership'] = 'non-user'
+
+                    children[item.id] = child
+
+                itemWithChildren = {'item':item, 'children':children}
+                sectionedBaseItemsWithChildren[section][item.id] = \
+                    itemWithChildren
 
         if len(baseMenuItems) > 0:
             # also put in normal dollar format
@@ -491,10 +528,13 @@ def cuisine(cuisine_id):
             for item in baseMenuItems:
                 if item.price > mostExpensiveBaseMenuItem.price:
                     mostExpensiveBaseMenuItem = item
-            mostExpensiveBaseMenuItem.price = Decimal(mostExpensiveBaseMenuItem.price).quantize(Decimal('0.01'))
+            mostExpensiveBaseMenuItem.price = \
+                Decimal(mostExpensiveBaseMenuItem.price).\
+                quantize(Decimal('0.01'))
         else:
             ## got to be a better way to do this
-            mostExpensiveBaseMenuItem = RestaurantManager.getBaseMenuItem(-1)
+            mostExpensiveBaseMenuItem = RestaurantManager.\
+                                        getBaseMenuItem(-1)
             mostExpensiveBaseMenuItem.name = "N/A"
             mostExpensiveBaseMenuItem.price = "N/A"
 
@@ -503,21 +543,22 @@ def cuisine(cuisine_id):
             for item in restaurantMenuItems:
                 if item.price > mostExpensiveRestaurantMenuItem.price:
                     mostExpensiveRestaurantMenuItem = item
-            mostExpensiveRestaurantMenuItem.price = Decimal(mostExpensiveRestaurantMenuItem.price).quantize(Decimal('0.01'))
+            mostExpensiveRestaurantMenuItem.price = \
+                Decimal(mostExpensiveRestaurantMenuItem.price).\
+                quantize(Decimal('0.01'))
         else:
             ## got to be a better way to do this
-            mostExpensiveRestaurantMenuItem = RestaurantManager.getBaseMenuItem(-1)
+            mostExpensiveRestaurantMenuItem = RestaurantManager.\
+                                              getBaseMenuItem(-1)
             mostExpensiveRestaurantMenuItem.name = "N/A"
             mostExpensiveRestaurantMenuItem.price = "N/A"
 
         return render_template("Cuisine.html",
-                               cuisine=cuisine,
-                               mostExpensiveBaseMenuItem=mostExpensiveBaseMenuItem,
-                               mostExpensiveRestaurantMenuItem=mostExpensiveRestaurantMenuItem,
-                               restaurants=restaurants,
-                               baseMenuItems=baseMenuItems,
-                               restaurantMenuItems=restaurantMenuItems,
-                               sectionedBaseMenuItems=sectionedBaseMenuItems)
+            cuisine=cuisine,
+            mostExpensiveBaseMenuItem=mostExpensiveBaseMenuItem,
+            mostExpensiveRestaurantMenuItem=mostExpensiveRestaurantMenuItem,
+            restaurants=restaurants,
+            sectionedBaseItemsWithChildren=sectionedBaseItemsWithChildren)
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
@@ -1444,8 +1485,13 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
 # for checking picture filename input
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_PIC_EXTENSIONS
+        return '.' in filename and \
+            filename.rsplit('.', 1)[1] in ALLOWED_PIC_EXTENSIONS
+
+def isLoggedIn():
+        return ('credentials' in login_session and
+                'access_token' in login_session['credentials'] and
+                'user_id' in login_session)
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'

@@ -1,4 +1,4 @@
-body            {font-family: serif; background-color: #009999}
+body            {font-family: serif; background-color: #008080}
 
 li				{margin: 0 0 3px 0;}
 
@@ -20,6 +20,9 @@ li				{margin: 0 0 3px 0;}
 .form    		{border: 2px solid; border-radius: 5px; padding: 5px; 
 				 margin: 5px; border-color: #262626;
 				 background-color: #ffffff; color: #000000;}
+
+.user			{background-color: #000000;}
+.non-user		{}
 
 .backLink 		{color: #ff3c00;}
 .actionLink     {color: #ffcc99;}

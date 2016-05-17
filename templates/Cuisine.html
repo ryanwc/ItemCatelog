@@ -46,98 +46,6 @@
 
 		<div class='list'>
 		<p>
-			Base menu items with this cuisine:
-		</p>
-		<ul>
-			<li>
-				Appetizers:
-				<ol>
-					{% for item in sectionedBaseMenuItems['Appetizer'] %}
-					<li>
-						<a class='forwardLink' href="{{url_for('baseMenuItem',
-							cuisine_id=cuisine.id,
-							baseMenuItem_id=item.id)}}">
-						{{item.name}}</a>
-					</li>
-					{% endfor %}
-				</ol>
-			</li>
-			<li>
-				Main Courses:
-				<ol>
-					{% for item in sectionedBaseMenuItems['Main Course'] %}
-					<li>
-						<a class='forwardLink' href="{{url_for('baseMenuItem',
-							cuisine_id=cuisine.id,
-							baseMenuItem_id=item.id)}}">
-						{{item.name}}</a>
-					</li>
-					{% endfor %}
-				</ol>
-			</li>
-			<li>
-				Side Dishes:
-				<ol>
-					{% for item in sectionedBaseMenuItems['Side Dish'] %}
-					<li>
-						<a class='forwardLink' href="{{url_for('baseMenuItem',
-							cuisine_id=cuisine.id,
-							baseMenuItem_id=item.id)}}">
-						{{item.name}}</a>
-					</li>
-					{% endfor %}
-				</ol>
-			</li>
-			<li>
-				Drinks:
-				<ol>
-					{% for item in sectionedBaseMenuItems['Drink'] %}
-					<li>
-						<a class='forwardLink' href="{{url_for('baseMenuItem',
-							cuisine_id=cuisine.id,
-							baseMenuItem_id=item.id)}}">
-						{{item.name}}</a>
-					</li>
-					{% endfor %}
-				</ol>
-			</li>
-			<li>
-				Desserts:
-				<ol>
-					{% for item in sectionedBaseMenuItems['Dessert'] %}
-					<li>
-						<a class='forwardLink' href="{{url_for('baseMenuItem',
-							cuisine_id=cuisine.id,
-							baseMenuItem_id=item.id)}}">
-						{{item.name}}</a>
-					</li>
-					{% endfor %}
-				</ol>
-			</li>
-			<li>
-				Other:
-				<ol>
-					{% for item in sectionedBaseMenuItems['Other'] %}
-					<li>
-						<a class='forwardLink' href="{{url_for('baseMenuItem',
-							cuisine_id=cuisine.id,
-							baseMenuItem_id=item.id)}}">
-						{{item.name}}</a>
-					</li>
-					{% endfor %}
-				</ol>
-			</li>
-		</ul>
-		<ul>
-			<li><a class='actionLink' href="{{url_for('addBaseMenuItem', 
-							   	   cuisine_id=cuisine.id)}}">
-				Add base menu item</a>
-			</li>
-		</ul>
-		</div>
-
-		<div class='list'>
-		<p>
 			Restaurants with this as primary cuisine:
 		</p>
 		<ol>
@@ -153,18 +61,140 @@
 
 		<div class='list'>
 		<p>
-			Restaurant menu items with this cuisine:
+			Base menu items with this cuisine (and the restaurant menu items that are based on them):
 		</p>
-		<ol>
-			{% for item in restaurantMenuItems %}
+		<ul>
+			<!-- apps -->
 			<li>
-			<a class='forwardLink' href="{{url_for('restaurantMenuItem',
-							   restaurant_id=item.restaurant_id,
-							   restaurantMenuItem_id=item.id)}}">
-				{{item.name}} (at restaurant {{item.restaurant_id}})</a>
+				Appetizers:
+				<ol>
+					{% for itemID in sectionedBaseItemsWithChildren['Appetizer'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id, baseMenuItem_id=itemID)}}">
+						{{sectionedBaseItemsWithChildren['Appetizer'][itemID]['item'].name}}</a>
+						<ol>
+							{% for childID in sectionedBaseItemsWithChildren['Appetizer'][itemID]['children'] %}
+							<li>
+								<span class="{{sectionedBaseItemsWithChildren['Appetizer'][itemID]['children'][childID]['ownership']}}"><a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=sectionedBaseItemsWithChildren['Appetizer'][itemID]['children'][childID]['item'].restaurant_id, restaurantMenuItem_id=childID)}}">
+								{{sectionedBaseItemsWithChildren['Appetizer'][itemID]['children'][childID]['item'].name}} (at restaurant {{sectionedBaseItemsWithChildren['Appetizer'][itemID]['children'][childID]['item'].restaurant_id}})</a></span>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					{% endfor %}
+				</ol>
 			</li>
-			{% endfor %}
-		</ol>
+			<!-- mains -->
+			<li>
+				Main Courses:
+				<ol>
+					{% for itemID in sectionedBaseItemsWithChildren['Main Course'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem', cuisine_id=cuisine.id, baseMenuItem_id=itemID)}}">
+						{{sectionedBaseItemsWithChildren['Main Course'][itemID]['item'].name}}</a>
+						<ol>
+							{% for childID in sectionedBaseItemsWithChildren['Main Course'][itemID]['children'] %}
+							<li>
+								<span class="{{sectionedBaseItemsWithChildren['Main Course'][itemID]['children'][childID]['ownership']}}"><a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=sectionedBaseItemsWithChildren['Main Course'][itemID]['children'][childID]['item'].restaurant_id, restaurantMenuItem_id=childID)}}">
+								{{sectionedBaseItemsWithChildren['Main Course'][itemID]['children'][childID]['item'].name}} (at restaurant {{sectionedBaseItemsWithChildren['Main Course'][itemID]['children'][childID]['item'].restaurant_id}})</a></span>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+			<!-- sides -->
+			<li>
+				Side Dishes:
+				<ol>
+					{% for itemID in sectionedBaseItemsWithChildren['Side Dish'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem', cuisine_id=cuisine.id, baseMenuItem_id=itemID)}}">
+						{{sectionedBaseItemsWithChildren['Side Dish'][itemID]['item'].name}}</a>
+						<ol>
+							{% for childID in sectionedBaseItemsWithChildren['Side Dish'][itemID]['children'] %}
+							<li>
+								<span class="{{sectionedBaseItemsWithChildren['Side Dish'][itemID]['children'][childID]['ownership']}}"><a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=sectionedBaseItemsWithChildren['Side Dish'][itemID]['children'][childID]['item'].restaurant_id, restaurantMenuItem_id=childID)}}">
+								{{sectionedBaseItemsWithChildren['Side Dish'][itemID]['children'][childID]['item'].name}} (at restaurant {{sectionedBaseItemsWithChildren['Side Dish'][itemID]['children'][childID]['item'].restaurant_id}})</a></span>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+			<!-- drinks -->
+			<li>
+				Drinks:
+				<ol>
+					{% for itemID in sectionedBaseItemsWithChildren['Drink'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id, baseMenuItem_id=itemID)}}">
+						{{sectionedBaseItemsWithChildren['Drink'][itemID]['item'].name}}</a>
+						<ol>
+							{% for childID in sectionedBaseItemsWithChildren['Drink'][itemID]['children'] %}
+							<li>
+								<span class="{{sectionedBaseItemsWithChildren['Drink'][itemID]['children'][childID]['ownership']}}"><a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=sectionedBaseItemsWithChildren['Drink'][itemID]['children'][childID]['item'].restaurant_id, restaurantMenuItem_id=childID)}}">
+								{{sectionedBaseItemsWithChildren['Drink'][itemID]['children'][childID]['item'].name}} (at restaurant {{sectionedBaseItemsWithChildren['Drink'][itemID]['children'][childID]['item'].restaurant_id}})</a></span>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+			<!-- desserts -->
+			<li>
+				Desserts:
+				<ol>
+					{% for itemID in sectionedBaseItemsWithChildren['Dessert'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id, baseMenuItem_id=itemID)}}">
+						{{sectionedBaseItemsWithChildren['Dessert'][itemID]['item'].name}}</a>
+						<ol>
+							{% for childID in sectionedBaseItemsWithChildren['Dessert'][itemID]['children'] %}
+							<li>
+								<span class="{{sectionedBaseItemsWithChildren['Dessert'][itemID]['children'][childID]['ownership']}}"><a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=sectionedBaseItemsWithChildren['Dessert'][itemID]['children'][childID]['item'].restaurant_id, restaurantMenuItem_id=childID)}}">
+								{{sectionedBaseItemsWithChildren['Dessert'][itemID]['children'][childID]['item'].name}} (at restaurant {{sectionedBaseItemsWithChildren['Dessert'][itemID]['children'][childID]['item'].restaurant_id}})</a></span>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+			<!-- other -->
+			<li>
+				Other:
+				<ol>
+					{% for itemID in sectionedBaseItemsWithChildren['Other'] %}
+					<li>
+						<a class='forwardLink' href="{{url_for('baseMenuItem',
+							cuisine_id=cuisine.id, baseMenuItem_id=itemID)}}">
+						{{sectionedBaseItemsWithChildren['Other'][itemID]['item'].name}}</a>
+						<ol>
+							{% for childID in sectionedBaseItemsWithChildren['Other'][itemID]['children'] %}
+							<li>
+								<span class="{{sectionedBaseItemsWithChildren['Other'][itemID]['children'][childID]['ownership']}}"><a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=sectionedBaseItemsWithChildren['Other'][itemID]['children'][childID]['item'].restaurant_id, restaurantMenuItem_id=childID)}}">
+								{{sectionedBaseItemsWithChildren['Other'][itemID]['children'][childID]['item'].name}} (at restaurant {{sectionedBaseItemsWithChildren['Other'][itemID]['children'][childID]['item'].restaurant_id}})</a></span>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					{% endfor %}
+				</ol>
+			</li>
+		</ul>
+		<ul>
+			<li><a class='actionLink' href="{{url_for('addBaseMenuItem', 
+							   	   cuisine_id=cuisine.id)}}">
+				Add base menu item</a>
+			</li>
+		</ul>
 		</div>
 	</div>
 
