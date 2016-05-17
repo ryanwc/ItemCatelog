@@ -20,8 +20,11 @@ li				{margin: 0 0 3px 0;}
 .form    		{border: 2px solid; border-radius: 5px; padding: 5px; 
 				 margin: 5px; border-color: #262626;
 				 background-color: #ffffff; color: #000000;}
+.signOut		{border: 2px solid; border-radius: 5px; padding: 5px; 
+				 margin: 5px; border-color: #262626;
+				 background-color: #ffffff; width: 70px;}
 
-.user			{background-color: #ccccff;}
+.user			{background-color: #000000;;}
 .non-user		{}
 
 .backLink 		{color: #ff3c00;}
@@ -30,6 +33,8 @@ li				{margin: 0 0 3px 0;}
 .homeLinks a    {font-family: 'Georgia', serif; color: #ffffff; font-size: .75em;}
 
 #photoOr		{padding: 5px;}
-#submitButton	{align: center;}
 #photo			{max-width: 100%; max-height: 300px;
 				 border: 1px solid; border-color: #000000;}
+#signIn			{border: 2px solid; border-radius: 5px; padding: 5px; 
+				 margin: 5px; border-color: #262626; position: absolute;
+				 background-color: #b3b3b3;}

@@ -4,18 +4,53 @@
 											           filename='Cuisines.css')}}">
 </head>
 <body> 
-	<h1 class='header'>
-		{{cuisine.name}}
-	</h1>
+	<div id='pageHeader'>
+		<div id='coloredHeader'>
 
-	<div class='homeLinks'>
-		<a href="{{url_for('restaurants')}}">restaurants</a>
-		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
-		<a href="{{url_for('cuisines')}}">cuisines</a>
+			<span id='signIn'>
+
+				<div id='loginStatus'>
+					{{loginStatusMessage}}
+				</div>
+
+				<span id='loginLink' display="{{displayNoneIfLoggedIn}} !important">
+					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+						{{loginStatusLinkText}}
+					</a>
+				</span>
+
+				<span id='profileLink' display="{{displayNoneIfNotLoggedIn}} !important">
+					<a class='actionLink' href="#">
+						{{loginStatusLinkText}}
+					</a>
+				</span>
+
+    			<span display="{{displayNoneIfLoggedIn}} !important">
+    				<a class="backLink" href="#" onclick="signOut();">
+    					Sign out
+    				</a>
+    			</span>
+
+    		</span>	
+    		
+			<h1 id='pageTitle' class='header'>
+				{{cuisine.name}}
+			</h1>
+
+		</div>
+
+		<div id='transHeader'>
+			<div class='homeLinks'>
+				<a href="{{url_for('restaurants')}}">restaurants</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+				<a href="{{url_for('cuisines')}}">cuisines</a>
+			</div>
+		</div>
 	</div>
 
+<div id='pageContent'>
 	<p>
-		<a class='backLink' href="{{url_for('cuisines')}}">
+		<a id='topContent' class='backLink' href="{{url_for('cuisines')}}">
 			Back to the cuisine list
 		</a>
 	</p>
@@ -46,8 +81,12 @@
 
 		<div class='list'>
 		<p>
-			Restaurants with this as primary cuisine:
+			Restaurants with cuisine '{{cuisine.name}}' as primary cuisine:
 		</p>
+		<span class='user' display="{{displayNoneIfLoggedIn}}">
+			(Your restaurants are highlighted)
+		</span>
+		</br>
 		<ol>
 			{% for restaurant in restaurants %}
 			<li>
@@ -61,8 +100,12 @@
 
 		<div class='list'>
 		<p>
-			Base menu items with this cuisine (and the restaurant menu items that are based on them):
+			Base menu items with cuisine '{{cuisine.name}}'' (and the restaurant menu items that are based on them):
 		</p>
+		<span class='user' display="{{displayNoneIfLoggedIn}}">
+			(Your restaurant menu items are highlighted)
+		</span>
+		</br>
 		<ul>
 			<!-- apps -->
 			<li>
@@ -211,5 +254,24 @@
 		</li>
 	</ul>
 	</div>
+</div>
+<script>
+function signOut() {
+
+	$.ajax({
+		type: 'POST',
+		url: '/disconnect',
+		success: function(result) {
+			if (result) {
+				window.alert(result);
+				location.reload();
+			}
+			else {
+				$('#result').html('Failed to make a server-side call.  Check your configuration and console.');
+			}
+		}
+	});
+  }
+</script>
 </body>
 </html>

@@ -18,10 +18,10 @@ li				{margin: 0 0 3px 0;}
 				 margin: 5px; border-color: #ff0000; background-color: #ffffff;}
 .fbSignIn		{border: 5px solid; padding: 5px; 
 				 margin: 5px; border-color: #0000ff; background-color: #ffffff;}
-
 .signOut		{border: 2px solid; border-radius: 5px; padding: 5px; 
 				 margin: 5px; border-color: #262626;
 				 background-color: #ffffff; width: 70px;}
+				 
 #result 		{position: absolute;}
 #title			{color: #8000ff; font-family: 'Impact', sans-serif; 
 				 font-style: italic;}

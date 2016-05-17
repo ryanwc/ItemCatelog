@@ -486,6 +486,17 @@ def cuisine(cuisine_id):
         sectionedBaseMenuItems = RestaurantManager.\
                                  getBaseMenuItems(cuisine_id=cuisine_id,
                                                   byMenuSection=True)
+        # set login HTML
+        if isLoggedIn():
+            displayNoneIfLoggedIn = "none"
+            displayNoneIfNotLoggedIn = ""
+            loginStatusMessage = "Logged in as " + login_session['username']
+            loginStatusLinkText = "View/edit profile"
+        else:
+            displayNoneIfLoggedIn = ""
+            displayNoneIfNotLoggedIn = "none"
+            loginStatusMessage = "Not logged in"
+            loginStatusLinkText = "Log in here"
 
         # get the base items with their children 
         # in format that plays nice with jinja
@@ -512,6 +523,7 @@ def cuisine(cuisine_id):
                     if (isLoggedIn() and
                         itemUserID == login_session['user_id']):
                         child['ownership'] = 'user'
+
 
                     else:
                         child['ownership'] = 'non-user'
@@ -558,7 +570,11 @@ def cuisine(cuisine_id):
             mostExpensiveBaseMenuItem=mostExpensiveBaseMenuItem,
             mostExpensiveRestaurantMenuItem=mostExpensiveRestaurantMenuItem,
             restaurants=restaurants,
-            sectionedBaseItemsWithChildren=sectionedBaseItemsWithChildren)
+            sectionedBaseItemsWithChildren=sectionedBaseItemsWithChildren,
+            displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+            displayNoneIfNotLoggedIn=displayNoneIfNotLoggedIn,
+            loginStatusLinkText=loginStatusLinkText,
+            loginStatusMessage=loginStatusMessage)
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
