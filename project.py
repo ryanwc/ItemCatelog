@@ -486,17 +486,16 @@ def cuisine(cuisine_id):
         sectionedBaseMenuItems = RestaurantManager.\
                                  getBaseMenuItems(cuisine_id=cuisine_id,
                                                   byMenuSection=True)
-        # set login HTML
+        
+         # set login HTML
+        booleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
         if isLoggedIn():
             displayNoneIfLoggedIn = "none"
-            displayNoneIfNotLoggedIn = ""
             loginStatusMessage = "Logged in as " + login_session['username']
             loginStatusLinkText = "View/edit profile"
-        else:
-            displayNoneIfLoggedIn = ""
-            displayNoneIfNotLoggedIn = "none"
-            loginStatusMessage = "Not logged in"
-            loginStatusLinkText = "Log in here"
+            booleanLoggedIn = 1
 
         # get the base items with their children 
         # in format that plays nice with jinja
@@ -572,9 +571,8 @@ def cuisine(cuisine_id):
             restaurants=restaurants,
             sectionedBaseItemsWithChildren=sectionedBaseItemsWithChildren,
             displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-            displayNoneIfNotLoggedIn=displayNoneIfNotLoggedIn,
-            loginStatusLinkText=loginStatusLinkText,
-            loginStatusMessage=loginStatusMessage)
+            loginStatusMessage=loginStatusMessage,
+            booleanLoggedIn=booleanLoggedIn)
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):

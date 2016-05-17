@@ -13,26 +13,23 @@
 					{{loginStatusMessage}}
 				</div>
 
-				<span id='loginLink' display="{{displayNoneIfLoggedIn}} !important">
+				<span class='hideLoggedIn' id='loginSpan'>
 					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
-						{{loginStatusLinkText}}
-					</a>
+						Log in here</a>
 				</span>
 
-				<span id='profileLink' display="{{displayNoneIfNotLoggedIn}} !important">
+				<span class='hideLoggedOut' id='profileSpan'>
 					<a class='actionLink' href="#">
-						{{loginStatusLinkText}}
-					</a>
+						View/edit profile</a>
 				</span>
 
-    			<span display="{{displayNoneIfLoggedIn}} !important">
+    			<span class='hideLoggedOut' id='signOutSpan'>
     				<a class="backLink" href="#" onclick="signOut();">
-    					Sign out
-    				</a>
+    					Sign out</a>
     			</span>
 
     		</span>	
-    		
+
 			<h1 id='pageTitle' class='header'>
 				{{cuisine.name}}
 			</h1>
@@ -83,10 +80,9 @@
 		<p>
 			Restaurants with cuisine '{{cuisine.name}}' as primary cuisine:
 		</p>
-		<span class='user' display="{{displayNoneIfLoggedIn}}">
+		<span class='hideLoggedOut' id='restNote'>
 			(Your restaurants are highlighted)
 		</span>
-		</br>
 		<ol>
 			{% for restaurant in restaurants %}
 			<li>
@@ -102,10 +98,9 @@
 		<p>
 			Base menu items with cuisine '{{cuisine.name}}'' (and the restaurant menu items that are based on them):
 		</p>
-		<span class='user' display="{{displayNoneIfLoggedIn}}">
+		<span class='hideLoggedOut' id='itemNote'>
 			(Your restaurant menu items are highlighted)
 		</span>
-		</br>
 		<ul>
 			<!-- apps -->
 			<li>
@@ -256,22 +251,38 @@
 	</div>
 </div>
 <script>
+// hide/show according to whether logged in.  need to do it with JS because setting the display='none' property in the HTML with passed variable from Python does not work because it is overridden by a "display='in-line'" property given by ???
+if ({{booleanLoggedIn}}==1) { 
+
+	hide = document.getElementsByClassName("hideLoggedIn");
+}
+else {
+
+	hide = document.getElementsByClassName("hideLoggedOut");
+}
+
+for (i = 0; i < hide.length; i++) {
+	hide[i].style.display = "none";
+}
+</script>
+
+<script>
 function signOut() {
 
-	$.ajax({
-		type: 'POST',
-		url: '/disconnect',
-		success: function(result) {
-			if (result) {
-				window.alert(result);
-				location.reload();
-			}
-			else {
-				$('#result').html('Failed to make a server-side call.  Check your configuration and console.');
-			}
-		}
-	});
-  }
+	var xhttp = new XMLHttpRequest();
+
+	xhttp.onreadystatechange = function() {
+    	if (xhttp.readyState == 4 && xhttp.status == 200) {
+    		console.log(xhttp.readyState);
+    		console.log(xhttp.status);
+     		window.alert(xhttp.responseText);
+     		location.reload();
+    	}
+    }
+
+    xhttp.open("POST", "/disconnect", true);
+	xhttp.send();
+};
 </script>
 </body>
 </html>
