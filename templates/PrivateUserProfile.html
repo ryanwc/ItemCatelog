@@ -39,8 +39,9 @@
 		<div id='transHeader'>
 			<div class='homeLinks'>
 				<a href="{{url_for('restaurants')}}">restaurants</a>
-				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
 				<a href="{{url_for('cuisines')}}">cuisines</a>
+				<a href="{{url_for('users')}}">users</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
 			</div>
 		</div>
 	</div>
@@ -65,41 +66,47 @@
 	</div>
 
 	<div class='stats'>
+
+		<div class='photo'>
+			<img id='photo' src="{{picture.text}}" alt='[picture of {{user.name}}]' max-width=100%>
+		</div>
+
 		<p>Stats for user '{{user.name}}':</p>
 		<ul>
 			<li>ID: {{user.id}}</li>
 			<br>
 			<li>Total Restaurants: {{numRestaurants}}</li>
-			<li>Restaurant with Most Expensive Average Item Price: {{}}</li>
-			<li>Restaurant with Least Expensive Average Item Price: {{}}</li>
+			<li>Most Expensive Restaurant: {% if mostExpensiveRest %}{{mostExpensiveRest.name}} (avg price of {{mostExpensiveRestAvgPrice}} per menu item){% else %}N/A{% endif %}</li>
+			<li>Least Expensive Restaurant: {% if leastExpensiveRest %}{{leastExpensiveRest.name}} (avg price of {{leastExpensiveRestAvgPrice}} per menu item){% else %}N/A{% endif%}</li>
 			<br>
-			<li>Total Restaurant Menu Items: {{numRestaurantMenuItems}}</li>
-			<li>Average Restaurant Menu Item Price: {{avgRestaurantMenuItemPrice}}</li>
+			<li>Total Restaurant Menu Items: {{numMenuItems}}</li>
+			<li>Most Expensive Menu Item: {% if mostExpensiveMenuItem %}{{mostExpensiveMenuItem.name}} ({{mostExpensiveMenuItem.price}}){% else %}N/A{% endif %}</li>
+			<li>Least Expensive Menu Item: {% if leastExpensiveMenuItem %}{{leastExpensiveMenuItem.name}} ({{leastExpensiveMenuItem.price}}){% else %}N/A{% endif %}</li>	
 		</ul>
 
 		<div class='list'>
 		<p>
-			Restaurants with menu items <span id='toggleAll'>(hide all)</span>:
+			Your restaurants (with menu items) <span id='masterToggle' onclick="toggleAllLists();">(hide all)</span>:
 		</p>
-		<ol>
+		<ol id="topLevelList">
 			{% for restaurantID in userThings %}
-			<li>
-				<a class='forwardLink' href="{{url_for('restaurant', restaurant_id=restaurantID)}}">{{userThings[restaurantID]['restaurant'].name}} (ID {{userThings[restaurantID]['restaurant'].id}})</a> <span class='actionLink' onclick ='toggleList(restaurant{{restaurantID}}List);'>(hide)</span>
-				<ul id='restaurant{{restaurantID}}List'>
-					<li>
-						Appetizers <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}AppetizerList);'>(hide)</span>:
-						<ol id='restaurant{{restaurantID}}AppetizerList'>
+			<li class='topLevelListItem'>
+				<a class='forwardLink' href="{{url_for('restaurant', restaurant_id=restaurantID)}}">{{userThings[restaurantID]['restaurant'].name}} (ID {{userThings[restaurantID]['restaurant'].id}})</a> <span class='listToggle' id='restaurant{{restaurantID}}Toggle' onclick ="toggleList('restaurant{{restaurantID}}');">(hide)</span>
+				<ul class='nonTopLevelList' id='restaurant{{restaurantID}}List'>
+					<li class='nonTopLevelListItem'>
+						Appetizers <span class='listToggle' id='restaurant{{restaurantID}}AppetizerToggle' onclick="toggleList('restaurant{{restaurantID}}Appetizer');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}AppetizerList'>
 							{% for item in userThings[restaurantID]['items']['Appetizer'] %}
-							<li>
-								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
-								<ul id='item{{item.id}}List'>
-									<li>
+							<li class='nonTopLevelListItem'>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='listToggle' id='menuItem{{item.id}}Toggle' onclick="toggleList('menuItem{{item.id}}');">(hide)</span>
+								<ul class='nonTopLevelList' id='menuItem{{item.id}}List'>
+									<li class='nonTopLevelListItem'>
 										ID: {{item.id}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Description: {{item.description}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Price: {{item.price}}
 									</li>
 								</ul>
@@ -107,20 +114,20 @@
 							{% endfor %}
 						</ol>
 					</li>
-					<li>
-						Main Courses <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}MainCourseList);'>(hide)</span>:
-						<ol id='restaurant{{restaurantID}}MainCourseList'>
+					<li class='nonTopLevelListItem'>
+						Main Courses <span class='listToggle' id='restaurant{{restaurantID}}MainCourseToggle' onclick="toggleList('restaurant{{restaurantID}}MainCourse');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}MainCourseList'>
 							{% for item in userThings[restaurantID]['items']['Main Course'] %}
-							<li>
-								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
-								<ul id='item{{item.id}}List'>
-									<li>
+							<li class='nonTopLevelListItem'>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='listToggle' id='menuItem{{item.id}}Toggle' onclick="toggleList('menuItem{{item.id}}');">(hide)</span>
+								<ul class='nonTopLevelList' id='menuItem{{item.id}}List'>
+									<li class='nonTopLevelListItem'>
 										ID: {{item.id}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Description: {{item.description}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Price: {{item.price}}
 									</li>
 								</ul>
@@ -128,20 +135,20 @@
 							{% endfor %}
 						</ol>
 					</li>
-					<li>
-						Side Dishes <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}SideDishList);'>(hide)</span>:
-						<ol id='restaurant{{restaurantID}}SideDishList'>
+					<li class='nonTopLevelListItem'>
+						Side Dishes <span class='listToggle' id='restaurant{{restaurantID}}SideDishToggle' onclick="toggleList('restaurant{{restaurantID}}SideDish');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}SideDishList'>
 							{% for item in userThings[restaurantID]['items']['Side Dish'] %}
-							<li>
-								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
-								<ul id='item{{item.id}}List'>
-									<li>
+							<li class='nonTopLevelListItem'>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='listToggle' id='menuItem{{item.id}}Toggle' onclick="toggleList('menuItem{{item.id}}');">(hide)</span>
+								<ul class='nonTopLevelList' id='menuItem{{item.id}}List'>
+									<li class='nonTopLevelListItem'>
 										ID: {{item.id}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Description: {{item.description}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Price: {{item.price}}
 									</li>
 								</ul>
@@ -149,20 +156,20 @@
 							{% endfor %}
 						</ol>
 					</li>
-					<li>
-						Drink <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}DrinkList);'>(hide)</span>:
-						<ol id='restaurant{{restaurantID}}DrinkList'>
+					<li class='nonTopLevelListItem'>
+						Drinks <span class='listToggle' id='restaurant{{restaurantID}}DrinkToggle' onclick="toggleList('restaurant{{restaurantID}}Drink');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}DrinkList'>
 							{% for item in userThings[restaurantID]['items']['Drink'] %}
-							<li>
-								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
-								<ul id='item{{item.id}}List'>
-									<li>
+							<li class='nonTopLevelListItem'>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='listToggle' id='menuItem{{item.id}}Toggle' onclick="toggleList('menuItem{{item.id}}');">(hide)</span>
+								<ul class='nonTopLevelList' id='menuItem{{item.id}}List'>
+									<li class='nonTopLevelListItem'>
 										ID: {{item.id}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Description: {{item.description}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Price: {{item.price}}
 									</li>
 								</ul>
@@ -170,20 +177,20 @@
 							{% endfor %}
 						</ol>
 					</li>
-					<li>
-						Dessert <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}DessertList);'>(hide)</span>:
-						<ol id='restaurant{{restaurantID}}DessertList'>
+					<li class='nonTopLevelListItem'>
+						Desserts <span class='listToggle' id='restaurant{{restaurantID}}DessertToggle' onclick="toggleList('restaurant{{restaurantID}}Dessert');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}DessertList'>
 							{% for item in userThings[restaurantID]['items']['Dessert'] %}
-							<li>
-								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
-								<ul id='item{{item.id}}List'>
-									<li>
+							<li class='nonTopLevelListItem'>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='listToggle' id='menuItem{{item.id}}Toggle' onclick="toggleList('menuItem{{item.id}}');">(hide)</span>
+								<ul class='nonTopLevelList' id='menuItem{{item.id}}List'>
+									<li class='nonTopLevelListItem'>
 										ID: {{item.id}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Description: {{item.description}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Price: {{item.price}}
 									</li>
 								</ul>
@@ -191,20 +198,20 @@
 							{% endfor %}
 						</ol>
 					</li>
-					<li>
-						Other <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}OtherList);'>(hide)</span>:
-						<ol id='restaurant{{restaurantID}}OtherList'>
+					<li class='nonTopLevelListItem'>
+						Other <span class='listToggle' id='restaurant{{restaurantID}}OtherToggle' onclick="toggleList('restaurant{{restaurantID}}Other');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}OtherList'>
 							{% for item in userThings[restaurantID]['items']['Other'] %}
-							<li>
-								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
-								<ul id='item{{item.id}}List'>
-									<li>
+							<li class='nonTopLevelListItem'>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='listToggle' id='menuItem{{item.id}}Toggle' onclick="toggleList('menuItem{{item.id}}');">(hide)</span>
+								<ul class='nonTopLevelList' id='menuItem{{item.id}}List'>
+									<li class='nonTopLevelListItem'>
 										ID: {{item.id}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Description: {{item.description}}
 									</li>
-									<li>
+									<li class='nonTopLevelListItem'>
 										Price: {{item.price}}
 									</li>
 								</ul>
@@ -222,12 +229,10 @@
 	<div class='list'>
 	<p>Profile Actions:</p>
 	<ul>
-		<li><a class='actionLink' href="{{url_for('editProfile', 
-							   user_id=user.id)}}">
+		<li><a class='actionLink' href="{{url_for('editUser', user_id=user.id)}}">
 			Edit profile</a>
 		</li>
-		<li><a class='actionLink' href="{{url_for('deleteProfile', 
-							   user_id=user.id)}}">
+		<li><a class='actionLink' href="{{url_for('deleteUser', user_id=user.id)}}">
 			Delete profile</a>
 		</li>
 	</ul>
@@ -240,6 +245,16 @@
 <script src="{{url_for('static', filename='lists.js')}}">
 </script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
+</script>
+<script>
+// if appropriate, changes src of #photo from link to served file
+(function() {
+	if ('{{picture.serve_type}}' === 'upload') {
+
+	console.log("is upload");
+		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
+	}
+})();
 </script>
 </body>
 </html>

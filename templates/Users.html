@@ -1,9 +1,9 @@
 <html>
 <head>
 	<link rel=stylesheet type=text/css href="{{url_for('static',
-											           filename='Restaurants.css')}}">
+											           filename='Users.css')}}">
 </head>
-<body>
+<body> 
 	<div id='pageHeader'>
 		<div id='coloredHeader'>
 
@@ -31,7 +31,7 @@
     		</span>	
 
 			<h1 id='pageTitle' class='header'>
-				Delete '{{restaurant.name}}'
+				List of All Users
 			</h1>
 
 		</div>
@@ -48,37 +48,42 @@
 
 <div id='pageContent'>
 
-	<div class='actionText'>
-		<p>
-			Delete restaurant '{{restaurant.name}}' (ID {{restaurant.id}}) from the database.
-		</p>
-	</div>
-
 	<p>
-		<a class='backLink' href="{{url_for('restaurant',
-				restaurant_id=restaurant.id)}}">Cancel</a>
+		<a class='backLink' href="{{url_for('restaurantManagerIndex')}}">
+			Back to home
+		</a>
 	</p>
 
-	<form class='form' action="{{url_for('deleteRestaurant', 
-							restaurant_id=restaurant.id)}}"
-		method='post'>
+	<div class='flash'>
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<ul>
+				{% for message in messages %}
+					<li><strong>{{message}}</strong></li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+	</div>
 
-		<p>
-			WARNING: This will also delete all of this restaurant's restaurant menu items.
-		</p>
-
-		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
-
-		<input type='submit' value='Delete Restaurant'>
-	
-	</form>
+	<div class='list'>
+	<p>
+		Click a user to view his or her profile <span class='hideLoggedOut'>(see top left link for easy access to your profile</span>.
+	</p>
+	<ol>
+		{% for user in users %}
+		<li>
+			<a id='{{user.id}}' class='forwardLink' href="{{url_for('user', user_id=user.id)}}">{{user.name}} (ID {{user.id}})</a>
+		</li>
+		{% endfor %}
+	</ol>
+	</div>
 </div>
-</body>
 <script src="{{url_for('static', filename='login.js')}}">
 </script>
 <script src="{{url_for('static', filename='signOut.js')}}">
 </script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
 </script>
-<script>
+</body>
 </html>

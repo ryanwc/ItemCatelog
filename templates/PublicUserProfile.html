@@ -39,8 +39,9 @@
 		<div id='transHeader'>
 			<div class='homeLinks'>
 				<a href="{{url_for('restaurants')}}">restaurants</a>
-				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
 				<a href="{{url_for('cuisines')}}">cuisines</a>
+				<a href="{{url_for('users')}}">users</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
 			</div>
 		</div>
 	</div>
@@ -65,13 +66,18 @@
 	</div>
 
 	<div class='stats'>
+
+		<div class='photo'>
+			<img id='photo' src="{{picture.text}}" alt='[picture of {{user.name}}]' max-width=100%>
+		</div>
+
 		<p>Stats for user '{{user.name}}':</p>
 		<ul>
 			<li>ID: {{user.id}}</li>
 			<br>
 			<li>Total Restaurants: {{numRestaurants}}</li>
 			<br>
-			<li>Total Restaurant Menu Items: {{numRestaurantMenuItems}}</li>
+			<li>Total Restaurant Menu Items: {{numMenuItems}}</li>
 		</ul>
 
 		<div class='list'>
@@ -157,6 +163,16 @@
 <script src="{{url_for('static', filename='lists.js')}}">
 </script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
+</script>
+<script>
+// if appropriate, changes src of #photo from link to served file
+(function() {
+	if ('{{picture.serve_type}}' === 'upload') {
+
+	console.log("is upload");
+		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
+	}
+})();
 </script>
 </body>
 </html>

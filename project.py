@@ -1801,8 +1801,8 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                    loginStatusMessage=loginStatusMessage)
 
 @app.route('/users/', methods=['GET'])
-def users(user_id):
-        user = RestaurantManager.getUser(user_id)
+def users():
+        users = RestaurantManager.getUsers()
         # set login HTML and permissions
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
@@ -1816,6 +1816,7 @@ def users(user_id):
             intBooleanLoggedIn = 1
 
         return render_template('Users.html',
+                               users=users,
                                intBooleanLoggedIn=intBooleanLoggedIn,
                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                loginStatusMessage=loginStatusMessage)
@@ -1835,29 +1836,125 @@ def user(user_id):
             intBooleanLoggedIn = 1
 
         user = RestaurantManager.getUser(user_id=user_id)
-
+        picture = RestaurantManager.getPicture(user.picture_id)
         userThings = RestaurantManager.getUserThings(user.id)
+
+        loggedInStats = {}
+
+        numRestaurants = 0
+
+        mostExpensiveRest = None
+        mostExpensiveRestAvgPrice = None
+        leastExpensiveRest = None
+        leastExpensiveRestAvgPrice = None
+
+        numMenuItems = 0
+
+        mostExpensiveMenuItem = None
+        leastExpensiveMenuItem = None
+
+        for restaurantID in userThings:
+
+            numRestaurants = numRestaurants + 1
+            numItemsThisRestaurant = 0
+            totalRestaurantPrices = 0
+            thisRestaurantAvgItemPrice = None
+
+            for menuSectionName in userThings[restaurantID]['items']:
+
+                for item in userThings[restaurantID]['items'][menuSectionName]:
+
+                    item.price = Decimal(item.price).\
+                        quantize(Decimal('0.01'))
+                    numMenuItems = numMenuItems + 1
+                    numItemsThisRestaurant = numItemsThisRestaurant + 1
+
+                    if mostExpensiveMenuItem is None:
+                        mostExpensiveMenuItem = item
+                    elif item.price > mostExpensiveMenuItem.price:
+                        mostExpensiveMenuItem = item
+                    elif (leastExpensiveMenuItem is None and
+                        numMenuItems > 1):
+                        leastExpensiveMenuItem = item
+                    elif (item.price < leastExpensiveMenuItem.price and
+                          numMenuItems > 1):
+                        leastExpensiveMenuItem = item
+
+                    totalRestaurantPrices = totalRestaurantPrices + item.price
+
+            if numItemsThisRestaurant > 0:
+                thisRestaurantAvgItemPrice = \
+                    totalRestaurantPrices/numItemsThisRestaurant
+            else:
+                thisRestaurantAvgItemPrice = 0
+
+            if (mostExpensiveRest is None and
+                numItemsThisRestaurant > 0):
+
+                mostExpensiveRest = \
+                    userThings[restaurantID]['restaurant']
+                mostExpensiveRestAvgPrice = thisRestaurantAvgItemPrice
+
+            elif thisRestaurantAvgItemPrice > thisRestaurantAvgItemPrice:
+
+                mostExpensiveRest = \
+                    userThings[restaurantID]['restaurant']
+                mostExpensiveRestAvgPrice = thisRestaurantAvgItemPrice
+            elif (leastExpensiveRest is None and
+                  numRestaurants > 1 and
+                  numItemsThisRestaurant > 0):
+                leastExpensiveRest = \
+                    userThings[restaurantID]['restaurant']
+                leastExpensiveRestAvgPrice = thisRestaurantAvgItemPrice
+            elif (thisRestaurantAvgItemPrice < \
+                    leastExpensiveRestAvgPrice and
+                  numRestaurants > 1):
+                leastExpensiveRest = \
+                    userThings[restaurantID]['restaurant']
+                leastExpensiveRestAvgPrice = thisRestaurantAvgItemPrice
+
+        if mostExpensiveRestAvgPrice:
+            mostExpensiveRestAvgPrice = \
+                Decimal(mostExpensiveRestAvgPrice).\
+                quantize(Decimal('0.01'))
+        
+        if leastExpensiveRestAvgPrice:
+            leastExpensiveRestAvgPrice = \
+                Decimal(mostExpensiveRestAvgPrice).\
+                quantize(Decimal('0.01'))
 
         if (isLoggedIn() and
             login_session['user_id'] == user.id):
-
+            # could put stats in a loginStats dictionary
             return render_template('PrivateUserProfile.html',
-                                   user=user,
-                                   userThings=userThings,
-                                   intBooleanLoggedIn=intBooleanLoggedIn,
-                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                   loginStatusMessage=loginStatusMessage)
+                user=user,
+                picture=picture,
+                userThings=userThings,
+                numRestaurants=numRestaurants,
+                numMenuItems=numMenuItems,
+                mostExpensiveRest=mostExpensiveRest,
+                mostExpensiveRestAvgPrice=mostExpensiveRestAvgPrice,
+                leastExpensiveRest=leastExpensiveRest,
+                leastExpensiveRestAvgPrice=leastExpensiveRestAvgPrice,
+                mostExpensiveMenuItem=mostExpensiveMenuItem,
+                leastExpensiveMenuItem=leastExpensiveMenuItem,
+                intBooleanLoggedIn=intBooleanLoggedIn,
+                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                loginStatusMessage=loginStatusMessage)
         else:
 
             return render_template('PublicUserProfile.html',
                                    user=user,
+                                   picture=picture,
                                    userThings=userThings,
+                                   numRestaurants=numRestaurants,
+                                   numMenuItems=numMenuItems,
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                    loginStatusMessage=loginStatusMessage)
 
 @app.route('/users/<int:user_id>/edit/', methods=['GET','POST'])
-def editUserProfile(user_id):
+def editUser(user_id):
         user = RestaurantManager.getUser(user_id)
         # set login HTML and permissions
         intBooleanLoggedIn = 0
@@ -1871,13 +1968,13 @@ def editUserProfile(user_id):
             # passed to javascript function
             intBooleanLoggedIn = 1
 
-        return render_template('EditUserProfile.html',
+        return render_template('EditUser.html',
                                intBooleanLoggedIn=intBooleanLoggedIn,
                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                loginStatusMessage=loginStatusMessage)
 
 @app.route('/users/<int:user_id>/delete/', methods=['GET','POST'])
-def deleteUserProfile(user_id):
+def deleteUser(user_id):
         user = RestaurantManager.getUser(user_id)
         # set login HTML and permissions
         intBooleanLoggedIn = 0
@@ -1891,7 +1988,7 @@ def deleteUserProfile(user_id):
             # passed to javascript function
             intBooleanLoggedIn = 1
 
-        return render_template('DeleteUserProfile.html',
+        return render_template('DeleteUser.html',
                                intBooleanLoggedIn=intBooleanLoggedIn,
                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                loginStatusMessage=loginStatusMessage)
