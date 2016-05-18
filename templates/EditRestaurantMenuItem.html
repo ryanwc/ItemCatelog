@@ -4,15 +4,48 @@
 											           filename='Restaurants.css')}}">
 </head>
 <body>
-	<h1 class='header'>
-		Edit '{{restaurantMenuItem.name}}'
-	</h1>
-	
-	<div class='homeLinks'>
-		<a href="{{url_for('restaurants')}}">restaurants</a>
-		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
-		<a href="{{url_for('cuisines')}}">cuisines</a>
+	<div id='pageHeader'>
+		<div id='coloredHeader'>
+
+			<span id='signIn'>
+
+				<div id='loginStatus'>
+					{{loginStatusMessage}}
+				</div>
+
+				<span class='hideLoggedIn' id='loginSpan'>
+					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+						Log in here</a>
+				</span>
+
+				<span class='hideLoggedOut' id='profileSpan'>
+					<a class='actionLink' href="#">
+						View/edit profile</a>
+				</span>
+
+    			<span class='hideLoggedOut' id='signOutSpan'>
+    				<a class="backLink" href="#" onclick="signOut();">
+    					Sign out</a>
+    			</span>
+
+    		</span>	
+
+			<h1 id='pageTitle' class='header'>
+				Edit '{{restaurantMenuItem.name}}'
+			</h1>
+
+		</div>
+
+		<div id='transHeader'>
+			<div class='homeLinks'>
+				<a href="{{url_for('restaurants')}}">restaurants</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+				<a href="{{url_for('cuisines')}}">cuisines</a>
+			</div>
+		</div>
 	</div>
+
+<div id='pageContent'>
 	
 	<div class='actionText'>
 		<p>
@@ -81,13 +114,22 @@
 		<input type='submit' value='Submit Changes'>
 
 	</form>
-  	<script>
-  	// if appropriate, changes src of #photo from link to served file
-    if ('{{picture.serve_type}}' === 'upload') {
+</div>
+<script src="{{url_for('static', filename='login.js')}}">
+</script>
+<script src="{{url_for('static', filename='signOut.js')}}">
+</script>
+<script>displayBasedOnLogin({{intBooleanLoggedIn}});
+</script>
+<script>
+// if appropriate, changes src of #photo from link to served file
+(function() {
+	if ('{{picture.serve_type}}' === 'upload') {
 
+	console.log("is upload");
 		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
-		document.getElementById("pictureLinkText").setAttribute("placeholder", "Link to picture");
-    }
-	</script>
+	}
+})();
+</script>
 </body>
 </html>

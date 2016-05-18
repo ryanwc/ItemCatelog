@@ -1456,13 +1456,11 @@ def addRestaurantMenuItem(restaurant_id):
             return redirect('/login/')
 
         baseMenuItems = RestaurantManager.getBaseMenuItems()
+        menuSections = RestaurantManager.getMenuSections()
 
-        # display nicely and get name of menu section
+        # display nicely
         for item in baseMenuItems:
             item.price = Decimal(item.price).quantize(Decimal('0.01'))
-            menuSection = RestaurantManager.\
-                getMenuSection(menuSection_id=item.menuSection_id)
-            item.menuSectionName = menuSection.name
 
         if request.method == 'POST':
 
@@ -1538,6 +1536,7 @@ def addRestaurantMenuItem(restaurant_id):
             return render_template('AddRestaurantMenuItem.html',
                                    restaurant=restaurant,
                                    baseMenuItems=baseMenuItems,
+                                   menuSections=menuSections,
                                    hiddenToken=login_session['state'],
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
@@ -1614,16 +1613,27 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
-        if ('credentials' not in login_session or
-            'access_token' not in login_session['credentials']):
-            
-            flash("You must log in edit this restaurant's menu")
-            return redirect('/login/')
-        elif restaurant.user_id != login_session['user_id']:
+       # set login HTML and permissions
+        intBooleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
 
-            flash("You do not have permission to edit this "+\
-                "restaurant menu item")
-            return redirect('/restaurants/'+str(restaurant.id)+'/menu/')
+        if isLoggedIn():
+
+            displayNoneIfLoggedIn = "none"
+            loginStatusMessage = "Logged in as " + login_session['username']
+            # passed to javascript function
+            intBooleanLoggedIn = 1
+
+            if restaurant.user_id != login_session['user_id']:
+
+                flash("You do not have permission to edit this restaurant"+\
+                "menu item")
+                return redirect('/restaurants/'+str(restaurant.id)+'/menu/')  
+        else:
+
+            flash("You must log in to edit this restaurant menu item")
+            return redirect('/login/')
 
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
@@ -1726,23 +1736,37 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                    restaurant=restaurant,
                                    restaurantMenuItem=restaurantMenuItem,
                                    hiddenToken=login_session['state'],
-                                   picture=picture)
+                                   picture=picture,
+                                   intBooleanLoggedIn=intBooleanLoggedIn,
+                                   loginStatusMessage=loginStatusMessage,
+                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
            methods=['GET','POST'])
 def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
-        if ('credentials' not in login_session or
-            'access_token' not in login_session['credentials']):
-            
-            flash("You must log in delete this restaurant menu item")
-            return redirect('/login/')
-        elif restaurant.user_id != login_session['user_id']:
+       # set login HTML and permissions
+        intBooleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
 
-            flash("You do not have permission to delete this "+\
-                "restaurant menu item")
-            return redirect('/restaurants/'+str(restaurant.id)+'/menu/')
+        if isLoggedIn():
+
+            displayNoneIfLoggedIn = "none"
+            loginStatusMessage = "Logged in as " + login_session['username']
+            # passed to javascript function
+            intBooleanLoggedIn = 1
+
+            if restaurant.user_id != login_session['user_id']:
+
+                flash("You do not have permission to delete this "+\
+                " restaurant menu item")
+                return redirect('/restaurants/'+str(restaurant.id)+'/menu/')  
+        else:
+
+            flash("You must log in to delte this restaurant menu item")
+            return redirect('/login/')
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
@@ -1771,7 +1795,10 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             return render_template('DeleteRestaurantMenuItem.html',
                                    restaurant=restaurant,
                                    restaurantMenuItem=restaurantMenuItem,
-                                   hiddenToken=login_session['state'])
+                                   hiddenToken=login_session['state'],
+                                   intBooleanLoggedIn=intBooleanLoggedIn,
+                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                                   loginStatusMessage=loginStatusMessage)
 
 # for checking picture filename input
 def allowed_file(filename):

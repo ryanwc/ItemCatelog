@@ -4,15 +4,48 @@
 											           filename='Restaurants.css')}}">
 </head>
 <body>
-	<h1 class='header'>
-		Add Restaurant Menu Item
-	</h1>
-	
-	<div class='homeLinks'>
-		<a href="{{url_for('restaurants')}}">restaurants</a>
-		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
-		<a href="{{url_for('cuisines')}}">cuisines</a>
+	<div id='pageHeader'>
+		<div id='coloredHeader'>
+
+			<span id='signIn'>
+
+				<div id='loginStatus'>
+					{{loginStatusMessage}}
+				</div>
+
+				<span class='hideLoggedIn' id='loginSpan'>
+					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+						Log in here</a>
+				</span>
+
+				<span class='hideLoggedOut' id='profileSpan'>
+					<a class='actionLink' href="#">
+						View/edit profile</a>
+				</span>
+
+    			<span class='hideLoggedOut' id='signOutSpan'>
+    				<a class="backLink" href="#" onclick="signOut();">
+    					Sign out</a>
+    			</span>
+
+    		</span>	
+
+			<h1 id='pageTitle' class='header'>
+				Add Restaurant Menu Item
+			</h1>
+
+		</div>
+
+		<div id='transHeader'>
+			<div class='homeLinks'>
+				<a href="{{url_for('restaurants')}}">restaurants</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+				<a href="{{url_for('cuisines')}}">cuisines</a>
+			</div>
+		</div>
 	</div>
+
+<div id='pageContent'>
 	
 	<div class='actionText'>
 		<p>
@@ -42,6 +75,9 @@
 				<li>
 					The placeholder text for the text inputs will change as you select a base menu item so you can see the base menu item's attributes.
 				</li>
+				<li>
+					For attributes you leave blank, the new restaurant menu item will have its base item's value.
+				</li>
 			</ul>
 		</p>
 
@@ -49,7 +85,7 @@
 		<select id='baseMenuItemID' name="baseMenuItemID" oninput='
 			placeholdWithBaseMenuItem()'>
   		{% for baseMenuItem in baseMenuItems %}
-  			<option id="{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
+  			<option id="baseMenuItem{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
   		{% endfor %}
 		</select>
 
@@ -63,7 +99,11 @@
 		<input id='price' type='text' size='30' name='price' placeholder='Price'>
 
 		<p>Item Menu Section:</p>
-		<input id='menuSection' type='text' size='30' name='menuSection' placeholder='Menu section'>
+		<select id='menuSection' name="menuSection">
+			{% for menuSection in menuSections %}
+				<option id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
+			{% endfor %}
+		</select>
 
 		<p>Item Picture (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input type='file' name='pictureFile' accept='image/*'>
@@ -91,30 +131,21 @@
     # could not access any attribute/value pairs after parsing.
     # Maybe i can use an ajax endpoint to get the relevant info?
 	-->
-	<div id='baseMenuItemInfo' style='display: none;'>
+	<div id='baseMenuItemInfo' style= 'display: none;'>
 		{% for baseMenuItem in baseMenuItems %}
 		  	<div id="{{baseMenuItem.id}}name">{{baseMenuItem.name}}</div>
 		  	<div id="{{baseMenuItem.id}}description">{{baseMenuItem.description}}</div>
   			<div id="{{baseMenuItem.id}}price">{{baseMenuItem.price}}</div>
+  			<div id="{{baseMenuItem.id}}menuSection">{{baseMenuItem.menuSection_id}}</div>
   		{% endfor %}
 	</div>
-
-	<script>
-	function placeholdWithBaseMenuItem() {
-
-		// get the selected item
-    	var baseMenuItemID = document.getElementById("baseMenuItemID").value;
-
-    	// get the info
-    	placeholderName = document.getElementById(baseMenuItemID + "name").innerHTML;
-    	placeholderDescription = document.getElementById(baseMenuItemID + "description").innerHTML;
-    	placeholderPrice = document.getElementById(baseMenuItemID + "price").innerHTML;
-
-    	// set the placeholders
-    	document.getElementById("name").setAttribute("placeholder", placeholderName);
-    	document.getElementById("description").setAttribute("placeholder", placeholderDescription);
-    	document.getElementById("price").setAttribute("placeholder", placeholderPrice);	
-	}
-	</script>
+</div>
+<script src="{{url_for('static', filename='login.js')}}">
+</script>
+<script src="{{url_for('static', filename='signOut.js')}}">
+</script>
+<script>displayBasedOnLogin({{intBooleanLoggedIn}});
+</script>
+<script src="{{url_for('static', filename='forms.js')}}"></script>
 </body>
 </html>
