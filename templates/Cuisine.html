@@ -84,11 +84,10 @@
 			(Your restaurants are highlighted)
 		</span>
 		<ol>
-			{% for restaurant in restaurants %}
+			{% for restaurantID in restaurantDicts %}
 			<li>
-			<a class='forwardLink' href="{{url_for('restaurant',
-							   restaurant_id=restaurant.id)}}">
-				{{restaurant.name}} (ID {{restaurant.id}})</a>
+			<span class="{{restaurantDicts[restaurantID]['ownership']}}"><a class='forwardLink' href="{{url_for('restaurant', restaurant_id=restaurantID)}}">
+				{{restaurantDicts[restaurantID]['restaurant'].name}} (ID {{restaurantDicts[restaurantID]['restaurant'].id}})</a></span>
 			</li>
 			{% endfor %}
 		</ol>

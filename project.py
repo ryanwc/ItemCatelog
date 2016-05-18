@@ -494,7 +494,23 @@ def cuisine(cuisine_id):
         if isLoggedIn():
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
+            # passed to javascript function
             intBooleanLoggedIn = 1
+
+        # get restaurants labeled with user or non-user
+        restaurantDicts = {}
+        for restaurant in restaurants:
+            restaurantDict = {}
+            restaurantDict = {'restaurant': restaurant}
+
+            if (isLoggedIn() and 
+                restaurant.user_id == login_session['user_id']):
+                restaurantDict['ownership'] = 'user'
+            else:
+                restaurantDict['ownership'] = 'non-user'
+
+            restaurantDicts[restaurant.id] = restaurantDict
+            print restaurantDicts[restaurant.id]['restaurant'].id
 
         # get the base items with their children 
         # in format that plays nice with jinja
@@ -569,7 +585,7 @@ def cuisine(cuisine_id):
             cuisine=cuisine,
             mostExpensiveBaseMenuItem=mostExpensiveBaseMenuItem,
             mostExpensiveRestaurantMenuItem=mostExpensiveRestaurantMenuItem,
-            restaurants=restaurants,
+            restaurantDicts=restaurantDicts,
             sectionedBaseItemsWithChildren=sectionedBaseItemsWithChildren,
             displayNoneIfLoggedIn=displayNoneIfLoggedIn,
             loginStatusMessage=loginStatusMessage,
@@ -992,14 +1008,16 @@ def addBaseMenuItem(cuisine_id):
 
                 if allowed_file(picFile.filename):
                     # this name will be overwritten.
-                    # can't provide proper name now because don't have restaurant_id
+                    # can't provide proper name now because don't 
+                    # have restaurant_id
                     picFile.filename = secure_filename(picFile.filename)
-                    picture_id = RestaurantManager.addPicture(text=picFile.filename,
-                                                              serve_type='upload')
+                    picture_id = RestaurantManager.\
+                        addPicture(text=picFile.filename, serve_type='upload')
                 else:
 
                     flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
-                        '.jpg.  Please edit the restaurant to change the picture.')
+                        '.jpg.  Please edit the restaurant to change the "+\
+                         picture.')
             elif request.form['pictureLink']:
 
                 pictureLink = bleach.clean(request.form['pictureLink'])
@@ -1017,11 +1035,13 @@ def addBaseMenuItem(cuisine_id):
             # set the appropriate name in the database
             if request.files['pictureFile']:
                 picfilename = 'baseMenuItem' + str(restaurant_id)
-                picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], picfilename))
+                picFile.save(os.path.\
+                    join(app.config['UPLOAD_FOLDER'], picfilename))
                 RestaurantManager.editPicture(picture_id=picture_id,
                                               newText=picfilename)
 
-            flash("added '" + name + "'' to " + cuisine.name + "'s base menu")
+            flash("added '" + name + "'' to " + cuisine.name + \
+                "'s base menu")
 
             return redirect(url_for('cuisine', cuisine_id=cuisine.id))
         else:
@@ -1031,12 +1051,15 @@ def addBaseMenuItem(cuisine_id):
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/')
 def baseMenuItem(cuisine_id, baseMenuItem_id):
         baseMenuItem = RestaurantManager.getBaseMenuItem(baseMenuItem_id)
-        baseMenuItem.price = Decimal(baseMenuItem.price).quantize(Decimal('0.01'))
-        cuisine = RestaurantManager.getCuisine(cuisine_id=baseMenuItem.cuisine_id)
+        baseMenuItem.price = Decimal(baseMenuItem.price).\
+            quantize(Decimal('0.01'))
+        cuisine = RestaurantManager.\
+            getCuisine(cuisine_id=baseMenuItem.cuisine_id)
         restaurantMenuItems = RestaurantManager.\
-                              getRestaurantMenuItems(baseMenuItem_id=baseMenuItem.id)
+            getRestaurantMenuItems(baseMenuItem_id=baseMenuItem.id)
         picture = RestaurantManager.getPicture(baseMenuItem.picture_id)
-        menuSection = RestaurantManager.getMenuSection(menuSection_id=baseMenuItem.menuSection_id)
+        menuSection = RestaurantManager.\
+            getMenuSection(menuSection_id=baseMenuItem.menuSection_id)
         timesOrdered = 0
 
         # set login HTML
