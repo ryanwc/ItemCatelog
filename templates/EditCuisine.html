@@ -4,15 +4,47 @@
 											           filename='Cuisines.css')}}">
 </head>
 <body>
-	<h1 class='header'>
-		Edit '{{cuisine.name}}'
-	</h1>
-	
-	<div class='homeLinks'>
-		<a href="{{url_for('restaurants')}}">restaurants</a>
-		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
-		<a href="{{url_for('cuisines')}}">cuisines</a>
+	<div id='pageHeader'>
+		<div id='coloredHeader'>
+
+			<span id='signIn'>
+
+				<div id='loginStatus'>
+					{{loginStatusMessage}}
+				</div>
+
+				<span class='hideLoggedIn' id='loginSpan'>
+					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+						Log in here</a>
+				</span>
+
+				<span class='hideLoggedOut' id='profileSpan'>
+					<a class='actionLink' href="#">
+						View/edit profile</a>
+				</span>
+
+    			<span class='hideLoggedOut' id='signOutSpan'>
+    				<a class="backLink" href="#" onclick="signOut();">
+    					Sign out</a>
+    			</span>
+
+    		</span>	
+
+			<h1 id='pageTitle' class='header'>
+				Edit '{{cuisine.name}}'
+			</h1>
+
+		</div>
+
+		<div id='transHeader'>
+			<div class='homeLinks'>
+				<a href="{{url_for('restaurants')}}">restaurants</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+				<a href="{{url_for('cuisines')}}">cuisines</a>
+			</div>
+		</div>
 	</div>
+<div id='pageContent'>
 	
 	<div class='actionText'>
 		<p>
@@ -45,39 +77,11 @@
 		<input type='submit' value='Submit Changes'>
 
 	</form>
-<script>
-// hide/show according to whether logged in.  need to do it with JS because setting the display='none' property in the HTML with passed variable from Python does not work because it is overridden by a "display='in-line'" property given by ???
-if ({{intBooleanLoggedIn}}==1) { 
-
-	hide = document.getElementsByClassName("hideLoggedIn");
-}
-else {
-
-	hide = document.getElementsByClassName("hideLoggedOut");
-}
-
-for (i = 0; i < hide.length; i++) {
-	hide[i].style.display = "none";
-}
+<script src="{{url_for('static', filename='login.js')}}">
 </script>
-
-<script>
-function signOut() {
-
-	var xhttp = new XMLHttpRequest();
-
-	xhttp.onreadystatechange = function() {
-    	if (xhttp.readyState == 4 && xhttp.status == 200) {
-    		console.log(xhttp.readyState);
-    		console.log(xhttp.status);
-     		window.alert(xhttp.responseText);
-     		location.reload();
-    	}
-    }
-
-    xhttp.open("POST", "/disconnect", true);
-	xhttp.send();
-};
+<script src="{{url_for('static', filename='signOut.js')}}">
+</script>
+<script>displayBasedOnLogin({{intBooleanLoggedIn}});
 </script>
 </body>
 </html>

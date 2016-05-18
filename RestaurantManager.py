@@ -370,6 +370,9 @@ def getRestaurantMenuItems(restaurant_id=None, baseMenuItem_id=None,
         menuSections = getMenuSections()
 
         restaurantMenuItems = {}
+
+        for menuSection in menuSections:
+            restaurantMenuItems[menuSection.name] = []
         
         for restaurantMenuItem in restaurantMenuItemList:
             menuSection = getMenuSection(menuSection_id=restaurantMenuItem.menuSection_id)

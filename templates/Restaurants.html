@@ -4,15 +4,48 @@
 											           filename='Restaurants.css')}}">
 </head>
 <body> 
-	<h1 class='header'>
-		List of All Restaurants
-	</h1>
+	<div id='pageHeader'>
+		<div id='coloredHeader'>
 
-	<div class='homeLinks'>
-		<a href="{{url_for('restaurants')}}">restaurants</a>
-		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
-		<a href="{{url_for('cuisines')}}">cuisines</a>
+			<span id='signIn'>
+
+				<div id='loginStatus'>
+					{{loginStatusMessage}}
+				</div>
+
+				<span class='hideLoggedIn' id='loginSpan'>
+					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+						Log in here</a>
+				</span>
+
+				<span class='hideLoggedOut' id='profileSpan'>
+					<a class='actionLink' href="#">
+						View/edit profile</a>
+				</span>
+
+    			<span class='hideLoggedOut' id='signOutSpan'>
+    				<a class="backLink" href="#" onclick="signOut();">
+    					Sign out</a>
+    			</span>
+
+    		</span>	
+
+			<h1 id='pageTitle' class='header'>
+				List of All Restaurants
+			</h1>
+
+		</div>
+
+		<div id='transHeader'>
+			<div class='homeLinks'>
+				<a href="{{url_for('restaurants')}}">restaurants</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+				<a href="{{url_for('cuisines')}}">cuisines</a>
+			</div>
+		</div>
 	</div>
+
+<div id='pageContent'>
 
 	<p>
 		<a class='backLink' href="{{url_for('restaurantManagerIndex')}}">
@@ -31,22 +64,47 @@
 	{% endwith %}
 	</div>
 
+<div class='stats'>
+		<p>Stats for all restaurants:</p>
+		<ul>
+			<li>
+				Total restaurants: {{numRestaurants}}
+			</li>
+		</ul>
+
 	<div class='list'>
 	<p>
 		Click a restaurant to view, edit, or delete it, or 
 		<a class='actionLink' href="{{url_for('addRestaurant')}}"> 
 			click here to create a new restaurant</a>
 	</p>
+	<span class='hideLoggedOut' id='itemNote'>
+		(Your restaurants are highlighted)
+	</span>
 	<ul>
-	{% for r in restaurants %}
+		{% for cuisineID in cuisineToRestaurantsDict %}
 		<li>
-			<a class='forwardLink' href="{{url_for('restaurant',
-							 	restaurant_id=r.id)}}">
-				{{r.name}} (ID {{r.id}})
-			</a>
+			Restaurants with primary cuisine '{{cuisineToRestaurantsDict[cuisineID]['cuisine'].name}}':
+			<ol>
+				{% for restaurantID in cuisineToRestaurantsDict[cuisineID]['restaurants'] %}
+				<li>
+					<span class="{{cuisineToRestaurantsDict[cuisineID]['restaurants'][restaurantID]['ownership']}}"><a class='forwardLink' href="{{url_for('restaurant', restaurant_id=restaurantID)}}">
+						{{cuisineToRestaurantsDict[cuisineID]['restaurants'][restaurantID]['restaurant'].name}} (ID {{cuisineToRestaurantsDict[cuisineID]['restaurants'][restaurantID]['restaurant'].id}})</a></span>
+				</li>
+				{% endfor %}
+			</ol>
+			</br>
 		</li>
-	{% endfor %}
+		{% endfor %}
 	</ul>
 	</div>
+</div>
+</div>
+<script src="{{url_for('static', filename='login.js')}}">
+</script>
+<script src="{{url_for('static', filename='signOut.js')}}">
+</script>
+<script>displayBasedOnLogin({{intBooleanLoggedIn}});
+</script>
 </body>
 </html>

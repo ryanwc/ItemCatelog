@@ -4,23 +4,50 @@
 											           filename='Cuisines.css')}}">
 </head>
 <body>
-	<h1 class='header'>
-		Add Cuisine
-	</h1>
-	
-	<div class='homeLinks'>
-		<a href="{{url_for('restaurants')}}">restaurants</a>
-		<a href="{{url_for('restaurantManagerIndex')}}">home</a>
-		<a href="{{url_for('cuisines')}}">cuisines</a>
+	<div id='pageHeader'>
+		<div id='coloredHeader'>
+
+			<span id='signIn'>
+
+				<div id='loginStatus'>
+					{{loginStatusMessage}}
+				</div>
+
+				<span class='hideLoggedIn' id='loginSpan'>
+					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+						Log in here</a>
+				</span>
+
+				<span class='hideLoggedOut' id='profileSpan'>
+					<a class='actionLink' href="#">
+						View/edit profile</a>
+				</span>
+
+    			<span class='hideLoggedOut' id='signOutSpan'>
+    				<a class="backLink" href="#" onclick="signOut();">
+    					Sign out</a>
+    			</span>
+
+    		</span>	
+
+			<h1 id='pageTitle' class='header'>
+				Add Cuisine
+			</h1>
+
+		</div>
+
+		<div id='transHeader'>
+			<div class='homeLinks'>
+				<a href="{{url_for('restaurants')}}">restaurants</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+				<a href="{{url_for('cuisines')}}">cuisines</a>
+			</div>
+		</div>
 	</div>
-	
+<div id='pageContent'>
 	<div class='actionText'>
 		<p>
-			Create a new cuisine and add it to the cuisine list.  Note that cuisine names must be unique, so you will get an error if the cuisine name already exisits in the database.
-		</p>
-		<p>
-			Note that the cuisine will not start with any base menu items. So, after you create the cuisine, you might want to create some
-			base menu items for it.
+			Create a new cuisine and add it to the cuisine list.
 		</p>
 	</div>
 
@@ -34,6 +61,18 @@
 		<h3 class='header'>
 			Info for New Cuisine
 		</h3>
+
+		<p> 
+			Important notes:
+			<ul>
+				<li>
+					Cuisine names must be unique, so you will get an error if the cuisine name already exisits in the database.
+				</li>
+				<li>
+					The cuisine will not start with any base menu items. So, after you create the cuisine, you might want to create some base menu items for it.
+				</li>
+			</ul>
+		</p>
 		
 		<p>Cuisine Name:</p>
 		<input type='text' size='50' name='name'>
@@ -46,6 +85,7 @@
 		<input type='submit' value='Create Cuisine'>
 
 	</form>
+</div>
 <script src="{{url_for('static', filename='login.js')}}">
 </script>
 <script src="{{url_for('static', filename='signOut.js')}}">
