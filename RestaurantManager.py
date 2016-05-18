@@ -45,6 +45,7 @@ def getUserThings(user_id):
     restaurants = getRestaurants(user_id=user_id)
 
     for restaurant in restaurants:
+        userThings[restaurant.id] = {}
         userThings[restaurant.id]['restaurant'] = restaurant
         sectionedItems = getRestaurantMenuItems(restaurant_id=restaurant.id,
                                                 byMenuSection=True)

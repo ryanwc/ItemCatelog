@@ -1800,6 +1800,102 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                    loginStatusMessage=loginStatusMessage)
 
+@app.route('/users/', methods=['GET'])
+def users(user_id):
+        user = RestaurantManager.getUser(user_id)
+        # set login HTML and permissions
+        intBooleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
+
+        if isLoggedIn():
+
+            displayNoneIfLoggedIn = "none"
+            loginStatusMessage = "Logged in as " + login_session['username']
+            # passed to javascript function
+            intBooleanLoggedIn = 1
+
+        return render_template('Users.html',
+                               intBooleanLoggedIn=intBooleanLoggedIn,
+                               displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                               loginStatusMessage=loginStatusMessage)
+
+@app.route('/users/<int:user_id>/', methods=['GET'])
+def user(user_id):
+        # set login HTML and permissions
+        intBooleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
+
+        if isLoggedIn():
+
+            displayNoneIfLoggedIn = "none"
+            loginStatusMessage = "Logged in as " + login_session['username']
+            # passed to javascript function
+            intBooleanLoggedIn = 1
+
+        user = RestaurantManager.getUser(user_id=user_id)
+
+        userThings = RestaurantManager.getUserThings(user.id)
+
+        if (isLoggedIn() and
+            login_session['user_id'] == user.id):
+
+            return render_template('PrivateUserProfile.html',
+                                   user=user,
+                                   userThings=userThings,
+                                   intBooleanLoggedIn=intBooleanLoggedIn,
+                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                                   loginStatusMessage=loginStatusMessage)
+        else:
+
+            return render_template('PublicUserProfile.html',
+                                   user=user,
+                                   userThings=userThings,
+                                   intBooleanLoggedIn=intBooleanLoggedIn,
+                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                                   loginStatusMessage=loginStatusMessage)
+
+@app.route('/users/<int:user_id>/edit/', methods=['GET','POST'])
+def editUserProfile(user_id):
+        user = RestaurantManager.getUser(user_id)
+        # set login HTML and permissions
+        intBooleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
+
+        if isLoggedIn():
+
+            displayNoneIfLoggedIn = "none"
+            loginStatusMessage = "Logged in as " + login_session['username']
+            # passed to javascript function
+            intBooleanLoggedIn = 1
+
+        return render_template('EditUserProfile.html',
+                               intBooleanLoggedIn=intBooleanLoggedIn,
+                               displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                               loginStatusMessage=loginStatusMessage)
+
+@app.route('/users/<int:user_id>/delete/', methods=['GET','POST'])
+def deleteUserProfile(user_id):
+        user = RestaurantManager.getUser(user_id)
+        # set login HTML and permissions
+        intBooleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
+
+        if isLoggedIn():
+
+            displayNoneIfLoggedIn = "none"
+            loginStatusMessage = "Logged in as " + login_session['username']
+            # passed to javascript function
+            intBooleanLoggedIn = 1
+
+        return render_template('DeleteUserProfile.html',
+                               intBooleanLoggedIn=intBooleanLoggedIn,
+                               displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                               loginStatusMessage=loginStatusMessage)
+
 # for checking picture filename input
 def allowed_file(filename):
         return '.' in filename and \

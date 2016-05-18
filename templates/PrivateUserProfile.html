@@ -1,0 +1,245 @@
+<html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Users.css')}}">
+</head>
+<body> 
+	<div id='pageHeader'>
+		<div id='coloredHeader'>
+
+			<span id='signIn'>
+
+				<div id='loginStatus'>
+					{{loginStatusMessage}}
+				</div>
+
+				<span class='hideLoggedIn' id='loginSpan'>
+					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+						Log in here</a>
+				</span>
+
+				<span class='hideLoggedOut' id='profileSpan'>
+					<a class='actionLink' href="#">
+						View/edit profile</a>
+				</span>
+
+    			<span class='hideLoggedOut' id='signOutSpan'>
+    				<a class="backLink" href="#" onclick="signOut();">
+    					Sign out</a>
+    			</span>
+
+    		</span>	
+
+			<h1 id='pageTitle' class='header'>
+				{{user.name}}
+			</h1>
+
+		</div>
+
+		<div id='transHeader'>
+			<div class='homeLinks'>
+				<a href="{{url_for('restaurants')}}">restaurants</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+				<a href="{{url_for('cuisines')}}">cuisines</a>
+			</div>
+		</div>
+	</div>
+
+<div id='pageContent'>
+	<p>
+		<a class='backLink' href="{{url_for('users')}}">
+			Back to the user list
+		</a>
+	</p>
+
+	<div class='flash'>
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<ul>
+				{% for message in messages %}
+					<li><strong>{{message}}</strong></li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+	</div>
+
+	<div class='stats'>
+		<p>Stats for user '{{user.name}}':</p>
+		<ul>
+			<li>ID: {{user.id}}</li>
+			<br>
+			<li>Total Restaurants: {{numRestaurants}}</li>
+			<li>Restaurant with Most Expensive Average Item Price: {{}}</li>
+			<li>Restaurant with Least Expensive Average Item Price: {{}}</li>
+			<br>
+			<li>Total Restaurant Menu Items: {{numRestaurantMenuItems}}</li>
+			<li>Average Restaurant Menu Item Price: {{avgRestaurantMenuItemPrice}}</li>
+		</ul>
+
+		<div class='list'>
+		<p>
+			Restaurants with menu items <span id='toggleAll'>(hide all)</span>:
+		</p>
+		<ol>
+			{% for restaurantID in userThings %}
+			<li>
+				<a class='forwardLink' href="{{url_for('restaurant', restaurant_id=restaurantID)}}">{{userThings[restaurantID]['restaurant'].name}} (ID {{userThings[restaurantID]['restaurant'].id}})</a> <span class='actionLink' onclick ='toggleList(restaurant{{restaurantID}}List);'>(hide)</span>
+				<ul id='restaurant{{restaurantID}}List'>
+					<li>
+						Appetizers <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}AppetizerList);'>(hide)</span>:
+						<ol id='restaurant{{restaurantID}}AppetizerList'>
+							{% for item in userThings[restaurantID]['items']['Appetizer'] %}
+							<li>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
+								<ul id='item{{item.id}}List'>
+									<li>
+										ID: {{item.id}}
+									</li>
+									<li>
+										Description: {{item.description}}
+									</li>
+									<li>
+										Price: {{item.price}}
+									</li>
+								</ul>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li>
+						Main Courses <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}MainCourseList);'>(hide)</span>:
+						<ol id='restaurant{{restaurantID}}MainCourseList'>
+							{% for item in userThings[restaurantID]['items']['Main Course'] %}
+							<li>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
+								<ul id='item{{item.id}}List'>
+									<li>
+										ID: {{item.id}}
+									</li>
+									<li>
+										Description: {{item.description}}
+									</li>
+									<li>
+										Price: {{item.price}}
+									</li>
+								</ul>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li>
+						Side Dishes <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}SideDishList);'>(hide)</span>:
+						<ol id='restaurant{{restaurantID}}SideDishList'>
+							{% for item in userThings[restaurantID]['items']['Side Dish'] %}
+							<li>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
+								<ul id='item{{item.id}}List'>
+									<li>
+										ID: {{item.id}}
+									</li>
+									<li>
+										Description: {{item.description}}
+									</li>
+									<li>
+										Price: {{item.price}}
+									</li>
+								</ul>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li>
+						Drink <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}DrinkList);'>(hide)</span>:
+						<ol id='restaurant{{restaurantID}}DrinkList'>
+							{% for item in userThings[restaurantID]['items']['Drink'] %}
+							<li>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
+								<ul id='item{{item.id}}List'>
+									<li>
+										ID: {{item.id}}
+									</li>
+									<li>
+										Description: {{item.description}}
+									</li>
+									<li>
+										Price: {{item.price}}
+									</li>
+								</ul>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li>
+						Dessert <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}DessertList);'>(hide)</span>:
+						<ol id='restaurant{{restaurantID}}DessertList'>
+							{% for item in userThings[restaurantID]['items']['Dessert'] %}
+							<li>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
+								<ul id='item{{item.id}}List'>
+									<li>
+										ID: {{item.id}}
+									</li>
+									<li>
+										Description: {{item.description}}
+									</li>
+									<li>
+										Price: {{item.price}}
+									</li>
+								</ul>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li>
+						Other <span class='actionLink' onclick='toggleList(restaurant{{restaurantID}}OtherList);'>(hide)</span>:
+						<ol id='restaurant{{restaurantID}}OtherList'>
+							{% for item in userThings[restaurantID]['items']['Other'] %}
+							<li>
+								<a class='forwardLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurantID, restaurantMenuItem_id=item.id)}}">{{item.name}}</a> <span class='actionLink' onclick='toggleList(item{{item.id}}List);'>(hide)</span>
+								<ul id='item{{item.id}}List'>
+									<li>
+										ID: {{item.id}}
+									</li>
+									<li>
+										Description: {{item.description}}
+									</li>
+									<li>
+										Price: {{item.price}}
+									</li>
+								</ul>
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+				</ul>
+			</li>
+			{% endfor %}
+		</ol>
+		</div>
+	</div>
+
+	<div class='list'>
+	<p>Profile Actions:</p>
+	<ul>
+		<li><a class='actionLink' href="{{url_for('editProfile', 
+							   user_id=user.id)}}">
+			Edit profile</a>
+		</li>
+		<li><a class='actionLink' href="{{url_for('deleteProfile', 
+							   user_id=user.id)}}">
+			Delete profile</a>
+		</li>
+	</ul>
+	</div>
+</div>
+<script src="{{url_for('static', filename='login.js')}}">
+</script>
+<script src="{{url_for('static', filename='signOut.js')}}">
+</script>
+<script src="{{url_for('static', filename='lists.js')}}">
+</script>
+<script>displayBasedOnLogin({{intBooleanLoggedIn}});
+</script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<html>
+<head>
+	<link rel=stylesheet type=text/css href="{{url_for('static',
+											           filename='Users.css')}}">
+</head>
+<body> 
+	<div id='pageHeader'>
+		<div id='coloredHeader'>
+
+			<span id='signIn'>
+
+				<div id='loginStatus'>
+					{{loginStatusMessage}}
+				</div>
+
+				<span class='hideLoggedIn' id='loginSpan'>
+					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+						Log in here</a>
+				</span>
+
+				<span class='hideLoggedOut' id='profileSpan'>
+					<a class='actionLink' href="#">
+						View/edit profile</a>
+				</span>
+
+    			<span class='hideLoggedOut' id='signOutSpan'>
+    				<a class="backLink" href="#" onclick="signOut();">
+    					Sign out</a>
+    			</span>
+
+    		</span>	
+
+			<h1 id='pageTitle' class='header'>
+				{{user.name}}
+			</h1>
+
+		</div>
+
+		<div id='transHeader'>
+			<div class='homeLinks'>
+				<a href="{{url_for('restaurants')}}">restaurants</a>
+				<a href="{{url_for('restaurantManagerIndex')}}">home</a>
+				<a href="{{url_for('cuisines')}}">cuisines</a>
+			</div>
+		</div>
+	</div>
+
+<div id='pageContent'>
+	<p>
+		<a class='backLink' href="{{url_for('users')}}">
+			Back to the user list
+		</a>
+	</p>
+
+	<div class='flash'>
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<ul>
+				{% for message in messages %}
+					<li><strong>{{message}}</strong></li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+	</div>
+
+	<div class='stats'>
+		<p>Stats for user '{{user.name}}':</p>
+		<ul>
+			<li>ID: {{user.id}}</li>
+			<br>
+			<li>Total Restaurants: {{numRestaurants}}</li>
+			<br>
+			<li>Total Restaurant Menu Items: {{numRestaurantMenuItems}}</li>
+		</ul>
+
+		<div class='list'>
+		<p>
+			{{user.name}}'s restaurants (with menu items) <span id='masterToggle' onclick="toggleAllLists();">(hide all)</span>:
+		</p>
+		<ol id="topLevelList">
+			{% for restaurantID in userThings %}
+			<li class='topLevelListItem'>
+				<a class='forwardLink' href="{{url_for('restaurant', restaurant_id=restaurantID)}}">{{userThings[restaurantID]['restaurant'].name}} (ID {{userThings[restaurantID]['restaurant'].id}})</a> <span class='listToggle' id='restaurant{{restaurantID}}Toggle' onclick ="toggleList('restaurant{{restaurantID}}');">(hide)</span>
+				<ul class='nonTopLevelList' id='restaurant{{restaurantID}}List'>
+					<li class='nonTopLevelListItem'>
+						Appetizers <span class='listToggle' id='restaurant{{restaurantID}}AppetizerToggle' onclick="toggleList('restaurant{{restaurantID}}Appetizer');">(hide)</span>
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}AppetizerList'>
+							{% for item in userThings[restaurantID]['items']['Appetizer'] %}
+							<li class='nonTopLevelListItem'>
+								{{item.name}}
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li class='nonTopLevelListItem'>
+						Main Courses <span class='listToggle' id='restaurant{{restaurantID}}MainCourseToggle' onclick="toggleList('restaurant{{restaurantID}}MainCourse');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}MainCourseList'>
+							{% for item in userThings[restaurantID]['items']['Main Course'] %}
+							<li class='nonTopLevelListItem'>
+								{{item.name}}
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li class='nonTopLevelListItem'>
+						Side Dishes <span class='listToggle' id='restaurant{{restaurantID}}SideDishToggle' onclick="toggleList('restaurant{{restaurantID}}SideDish');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}SideDishList'>
+							{% for item in userThings[restaurantID]['items']['Side Dish'] %}
+							<li class='nonTopLevelListItem'>
+								{{item.name}}
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li class='nonTopLevelListItem'>
+						Drink <span class='listToggle' id='restaurant{{restaurantID}}DrinkToggle' onclick="toggleList('restaurant{{restaurantID}}Drink');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}DrinkList'>
+							{% for item in userThings[restaurantID]['items']['Drink'] %}
+							<li class='nonTopLevelListItem'>
+								{{item.name}}
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li class='nonTopLevelListItem'>
+						Dessert <span class='listToggle' id='restaurant{{restaurantID}}DessertToggle' onclick="toggleList('restaurant{{restaurantID}}Dessert');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}DessertList'>
+							{% for item in userThings[restaurantID]['items']['Dessert'] %}
+							<li class='nonTopLevelListItem'>
+								{{item.name}}
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+					<li class='nonTopLevelListItem'>
+						Other <span class='listToggle' id='restaurant{{restaurantID}}OtherToggle' onclick="toggleList('restaurant{{restaurantID}}Other');">(hide)</span>:
+						<ol class='nonTopLevelList' id='restaurant{{restaurantID}}OtherList'>
+							{% for item in userThings[restaurantID]['items']['Other'] %}
+							<li class='nonTopLevelListItem'>
+								{{item.name}}
+							</li>
+							{% endfor %}
+						</ol>
+					</li>
+				</ul>
+			</li>
+			{% endfor %}
+		</ol>
+		</div>
+	</div>
+</div>
+<script src="{{url_for('static', filename='login.js')}}">
+</script>
+<script src="{{url_for('static', filename='signOut.js')}}">
+</script>
+<script src="{{url_for('static', filename='lists.js')}}">
+</script>
+<script>displayBasedOnLogin({{intBooleanLoggedIn}});
+</script>
+</body>
+</html>
