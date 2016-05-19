@@ -2102,9 +2102,10 @@ def deleteUser(user_id):
             flash("deleted " + user.name + " from " +\
                 "the database")
 
-            return redirect(url_for('cuisine',cuisine_id=cuisine_id))
+            return redirect(url_for('users'))
 
         return render_template('DeleteUser.html',
+                               user=user,
                                hiddenToken=login_session['state'],
                                intBooleanLoggedIn=intBooleanLoggedIn,
                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
