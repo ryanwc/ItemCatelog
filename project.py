@@ -1109,7 +1109,7 @@ def deleteRestaurant(restaurant_id):
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
             intBooleanLoggedIn = 1
-            user_id = login_session['login_session']
+            user_id = login_session['user_id']
 
             if restaurant.user_id != login_session['user_id']:
 
@@ -2163,6 +2163,8 @@ def deleteUser(user_id):
                 return redirect(url_for('login'))
 
             RestaurantManager.deleteUser(user.id)
+
+            flash(disconnect())
 
             flash("deleted " + user.name + " from " +\
                 "the database")

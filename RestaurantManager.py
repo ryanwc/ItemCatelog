@@ -8,7 +8,9 @@ import requests
 
 import os
 
-from database_setup import Base, Restaurant, BaseMenuItem, RestaurantMenuItem, Cuisine, User, MenuSection, Picture
+from database_setup import Base, Restaurant, BaseMenuItem
+from database_setup import RestaurantMenuItem, Cuisine, User
+from database_setup import MenuSection, Picture
 
 
 def populateMenuWithBaseItems(restaurant_id):
@@ -358,11 +360,11 @@ def getRestaurantMenuItems(restaurant_id=None, baseMenuItem_id=None,
     elif cuisine_id is not None:
         restaurantMenuItemList = session.query(RestaurantMenuItem).\
                                  join(BaseMenuItem).\
-                                 filter(BaseMenuItem.cuisine_id==cuisine_id).\
+                                 filter(cuisine_id=cuisine_id).\
                                  all()
     else:
         restaurantMenuItemList = session.query(RestaurantMenuItem).\
-                                 order_by(RestaurantMenuItem.restaurant_id).\
+                                 order_by(RestaurantMenuItem.id).\
                                  all()
 
     # section items if required
@@ -715,13 +717,16 @@ def deleteRestaurantMenuItem(restaurantMenuItem_id=None):
         baseMenuItem = getBaseMenuItem(restaurantMenuItem.baseMenuItem_id)
 
         if restaurantMenuItem.picture_id != baseMenuItem.picture_id:
-            deletePicture(restaurantMenuItem.picture_id)
+            picture = getPicture(restaurantMenuItem.picture_id)
 
         session.query(RestaurantMenuItem).\
             filter_by(id=restaurantMenuItem_id).\
             delete(synchronize_session=False)
 
         session.commit()
+
+        if picture:
+            deletePicture(picture.id)
 
     session.close()
 
@@ -751,6 +756,36 @@ def deletePicture(picture_id=None):
 
     session.close()
 
+def deleteUser(user_id=None):
+    """Remove a user from the database.
+
+    NOTE: This also deletes the user's restaurants, menu items,
+    and picture.
+
+    Args:
+        user_id: the id of the user to remove
+    """
+    session = getRestaurantDBSession()
+
+    if user_id is not None:
+
+        restaurants = getRestaurants(user_id=user_id)
+
+        for restaurant in restaurants:
+            deleteRestaurant(restaurant.id)
+
+        user = getUser(user_id)
+        picture = getPicture(user.picture_id)
+
+        session.query(User).filter_by(id=user_id).\
+                delete(synchronize_session=False)
+
+        session.commit()
+
+        deletePicture(picture.id)
+
+    session.close()
+
 def deleteRestaurant(restaurant_id=None):
     """Remove a restaurant from the database.
 
@@ -773,12 +808,14 @@ def deleteRestaurant(restaurant_id=None):
             session.commit()
 
         restaurant = getRestaurant(restaurant_id)
-        deletePicture(restaurant.picture_id)
+        picture = getPicture(restaurant.picture_id)
 
         session.query(Restaurant).filter_by(id=restaurant_id).\
                 delete(synchronize_session=False)
         
         session.commit()
+
+        deletePicture(picture.id)
 
     session.close()
 
@@ -789,23 +826,39 @@ def deleteBaseMenuItem(baseMenuItem_id=None):
     item as its base to the default base item for restaurant menu
     items with no base item.
 
+    However, it does not delete the picture, unless there are no base
+    menu items that share it's picture.
+
     Args:
         baseMenuItem_id: the id of the base menu item to remove
     """
     session = getRestaurantDBSession()
 
     if baseMenuItem_id is not None:
-        restaurantMenuItems = getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
+
+        baseMenuItem = getBaseMenuItem(baseMenuItem_id)
+        restaurantMenuItems = \
+            getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
+
+        sharePicture = False
 
         for restaurantMenuItem in restaurantMenuItems:
             editRestaurantMenuItem(restaurantMenuItem.id,
                                    newBaseMenuItem_id=-1)
+            if baseMenuItem.picture_id == restaurantMenuItem.picture_id:
+                sharePicture = True
+
+        if not sharePicture:
+            picture = getPicture(baseMenuItem.picture_id)
 
         session.query(BaseMenuItem).\
             filter_by(id=baseMenuItem_id).\
             delete(synchronize_session=False)
 
         session.commit()
+
+        if picture:
+            deletePicture(picture.id)
 
     session.close()
 
