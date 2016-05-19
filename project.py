@@ -1118,8 +1118,19 @@ def deleteRestaurant(restaurant_id):
 
 @app.route('/cuisines/<int:cuisine_id>/add/', methods=['GET','POST'])
 def addBaseMenuItem(cuisine_id):
-        if ('credentials' not in login_session or
-            'access_token' not in login_session['credentials']):
+
+        # set login HTML
+        intBooleanLoggedIn = 0
+        displayNoneIfLoggedIn = ""
+        loginStatusMessage = "Not logged in"
+
+        if isLoggedIn():
+
+            displayNoneIfLoggedIn = "none"
+            loginStatusMessage = "Logged in as " + login_session['username']
+            # passed to javascript function
+            intBooleanLoggedIn = 1
+        else:
             
             flash("You must log in to add a base menu item")
             return redirect('/login/')
@@ -1187,10 +1198,16 @@ def addBaseMenuItem(cuisine_id):
             flash("added '" + name + "'' to " + cuisine.name + \
                 "'s base menu")
 
-            return redirect(url_for('cuisine', cuisine_id=cuisine.id))
+            return redirect(url_for('cuisine', cuisine_id=cuisine.id,
+                                intBooleanLoggedIn=intBooleanLoggedIn,
+                                loginStatusMessage=loginStatusMessage,
+                                displayNoneIfLoggedIn=displayNoneIfLoggedIn))
         else:
             return render_template('AddBaseMenuItem.html',
-                                   cuisine=cuisine)
+                                cuisine=cuisine,
+                                intBooleanLoggedIn=intBooleanLoggedIn,
+                                loginStatusMessage=loginStatusMessage,
+                                displayNoneIfLoggedIn=displayNoneIfLoggedIn)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/')
 def baseMenuItem(cuisine_id, baseMenuItem_id):
