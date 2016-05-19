@@ -19,7 +19,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='profileSpan'>
-					<a class='actionLink' href="#">
+					<a class='actionLink' href="{{url_for('user',user_id=user.id)}}">
 						View/edit profile</a>
 				</span>
 
@@ -45,7 +45,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='fakeProfileSpan'>
-					<a class='actionLink' href="#">
+					<a class='actionLink' href="{{url_for('user',user_id=user.id)}}">
 						View/edit profile</a>
 				</span>
 

@@ -19,7 +19,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='profileSpan'>
-					<a class='actionLink' href="#">
+					<a class='actionLink' href="{{url_for('user',user_id=user_id)}}">
 						View/edit profile</a>
 				</span>
 
@@ -45,7 +45,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='fakeProfileSpan'>
-					<a class='actionLink' href="#">
+					<a class='actionLink' href="{{url_for('user',user_id=user_id)}}">
 						View/edit profile</a>
 				</span>
 
@@ -108,12 +108,19 @@
 			<img id='photo' src="{{picture.text}}" alt='[picture of {{restaurant.name}}]' max-width=100%>
 		</div>
 
+		</br>
+		<span class='hideIfNotOwner'>This is your restaurant menu item</span>
+		</br>
+
 		<p>
 			Stats for restaurant menu item '{{restaurantMenuItem.name}}':
 		</p>
 		<ul>
 			<li>
 				ID: {{restaurantMenuItem.id}}
+			</li>
+			<li>
+				Owner: {{owner.name}}
 			</li>
 			<li>
 				Description: {{restaurantMenuItem.description}}
@@ -174,9 +181,9 @@
 </script>
 <script src="{{url_for('static', filename='signOut.js')}}">
 </script>
-<script>displayBasedOnLogin({{intBooleanLoggedIn}});
-</script>
 <script>
+displayBasedOnLogin({{intBooleanLoggedIn}});
+displayBasedOnOwner({{user_id}}, {{restaurant.user_id}});
 // if appropriate, changes src of #photo from link to served file
 (function() {
 	if ('{{picture.serve_type}}' === 'upload') {

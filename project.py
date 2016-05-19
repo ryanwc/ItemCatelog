@@ -419,6 +419,7 @@ def restaurantManagerIndex():
         login_session['state'] = state
 
         userName = None
+        userID = -999 # make "profile" link (which will be hidden) go nowhere
         isAccessToken = 0
         access_token = None
 
@@ -429,11 +430,13 @@ def restaurantManagerIndex():
             if 'access_token' in login_session['credentials']:
                 print 'access token'
                 userName = login_session['username']
+                userID = login_session['user_id']
                 isAccessToken = 1
 
         return render_template("index.html",
                                state=state,
                                userName=userName,
+                               userID=userID,
                                isAccessToken=isAccessToken)
 
 @app.route('/cuisines/')
@@ -441,10 +444,13 @@ def cuisines():
         cuisines = RestaurantManager.getCuisines()
 
         # set login HTML
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
         if isLoggedIn():
+
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -454,17 +460,20 @@ def cuisines():
                                cuisines=cuisines,
                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                loginStatusMessage=loginStatusMessage,
-                               intBooleanLoggedIn=intBooleanLoggedIn)
+                               intBooleanLoggedIn=intBooleanLoggedIn,
+                               user_id=user_id)
 
 @app.route('/cuisines/add/', methods=['GET', 'POST'])
 def addCuisine():
         # set login HTML
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
 
         if isLoggedIn():
 
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -497,7 +506,8 @@ def addCuisine():
                                    hiddenToken=login_session['state'],
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                    loginStatusMessage=loginStatusMessage,
-                                   intBooleanLoggedIn=intBooleanLoggedIn)
+                                   intBooleanLoggedIn=intBooleanLoggedIn,
+                                   user_id=user_id)
 
 @app.route('/cuisines/<int:cuisine_id>/')
 def cuisine(cuisine_id):
@@ -512,11 +522,14 @@ def cuisine(cuisine_id):
                                  getBaseMenuItems(cuisine_id=cuisine_id,
                                                   byMenuSection=True)
         
-         # set login HTML
+        # set login HTML
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
+
         if isLoggedIn():
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -613,7 +626,8 @@ def cuisine(cuisine_id):
             sectionedBaseItemsWithChildren=sectionedBaseItemsWithChildren,
             displayNoneIfLoggedIn=displayNoneIfLoggedIn,
             loginStatusMessage=loginStatusMessage,
-            intBooleanLoggedIn=intBooleanLoggedIn)
+            intBooleanLoggedIn=intBooleanLoggedIn,
+            user_id=user_id)
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
@@ -621,6 +635,7 @@ def editCuisine(cuisine_id):
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
+        user_id = -99
 
         if isLoggedIn():
 
@@ -628,6 +643,7 @@ def editCuisine(cuisine_id):
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
             intBooleanLoggedIn = 1
+            user_id = login_session['user_id']
         else:
 
             flash("You must log in to add a cuisine")
@@ -665,7 +681,8 @@ def editCuisine(cuisine_id):
                                    hiddenToken=login_session['state'],
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                   loginStatusMessage=loginStatusMessage)
+                                   loginStatusMessage=loginStatusMessage,
+                                   user_id=user_id)
 
 @app.route('/cuisines/<int:cuisine_id>/delete/', methods=['GET', 'POST'])
 def deleteCuisine(cuisine_id):
@@ -673,9 +690,11 @@ def deleteCuisine(cuisine_id):
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
+        user_id = -99
 
         if isLoggedIn():
 
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -735,17 +754,20 @@ def deleteCuisine(cuisine_id):
                                    hiddenToken=login_session['state'],
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                   loginStatusMessage=loginStatusMessage)
+                                   loginStatusMessage=loginStatusMessage,
+                                   user_id=user_id)
 
 @app.route('/restaurants/')
 def restaurants():
         # set login HTML
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
 
         if isLoggedIn():
 
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -789,17 +811,20 @@ def restaurants():
                         numRestaurants=numRestaurants,
                         intBooleanLoggedIn=intBooleanLoggedIn,
                         displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                        loginStatusMessage=loginStatusMessage)
+                        loginStatusMessage=loginStatusMessage,
+                        user_id=user_id)
 
 @app.route('/restaurants/add/', methods=['GET','POST'])
 def addRestaurant():
         # set login HTML
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
 
         if isLoggedIn():
 
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -889,23 +914,27 @@ def addRestaurant():
                                     hiddenToken=login_session['state'],
                                     intBooleanLoggedIn=intBooleanLoggedIn,
                                     displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                    loginStatusMessage=loginStatusMessage)
+                                    loginStatusMessage=loginStatusMessage,
+                                    user_id=user_id)
 
 @app.route('/restaurants/<int:restaurant_id>/')
 def restaurant(restaurant_id):
         # set login HTML
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
 
         if isLoggedIn():
 
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
             intBooleanLoggedIn = 1
 
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
+        owner = RestaurantManager.getUser(restaurant.user_id)
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(restaurant_id=restaurant_id)
         cuisine = RestaurantManager.getCuisine(cuisine_id=restaurant.cuisine_id)
@@ -935,7 +964,9 @@ def restaurant(restaurant_id):
                                picture=picture,
                                intBooleanLoggedIn=intBooleanLoggedIn,
                                loginStatusMessage=loginStatusMessage,
-                               displayNoneIfLoggedIn=displayNoneIfLoggedIn)
+                               displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                               user_id=user_id,
+                               owner=owner)
 
 @app.route('/restaurants/<int:restaurant_id>/edit/',
            methods=['GET','POST'])
@@ -943,6 +974,7 @@ def editRestaurant(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
         # set login HTML and check permissions
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
@@ -953,6 +985,7 @@ def editRestaurant(restaurant_id):
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
             intBooleanLoggedIn = 1
+            user_id = login_session['user_id']
             
             if restaurant.user_id != login_session['user_id']:
 
@@ -1057,7 +1090,8 @@ def editRestaurant(restaurant_id):
                                    picture=picture,
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                   loginStatusMessage=loginStatusMessage)
+                                   loginStatusMessage=loginStatusMessage,
+                                   user_id=user_id)
 
 @app.route('/restaurants/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
@@ -1067,6 +1101,7 @@ def deleteRestaurant(restaurant_id):
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
+        user_id = -99
 
         if isLoggedIn():
 
@@ -1074,6 +1109,7 @@ def deleteRestaurant(restaurant_id):
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
             intBooleanLoggedIn = 1
+            user_id = login_session['login_session']
 
             if restaurant.user_id != login_session['user_id']:
 
@@ -1114,18 +1150,21 @@ def deleteRestaurant(restaurant_id):
                                    hiddenToken=login_session['state'],
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    loginStatusMessage=loginStatusMessage,
-                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn)
+                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                                   user_id=user_id)
 
 @app.route('/cuisines/<int:cuisine_id>/add/', methods=['GET','POST'])
 def addBaseMenuItem(cuisine_id):
 
         # set login HTML
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
 
         if isLoggedIn():
 
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -1207,7 +1246,8 @@ def addBaseMenuItem(cuisine_id):
                                 cuisine=cuisine,
                                 intBooleanLoggedIn=intBooleanLoggedIn,
                                 loginStatusMessage=loginStatusMessage,
-                                displayNoneIfLoggedIn=displayNoneIfLoggedIn)
+                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                                user_id=user_id)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/')
 def baseMenuItem(cuisine_id, baseMenuItem_id):
@@ -1224,6 +1264,7 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
         timesOrdered = 0
 
         # set login HTML
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
@@ -1231,6 +1272,7 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             intBooleanLoggedIn = 1
+            user_id = login_session['user_id']
 
         return render_template("BaseMenuItem.html",
                                 baseMenuItem=baseMenuItem,
@@ -1242,7 +1284,8 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
                                 menuSection=menuSection,
                                 displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                 loginStatusMessage=loginStatusMessage,
-                                intBooleanLoggedIn=intBooleanLoggedIn)
+                                intBooleanLoggedIn=intBooleanLoggedIn,
+                                user_id=user_id)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/edit/',
            methods=['POST','GET'])
@@ -1251,6 +1294,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
+        user_id = -99
 
         if isLoggedIn():
 
@@ -1258,6 +1302,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
             intBooleanLoggedIn = 1
+            user_id = login_session['user_id']
         else:
 
             flash("You must log in to edit a base menu item")
@@ -1362,7 +1407,8 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                                    picture=picture,
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                    loginStatusMessage=loginStatusMessage,
-                                   intBooleanLoggedIn=intBooleanLoggedIn)
+                                   intBooleanLoggedIn=intBooleanLoggedIn,
+                                   user_id=user_id)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/delete/',
            methods=['GET','POST'])
@@ -1371,9 +1417,11 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
+        user_id = -99
 
         if isLoggedIn():
 
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -1418,7 +1466,8 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
                                 hiddenToken=login_session['state'],
                                 intBooleanLoggedIn=intBooleanLoggedIn,
                                 displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                loginStatusMessage=loginStatusMessage)
+                                loginStatusMessage=loginStatusMessage,
+                                user_id=user_id)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/')
 def restaurantMenu(restaurant_id):
@@ -1450,13 +1499,15 @@ def restaurantMenu(restaurant_id):
 def addRestaurantMenuItem(restaurant_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         
-       # set login HTML and permissions
+        # set login HTML and permissions
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
 
         if isLoggedIn():
 
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -1557,13 +1608,15 @@ def addRestaurantMenuItem(restaurant_id):
                                    hiddenToken=login_session['state'],
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                   loginStatusMessage=loginStatusMessage)
+                                   loginStatusMessage=loginStatusMessage,
+                                   user_id=user_id)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/')
 def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
-       # set login HTML and permissions
+        # set login HTML and permissions
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
@@ -1574,6 +1627,7 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
             intBooleanLoggedIn = 1
+            user_id = login_session['user_id']
 
             if restaurant.user_id != login_session['user_id']:
 
@@ -1623,7 +1677,8 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                         baseMenuItemSection=baseMenuItemSection,
                         intBooleanLoggedIn=intBooleanLoggedIn,
                         displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                        loginStatusMessage=loginStatusMessage)
+                        loginStatusMessage=loginStatusMessage,
+                        user_id=user_id)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/edit/',
            methods=['GET','POST'])
@@ -1756,7 +1811,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                    picture=picture,
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    loginStatusMessage=loginStatusMessage,
-                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn)
+                                   displayNoneIfLoggedIn=displayNoneIfLoggedIn,
+                                   user_id=user_id)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
            methods=['GET','POST'])
@@ -1767,13 +1823,14 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
+        user_id = -99
 
         if isLoggedIn():
 
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
-            # passed to javascript function
             intBooleanLoggedIn = 1
+            user_id = login_session['user_id']
 
             if restaurant.user_id != login_session['user_id']:
 
@@ -1815,18 +1872,21 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                                    hiddenToken=login_session['state'],
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                   loginStatusMessage=loginStatusMessage)
+                                   loginStatusMessage=loginStatusMessage,
+                                   user_id=user_id)
 
 @app.route('/users/', methods=['GET'])
 def users():
         users = RestaurantManager.getUsers()
         # set login HTML and permissions
+        user_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
 
         if isLoggedIn():
 
+            user_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -1836,17 +1896,20 @@ def users():
                                users=users,
                                intBooleanLoggedIn=intBooleanLoggedIn,
                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                               loginStatusMessage=loginStatusMessage)
+                               loginStatusMessage=loginStatusMessage,
+                               user_id=user_id)
 
 @app.route('/users/<int:user_id>/', methods=['GET'])
 def user(user_id):
         # set login HTML and permissions
+        loggedInUser_id = -99
         intBooleanLoggedIn = 0
         displayNoneIfLoggedIn = ""
         loginStatusMessage = "Not logged in"
 
         if isLoggedIn():
 
+            loggedInUser_id = login_session['user_id']
             displayNoneIfLoggedIn = "none"
             loginStatusMessage = "Logged in as " + login_session['username']
             # passed to javascript function
@@ -1957,7 +2020,8 @@ def user(user_id):
                 leastExpensiveMenuItem=leastExpensiveMenuItem,
                 intBooleanLoggedIn=intBooleanLoggedIn,
                 displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                loginStatusMessage=loginStatusMessage)
+                loginStatusMessage=loginStatusMessage,
+                user_id=loggedInUser_id)
         else:
 
             return render_template('PublicUserProfile.html',
@@ -1968,7 +2032,8 @@ def user(user_id):
                                    numMenuItems=numMenuItems,
                                    intBooleanLoggedIn=intBooleanLoggedIn,
                                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                   loginStatusMessage=loginStatusMessage)
+                                   loginStatusMessage=loginStatusMessage,
+                                   user_id=loggedInUser_id)
 
 @app.route('/users/<int:user_id>/edit/', methods=['GET','POST'])
 def editUser(user_id):

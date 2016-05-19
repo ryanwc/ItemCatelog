@@ -19,7 +19,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='profileSpan'>
-					<a class='actionLink' href="#">
+					<a class='actionLink' href="{{url_for('user',user_id=user_id)}}">
 						View/edit profile</a>
 				</span>
 
@@ -45,7 +45,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='fakeProfileSpan'>
-					<a class='actionLink' href="#">
+					<a class='actionLink' href="{{url_for('user',user_id=user_id)}}">
 						View/edit profile</a>
 				</span>
 
@@ -107,11 +107,16 @@
 			<img id='photo' src="{{picture.text}}" alt='[picture of {{restaurant.name}}]' max-width=100%>
 		</div>
 
+		</br>
+		<span class='hideIfNotOwner'>This is your restaurant</span>
+		</br>
+
 		<p>
 			Stats for restaurant '{{restaurant.name}}':
 		</p>
 		<ul>
 			<li>ID: {{restaurant.id}}</li>
+			<li class="hideIfOwner">Owner: <a class='forwardLink' href="{{url_for('user',user_id=owner.id)}}">{{owner.name}}</a></li>
 			<li>Cuisine: {{cuisine.name}}</li>
 			<li>Number of items on menu: {{numMenuItems}}</li>
 			<li>Most expensive item: {{mostExpensiveItem.name}} 
@@ -141,9 +146,9 @@
 </script>
 <script src="{{url_for('static', filename='signOut.js')}}">
 </script>
-<script>displayBasedOnLogin({{intBooleanLoggedIn}});
-</script>
 <script>
+displayBasedOnLogin({{intBooleanLoggedIn}});
+displayBasedOnOwner({{user_id}}, {{restaurant.user_id}});
 // if appropriate, changes src of #photo from link to served file
 (function() {
 	if ('{{picture.serve_type}}' === 'upload') {

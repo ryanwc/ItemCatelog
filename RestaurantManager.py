@@ -628,6 +628,29 @@ def editCuisine(cuisine_id, newName=None):
     session.commit()
     session.close()
 
+def editUser(user_id, newName=None, newPicture_id=None):
+    """Edit a user
+
+    Pass none for an attribute to leave it unchanged.
+
+    Args:
+        user_id: the id of the user to edit
+        newName: a new username for the user
+        newPicture_id: the id of user's new picture
+    """
+    session = getRestaurantDBSession()
+
+    if newName is not None:
+        session.query(User).filter_by(id=user_id).\
+            update({'name':newName})
+
+    if newPicture_id is not None:
+        session.query(User).filter_by(id=user_id).\
+            update({'picture_id':newPicture_id})
+
+    session.commit()
+    session.close()
+
 def editBaseMenuItem(baseMenuItem_id, newName=None, 
                      newDescription=None, newPrice=None,
                      newCuisine_id=None, newMenuSection_id=None,

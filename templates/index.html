@@ -14,7 +14,9 @@
     	// is is an access token for this session
     	console.log({{isAccessToken}});
     	if ({{isAccessToken}}==1) { 
-    		$('#signInButtons').html('Signed in as ' + '{{userName}}');
+    		$('#signInMessage').html('Signed in as ' + '{{userName}}');
+    		$('#profileLink').html('View/edit your profile');
+    		$('#signInButtons').css("cssText", "display: none !important;");
     	}
     	else {
        		$('.signOut').css("cssText", "display: none !important;");
@@ -90,6 +92,8 @@
 <!-- data-approvalprompt="force" means user has to log in 
 	each time visit login page // useful for debugging, not so in production -->
 	<div id="signIn">
+		<div id='signInMessage'></div>
+		<div><a class='actionLink' id='profileLink' href="{{url_for('user',user_id=userID)}}"></div>
 		<div id='signInButtons'>
 			<div class="g-signin"
 				data-scope="openid email"
