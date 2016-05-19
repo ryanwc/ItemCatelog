@@ -3,9 +3,9 @@ body            {font-family: serif; background-color: #5353c6;}
 li				{margin: 0 0 3px 0;}
 
 .header         {left: 50%; text-align: center; font-family: 'Georgia', serif;
-				 border-bottom: 2px solid #eee; margin: 0;}
+				 border-bottom: 2px solid #eee;}
 
-.homeLinks		{left: 50%; text-align: center;}
+.homeLinks		{text-align: center;}
 
 .flash          {background: #F2F2F2;}
 
@@ -42,11 +42,12 @@ li				{margin: 0 0 3px 0;}
 				 border-color: #262626; position: absolute;
 				 background-color: #737373; font-size: .75em;
 				 top: 3; margin-left: 4px;}
-#pageHeader		{position: fixed; width: 100%; height: 75px; top: 0;}
-#coloredHeader	{background-color: #5353c6; top:0;}
-#transHeader	{background-color: transparent;}
+#pageHeader		{position: fixed; top: 0; left: 8; right: 8;}
+#coloredHeader	{background-color: #5353c6;}
+#transHeader	{}
 #pageContent 	{margin-top: 75px;}
-#pageTitle		{padding-top: 4px; padding-bottom: 4px}
+#pageTitle		{font-size: 180%; width: 100%; padding-top: 6px; 
+				 font-weight: bold; padding-bottom: 6px;}
 #loginSpan		{margin-right: 5px}
 #profileSpan	{margin-right: 5px}
 #signOutSpan	{}

@@ -1968,7 +1968,84 @@ def editUser(user_id):
             # passed to javascript function
             intBooleanLoggedIn = 1
 
-        return render_template('EditUser.html',
+            if user.id != login_session['user_id']:
+
+                flash("You do not have permission to edit this profile")
+                return redirect_uri(url_for('users'))
+
+        picture = RestaurantManager.getPicture(user.picture_id)
+
+        if request.method == 'POST':
+
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
+
+            oldName = user.name
+            newName = None
+            
+            if request.form['name']:
+                newName = bleach.clean(request.form['name'])
+
+            if request.form['pictureLink'] or request.files['pictureFile']:
+
+                newText = None
+                newServe_Type = None
+
+                if request.files['pictureFile']: 
+                    # user uploaded a file
+                    picFile = request.files['pictureFile']
+
+                    if allowed_file(picFile.filename):
+                        # overwrites pic for base menu item if already there
+                        newText = 'user' + str(user.id)
+                        picFile.save(os.path.join(app.config['UPLOAD_FOLDER'],\
+                            newText))
+                    else:
+
+                        flash('Sorry, the uploaded pic was not .png, .jpeg,'+\
+                                ' or .jpg.  Did not change picture.')
+
+                    if picture.serve_type == 'link':
+
+                        newServe_Type = 'upload'
+                else:
+                    # user gave a link
+                    newText = bleach.clean(request.form['pictureLink'])
+
+                    if picture.serve_type == 'upload':
+                        # change type and delete any old, uploaded pic
+                        newServe_Type = 'link'
+                        relPath = 'pics/'+picture.text
+                        os.remove(relPath)
+                
+                RestaurantManager.editPicture(user.picture_id,
+                    newText=newText,
+                    newServe_Type=newServe_Type)
+
+                if (newText is not None or newServe_Type is not None):
+                    flash("updated your picture!")
+
+            # we edited the pic directly, no need to include here
+            RestaurantManager.editUser(user.id, newName=newName)
+
+            if newName is not None:
+
+                login_session['username'] = newName
+                flash("changed your username from '" + oldName +\
+                    "' to '"+newName+"'")
+
+            return redirect(url_for('user', user_id=user.id))
+        else:
+
+            return render_template('EditUser.html',
+                               user=user,
+                               picture=picture,
+                               hiddenToken=login_session['state'],
                                intBooleanLoggedIn=intBooleanLoggedIn,
                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                loginStatusMessage=loginStatusMessage)
@@ -1988,7 +2065,30 @@ def deleteUser(user_id):
             # passed to javascript function
             intBooleanLoggedIn = 1
 
+            if user.id != login_session['user_id']:
+
+                flash("You do not have permission to edit this profile")
+                return redirect_uri(url_for('users'))
+
+        if request.method == 'POST':
+
+            if request.form['hiddenToken'] != login_session['state']:
+                # not same entity that first came to login page
+                # possible CSRF attack
+                flash("An unknown error occurred.  Try signing out"+\
+                    ", signing back in, and repeating the operation.")
+
+                return redirect(url_for('login'))
+
+            RestaurantManager.deleteUser(user.id)
+
+            flash("deleted " + user.name + " from " +\
+                "the database")
+
+            return redirect(url_for('cuisine',cuisine_id=cuisine_id))
+
         return render_template('DeleteUser.html',
+                               hiddenToken=login_session['state'],
                                intBooleanLoggedIn=intBooleanLoggedIn,
                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                loginStatusMessage=loginStatusMessage)

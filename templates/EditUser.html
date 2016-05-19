@@ -1,7 +1,7 @@
 <html>
 <head>
 	<link rel=stylesheet type=text/css href="{{url_for('static',
-											           filename='Cuisines.css')}}">
+											           filename='Users.css')}}">
 </head>
 <body>
 	<div id='pageHeader'>
@@ -31,7 +31,7 @@
     		</span>	
 
 			<h1 id='pageTitle' class='header'>
-				Edit '{{baseMenuItem.name}}'
+				Edit Your Profile
 			</h1>
 
 		</div>
@@ -49,57 +49,46 @@
 <div id='pageContent'>
 	<div class='actionText'>
 		<p>
-			Edit base menu item '{{baseMenuItem.name}}' (ID {{baseMenuItem.id}}) from from cuisine {{cuisine.name}}'s base menu.
+			Edit your profile information.
 		</p>
 	</div>
 
-	<a class='backLink' href="{{url_for('baseMenuItem',
-					   cuisine_id=cuisine.id,
-					   baseMenuItem_id=baseMenuItem.id)}}">
+	<a class='backLink' href="{{url_for('user', user_id=user.id)}}">
 		Cancel
 	</a>
 
-	<form class='form' action="{{url_for('editBaseMenuItem', 
-							cuisine_id=cuisine.id,
-							baseMenuItem_id=baseMenuItem.id)}}"
+	<form class='form' action="{{url_for('editUser', 
+							user_id=user.id)}}"
 		method='post' enctype=multipart/form-data>
 
 		<h3 class='header'>
-			Base Menu Item Attributes to Edit
+			Profile Attributes to Edit
 		</h3>
 
 		<p>
 			Important notes:
-			<ul>
-				<li>
-					NOTE: Leave a box blank if you do not wish to change its value.
-				</li>
-				<li>
-					Also note that you cannot change the cuisine type.  If you want to do that, you're better off creating a new base menu item.
-				</li>
-			</ul>
 		</p>
+		<ul>
+			<li>
+				Leave a box blank if you do not wish to change its value.
+			</li>
+			<li>
+				You cannot change the email address associated with an account.
+			</li>
+		</ul>
 
-		<p>Change Item Name to:</p>
+		<p>Change Username Name to:</p>
 		<input type='text' size='30' name='name' 
-			placeholder='{{baseMenuItem.name}}'>
-
-		<p>Change Item Description to:</p>
-		<input type='text' size='60' name='description' 
-			placeholder='{{baseMenuItem.description}}'>
-
-		<p>Change Item Price to:</p>
-		<input type='text' size='30' name='price' 
-			placeholder='{{baseMenuItem.price}}'>
+			placeholder='{{user.name}}'>
 
 		<p>
 			Current Picture:
 		</p>
 		<div class='photo'>
-			<img id='photo' src="{{picture.text}}" alt='[picture of {{baseMenuItem.name}}]' max-width=100%>
+			<img id='photo' src="{{picture.text}}" alt='[picture of {{user.name}}]' max-width=100%>
 		</div>
 
-		<p>Change Item Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
+		<p>Change Your Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input type='file' name='pictureFile' accept='image/*'>
 		<div id='photoOr'>or provide link:</div>
 		<input type='text' name='pictureLink' size='60'
@@ -123,9 +112,7 @@
 </script>
 
 <script>
-	// (could not get this to work properly in external .js file --
-	//  the setAttribute would take this page's url and append the "url for" part)
-  	// if appropriate, changes src of #photo from link to served file
+	// (could not get this to work properly in external .js file -- the setAttribute would append the "url for" to the page's url and insert that in the src instead of just the url_for. if appropriate, changes src of #photo from link to served file
     if ('{{picture.serve_type}}' === 'upload') {
 
     	console.log("is upload");

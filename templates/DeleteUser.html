@@ -1,7 +1,7 @@
 <html>
 <head>
 	<link rel=stylesheet type=text/css href="{{url_for('static',
-											           filename='Restaurants.css')}}">
+											           filename='Users.css')}}">
 </head>
 <body>
 	<div id='pageHeader'>
@@ -14,7 +14,7 @@
 				</div>
 
 				<span class='hideLoggedIn' id='loginSpan'>
-					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+					<a class='actionLink' hereref="{{url_for('restaurantManagerIndex')}}">
 						Log in here</a>
 				</span>
 
@@ -31,7 +31,7 @@
     		</span>	
 
 			<h1 id='pageTitle' class='header'>
-				Delete '{{restaurant.name}}'
+				Delete '{{user.name}}'
 			</h1>
 
 		</div>
@@ -50,22 +50,19 @@
 
 	<div class='actionText'>
 		<p>
-			Delete restaurant '{{restaurant.name}}' (ID {{restaurant.id}}) from the database.
+			Delete your profile ('{{user.name}}'; ID {{user.id}}; email {{user.email}}) from the database.
 		</p>
 	</div>
 
 	<p>
-		<a class='backLink' href="{{url_for('restaurant',
-				restaurant_id=restaurant.id)}}">Cancel</a>
+		<a class='backLink' href="{{url_for('user', user_id=user.id)}}">Cancel</a>
 	</p>
 
-	<form class='form' action="{{url_for('deleteRestaurant', 
-							restaurant_id=restaurant.id)}}"
-		method='post'>
+	<form class='form' action="{{url_for('deleteUser', user_id=user.id)}}" method='post'>
 
 		<p>
-			WARNING: This will also delete all of this restaurant's restaurant menu items.
-		</p>
+			WARNING: This will also delete 1) all of your restaurant menu items and 2) all of your restaurants.
+		<p>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
@@ -80,5 +77,4 @@
 </script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
 </script>
-<script>
 </html>

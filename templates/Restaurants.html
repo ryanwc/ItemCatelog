@@ -30,13 +30,12 @@
 
     		</span>	
 
-			<h1 id='pageTitle' class='header'>
+			<div id='pageTitle' class='header'>
 				List of All Restaurants
-			</h1>
+			</div>
 
 		</div>
 
-		<div id='transHeader'>
 		<div id='transHeader'>
 			<div class='homeLinks'>
 				<a href="{{url_for('restaurants')}}">restaurants</a>
@@ -107,6 +106,16 @@
 <script src="{{url_for('static', filename='signOut.js')}}">
 </script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
+</script>
+<script>
+// if appropriate, changes src of #photo from link to served file
+(function() {
+	if ('{{picture.serve_type}}' === 'upload') {
+
+	console.log("is upload");
+		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
+	}
+})();
 </script>
 </body>
 </html>
