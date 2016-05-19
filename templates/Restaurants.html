@@ -7,7 +7,7 @@
 	<div id='pageHeader'>
 		<div id='coloredHeader'>
 
-			<span id='signIn'>
+			<div id='signIn'>
 
 				<div id='loginStatus'>
 					{{loginStatusMessage}}
@@ -28,7 +28,33 @@
     					Sign out</a>
     			</span>
 
-    		</span>	
+    		</div>	
+
+   <!-- a non-displayed, floated-right div that mirrors the "real" (displayed), floated-left #signIn div (which has variable length). 
+   Used to ensure #pageTitle is centered on the page instead of centered in the
+   spaced to the right of the floating "real/visible" signIn box -->
+			<div id='fakeSignIn'>
+
+				<div id='fakeLoginStatus'>
+					{{loginStatusMessage}}
+				</div>
+
+				<span class='hideLoggedIn' id='fakeLoginSpan'>
+					<a class='actionLink' href="{{url_for('restaurantManagerIndex')}}">
+						Log in here</a>
+				</span>
+
+				<span class='hideLoggedOut' id='fakeProfileSpan'>
+					<a class='actionLink' href="#">
+						View/edit profile</a>
+				</span>
+
+    			<span class='hideLoggedOut' id='fakeSignOutSpan'>
+    				<a class="backLink" href="#" onclick="signOut();">
+    					Sign out</a>
+    			</span>
+
+    		</div>	
 
 			<div id='pageTitle' class='header'>
 				List of All Restaurants
@@ -45,6 +71,15 @@
 			</div>
 		</div>
 	</div>
+
+<!-- 
+	for ensuring that content is the appropriate distance from the header
+	(when scrolled to top) as the header changes height
+	(not "perfect", but very close)
+-->
+<div id='bodyPadding'> 
+	List of All Restaurants
+</div>
 
 <div id='pageContent'>
 
@@ -106,16 +141,6 @@
 <script src="{{url_for('static', filename='signOut.js')}}">
 </script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
-</script>
-<script>
-// if appropriate, changes src of #photo from link to served file
-(function() {
-	if ('{{picture.serve_type}}' === 'upload') {
-
-	console.log("is upload");
-		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
-	}
-})();
 </script>
 </body>
 </html>
