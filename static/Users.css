@@ -66,3 +66,32 @@ li				{margin: 0 0 3px 0;}
 				 margin-left: 13%; margin-right: 13%}
 #masterToggle	{color: #ffcc99; font-size: .75em; 
 				 font-style: italic; cursor: pointer;}
+
+form input[type~="text"]:invalid {
+
+	background-image: url(invalidInput.png); 
+	background-position: right top;
+	background-size: 13px 13px;
+	background-repeat: no-repeat;
+}
+form input[type~="text"]:valid {
+
+	background-image: url(validInput.png); 
+	background-position: right top;
+	background-size: 13px 13px;
+	background-repeat: no-repeat;
+}
+form input[type~="url"]:invalid {
+
+	background-image: url(invalidInput.png); 
+	background-position: right top;
+	background-size: 13px 13px;
+	background-repeat: no-repeat;
+}
+form input[type~="url"]:valid {
+
+	background-image: url(validInput.png); 
+	background-position: right top;
+	background-size: 13px 13px;
+	background-repeat: no-repeat;
+}
