@@ -93,8 +93,7 @@
 		Cancel
 	</a>
 
-	<form class='form' action="{{url_for('addRestaurant')}}"
-		method='post' enctype=multipart/form-data>
+	<form class='form' id='form' action="{{url_for('addRestaurant')}}" method='post' enctype=multipart/form-data>
 
 		<h3 class='header'>
 			Info for New Restaurant
@@ -116,7 +115,7 @@
 		</p>
 
 		<p>Restaurant Cuisine:</p>
-		<select name="cuisineID">
+		<select optional name="cuisineID">
 			<option value="custom">Custom (enter in text box below)</option>
   			{% for cuisine in cuisines %}
   				<option value="{{cuisine.id}}">{{cuisine.name}}</option>
@@ -124,16 +123,15 @@
 		</select>
 		</br>
 		</br>
-		<input type='text' size='60' name='customCuisine' 
-			placeholder='Custom Cuisine Name'>
+		<input optional type='text' size='30' name='customCuisine' placeholder='Custom Cuisine Name'>
 			
 		<p>Restaruant Name:</p>
-		<input type='text' size='30' name='name'>
+		<input type='text' required maxlength='100' size='30' name='name'>
 
 		<p>Restaurant Picture (uploaded pics must be .jpg, .jpeg, or .png):</p>
-		<input type='file' name='pictureFile' accept='image/*'>
-		<div id='photoOr'>or provide link:</div>
-		<input type='text' size='60' name='pictureLink' placeholder='Link to restaurant picture'>
+		<input type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
+		<div id='photoOr'>or provide link (must start with 'http://' or 'https://'):</div>
+		<input type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to restaurant picture'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 

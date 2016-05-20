@@ -94,9 +94,7 @@
 			Cancel</a>
 	</p>
 
-	<form class='form' action="{{url_for('addRestaurantMenuItem', 
-							restaurant_id=restaurant.id)}}"
-		method='post' enctype=multipart/form-data>
+	<form class='form' id='form' action="{{url_for('addRestaurantMenuItem', restaurant_id=restaurant.id)}}" method='post' enctype=multipart/form-data>
 
 		<h3 class='header'>
 			Info for New Restaurant Menu Item
@@ -109,7 +107,7 @@
 					If the menu item you want to create doesn't have a good fit for its base on the dropdown, you should either 1) select "Base Item for Menu Items with no Specific Cuisine" or 2) create a relevant base menu item (and relevant cuisine, if needed).  You can view and edit cuisines and their base menu items <a class='actionLink' href="{{url_for('cuisines')}}">here</a>.
 				</li>
 				<li>
-					The placeholder text for the text inputs will change as you select a base menu item so you can see the base menu item's attributes.
+					The placeholders for inputs will change as you select a base menu item so you can see its attributes.
 				</li>
 				<li>
 					For attributes you leave blank, the new restaurant menu item will have its base item's value.
@@ -118,33 +116,40 @@
 		</p>
 
 		<p>Base Menu Item:</p>
-		<select id='baseMenuItemID' name="baseMenuItemID" oninput='
-			placeholdWithBaseMenuItem()'>
+		<select required id='baseMenuItemID' name="baseMenuItemID" oninput='
+			placeholdWithBaseMenuItem(); loadPicture(this.value, document.getElementById(this.value + "picServe_Type"));'>
   		{% for baseMenuItem in baseMenuItems %}
   			<option id="baseMenuItem{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
   		{% endfor %}
 		</select>
 
 		<p>Item Name:</p>
-		<input id='name' type='text' size='30' name='name' placeholder='Name'>
+		<input optional id='name' type='text' maxlength='80' size='30' name='name' placeholder='Name'>
 
 		<p>Item Description:</p>
-		<input id='description' type='text' size='60' name='description' placeholder='Description'>
+		<input optional id='description' type='text' maxlength='250' size='80' name='description' placeholder='Description'>
 
-		<p>Item Price:</p>
-		<input id='price' type='text' size='30' name='price' placeholder='Price'>
+		<p>Item Price (must containly only digits and a decimal point):</p>
+		<input type='text' required pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price'>
 
 		<p>Item Menu Section:</p>
-		<select id='menuSection' name="menuSection">
+		<select required id='menuSection' name="menuSection">
 			{% for menuSection in menuSections %}
 				<option id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
 			{% endfor %}
 		</select>
 
+		<p>
+			Base Menu Item Picture:
+		</p>
+		<div class='photo'>
+			<img id='photo' src="[picture of base menu item]" alt='[picture of base menu item]' max-width=100%>
+		</div>
+
 		<p>Item Picture (uploaded pics must be .jpg, .jpeg, or .png):</p>
-		<input type='file' name='pictureFile' accept='image/*'>
-		<div id='photoOr'>or provide link:</div>
-		<input type='text' size='60' name='pictureLink' placeholder='Link to restaurant picture'>
+		<input type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
+		<div id='photoOr'>or provide link (must start with 'http://' or 'https://'):</div>
+		<input type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to item picture'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 		
@@ -173,6 +178,8 @@
 		  	<div id="{{baseMenuItem.id}}description">{{baseMenuItem.description}}</div>
   			<div id="{{baseMenuItem.id}}price">{{baseMenuItem.price}}</div>
   			<div id="{{baseMenuItem.id}}menuSection">{{baseMenuItem.menuSection_id}}</div>
+  			<div id="{{baseMenuItem.id}}picText"><{{baseMenuItemPic.text}}</div>
+   			<div id="{{baseMenuItem.id}}picServe_Type"><{{baseMenuItemPic.text}}</div>
   		{% endfor %}
 	</div>
 </div>
@@ -183,5 +190,26 @@
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
 </script>
 <script src="{{url_for('static', filename='forms.js')}}"></script>
+<script>
+	// (could not get this to work properly in external .js file --
+	//  the setAttribute would take this page's url and append the "url for" part)
+  	// if appropriate, changes src of #photo from link to served file
+function loadPicture(baseMenuItemID, serve_type) {
+
+    var picText = document.getElementById(baseMenuItemID+"picText");
+
+    if (serve_type === 'upload') {
+
+    	console.log("is upload");
+		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename="+pictText.html+")}}");
+    }
+    else {
+
+		document.getElementById("photo").setAttribute("src", pictText.html);
+    }
+
+    // reload only #photo
+}
+</script>
 </body>
 </html>

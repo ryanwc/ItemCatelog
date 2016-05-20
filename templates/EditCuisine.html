@@ -93,9 +93,7 @@
 		Cancel
 	</a>
 
-	<form class='form' action="{{url_for('editCuisine', 
-							cuisine_id=cuisine.id)}}"
-		method='post'>
+	<form class='form' id='form' action="{{url_for('editCuisine', cuisine_id=cuisine.id)}}" method='post'>
 
 		<h3 class='header'>
 			Cuisine Attributes to Edit
@@ -106,8 +104,7 @@
 		</p>
 
 		<p>Change Cuisine Name to:</p>
-		<input type='text' size='60' name='name' 
-			placeholder='{{cuisine.name}}'>
+		<input optional type='text' maxlength='80' size='50' name='name' placeholder='{{cuisine.name}}'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 

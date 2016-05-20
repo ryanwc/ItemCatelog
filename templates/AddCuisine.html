@@ -92,8 +92,7 @@
 		Cancel
 	</a>
 
-	<form class='form' action="{{url_for('addCuisine')}}"
-		method='post'>
+	<form class='form' id='form' action="{{url_for('addCuisine')}}" method='post'>
 
 		<h3 class='header'>
 			Info for New Cuisine
@@ -103,7 +102,7 @@
 			Important notes:
 			<ul>
 				<li>
-					Cuisine names must be unique, so you will get an error if the cuisine name already exisits in the database.
+					Cuisine names must be unique.
 				</li>
 				<li>
 					The cuisine will not start with any base menu items. So, after you create the cuisine, you might want to create some base menu items for it.
@@ -112,7 +111,7 @@
 		</p>
 		
 		<p>Cuisine Name:</p>
-		<input type='text' size='50' name='name'>
+		<input type='text' required maxlength='80' size='50' name='name'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 

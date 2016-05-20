@@ -107,25 +107,32 @@
 			Important notes:
 			<ul>
 				<li>
-					NOTE: Leave a box blank if you do not wish to change its value.
+					Leave a box blank if you do not wish to change its value.
 				</li>
 				<li>
-					Also note that you cannot change the cuisine type.  If you want to do that, you're better off creating a new base menu item.
+					You cannot change the cuisine type.  If you want to do that, you're better off creating a new base menu item.
 				</li>
 			</ul>
 		</p>
 
 		<p>Change Item Name to:</p>
-		<input type='text' size='30' name='name' 
+		<input type='text' optional maxlength='80' size='30' name='name' 
 			placeholder='{{baseMenuItem.name}}'>
 
 		<p>Change Item Description to:</p>
-		<input type='text' size='60' name='description' 
+		<input type='text' optional maxlength='250' size='80' name='description' 
 			placeholder='{{baseMenuItem.description}}'>
 
-		<p>Change Item Price to:</p>
-		<input type='text' size='30' name='price' 
-			placeholder='{{baseMenuItem.price}}'>
+		<p>Change Item Price to (must containly only digits and a decimal point):</p>
+		<input type='text' optional pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price'>
+
+		<p>Change Item Menu Section to:</p>
+		<select required id='menuSection' name="menuSection">
+		  	<option value="noNewSection">Do not change menu section</option>
+			{% for menuSection in menuSections %}
+				<option id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
+			{% endfor %}
+		</select>
 
 		<p>
 			Current Picture:
@@ -135,10 +142,9 @@
 		</div>
 
 		<p>Change Item Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
-		<input type='file' name='pictureFile' accept='image/*'>
-		<div id='photoOr'>or provide link:</div>
-		<input type='text' name='pictureLink' size='60'
-			placeholder='{{picture.text}}'>
+		<input type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
+		<div id='photoOr'>or provide link (must start with 'http://' or 'https://'):</div>
+		<input type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to item picture'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
