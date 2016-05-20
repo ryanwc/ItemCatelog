@@ -116,7 +116,7 @@
 
 		<p>Change Restaurant Cuisine to:</p>
 		<select optional name="cuisineID">
-		  <option value="noNewCuisine">Do not change cuisine</option>
+		  <option value="-1">Do not change cuisine</option>
   		{% for cuisine in cuisines %}
   			<option value="{{cuisine.id}}">{{cuisine.name}}</option>
   		{% endfor %}

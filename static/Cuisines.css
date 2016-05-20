@@ -65,6 +65,14 @@ li				{margin: 0 0 3px 0;}
 				 font-weight: bold; padding-bottom: 36px;
 				 margin-left: 13%; margin-right: 13%}
 
+form input[type~="text"] {
+
+	background-color: #e6e6e6;
+}
+form input[type~="url"] {
+
+	background-color: #e6e6e6;
+}
 form input[type~="text"]:invalid {
 
 	background-image: url(invalidInput.png); 

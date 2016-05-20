@@ -7,6 +7,8 @@ import requests
 
 import os
 
+import re
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -481,7 +483,7 @@ def addCuisine():
         else:
 
             flash("You must log in to add a cuisine")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         if request.method == 'POST':
 
@@ -493,7 +495,17 @@ def addCuisine():
 
                 return redirect(url_for('login'))
 
+            if not request.form['name']:
+
+                flash("Did not add cuisine; you must provide a name.")
+                return redirect(url_for('cuisines'))
+
             name = bleach.clean(request.form['name'])
+
+            if len(name) > 80:
+
+                flash("Did not add cuisine; name too long.")
+                return redirect(url_for('cuisines'))
 
             RestaurantManager.addCuisine(name)
 
@@ -640,14 +652,15 @@ def editCuisine(cuisine_id):
         if isLoggedIn():
 
             displayNoneIfLoggedIn = "none"
-            loginStatusMessage = "Logged in as " + login_session['username']
+            loginStatusMessage = "Logged in as " + \
+                login_session['username']
             # passed to javascript function
             intBooleanLoggedIn = 1
             user_id = login_session['user_id']
         else:
 
             flash("You must log in to add a cuisine")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
@@ -667,8 +680,16 @@ def editCuisine(cuisine_id):
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
 
-            if newName is not oldName:
-                RestaurantManager.editCuisine(cuisine_id, newName=newName)
+                if len(newName) > 80:
+
+                    newName = None
+                    flash("Did not change name; it was too long")
+
+
+            RestaurantManager.editCuisine(cuisine_id, newName=newName)
+            
+            if (newName is not oldName and
+                newName is not None):
                 
                 flash("Changed cuisine's name from '" + oldName +\
                     "' to '" + newName + "'")
@@ -702,7 +723,7 @@ def deleteCuisine(cuisine_id):
         else:
 
             flash("You must log in to delete a cuisine")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
@@ -833,7 +854,7 @@ def addRestaurant():
         else:
 
             flash("You must log in to add a restaurant")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         if request.method == 'POST':
 
@@ -845,9 +866,28 @@ def addRestaurant():
 
                 return redirect(url_for('login'))
 
+            if ( not (request.form['cuisineID'] or 
+                      request.form['customCuisine']) or
+                 (requestion.form['cuisineID'] == "-1" and 
+                  not request.form['customCuisine']) ):
+
+                flash("Did not add a restaurant; You did not provide "+\
+                    "a cuisine type.")
+                return redirect(url_for('restaurants'))
+
+            if not request.form['name']:
+
+                flash("Did not add restaurant; you did not provide a name")
+                return redirect(url_for('restaurants'))                
+
             name = bleach.clean(request.form['name'])
 
-            if request.form['cuisineID'] == 'custom':
+            if len(name) > 80:
+
+                flash("Did not add restaurant; name too long")
+                return redirect(url_for('restaurants'))    
+
+            if request.form['cuisineID'] == "-1":
                 custCuisineName = bleach.clean(request.form['customCuisine'])
                 RestaurantManager.addCuisine(name=custCuisineName)
                 custCuisine = RestaurantManager.getCuisine(name=custCuisineName)
@@ -862,27 +902,32 @@ def addRestaurant():
 
                 if allowed_file(picFile.filename):
                     # this name will be overwritten.
-                    # can't provide proper name now because don't have restaurant_id
+                    # can't provide proper name now because 
+                    # don't have restaurant_id
                     picFile.filename = secure_filename(picFile.filename)
-                    picture_id = RestaurantManager.addPicture(text=picFile.filename,
-                                                              serve_type='upload')
+                    picture_id = RestaurantManager.\
+                        addPicture(text=picFile.filename,
+                            serve_type='upload')
                 else:
 
-                    flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
-                        '.jpg.  Please edit the restaurant to add a picture.')
+                    flash("Did not add restaurant; the uploaded pic was "+\
+                        "not .png, .jpeg, or .jpg.")
+                    return redirect(url_for('restaurants'))   
+
             elif request.form['pictureLink']:
 
                 pictureLink = bleach.clean(request.form['pictureLink'])
                 picture_id = RestaurantManager.addPicture(text=pictureLink, 
                                                           serve_type='link')
             else:
-                pictureLink = "[no pic provided]"
-                picture_id = RestaurantManager.addPicture(text=pictureLink, 
-                                                          serve_type='link')
+                
+                flash("Did not add restaurant; you must provide a "+\
+                        "picture.")
+                return redirect(url_for('restaurants'))
 
             restaurant_id = RestaurantManager.addRestaurant(
                                 name=name,
-                                cuisine_id=cuisine_id,
+                                cuisine_id=cuisine.id,
                                 user_id=login_session['user_id'],
                                 picture_id=picture_id
                             )
@@ -891,19 +936,18 @@ def addRestaurant():
             # set the appropriate name in the database
             if picFile:
                 picfilename = 'restaurant' + str(restaurant_id)
-                picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], picfilename))
+                picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], \
+                    picfilename))
                 RestaurantManager.editPicture(picture_id=picture_id,
                                               newText=picfilename)
 
-            if request.form['cuisineID'] == 'custom':
-                flash("cuisine '" + cuisine.name + "' added to the " +\
-                    "database!")
+            if request.form['cuisineID'] == "-1":
+                flash("added a cuisine to the database!")
             else:
                 RestaurantManager.\
                     populateMenuWithBaseItems(restaurant_id)
 
-            flash("restaurant '" + name + "' with cuisine '" + cuisine.name +\
-                "' added to the database!")
+            flash("restaurant '" + name + "' added to the database!")
 
             return redirect(url_for('restaurants'))
         else:
@@ -990,11 +1034,12 @@ def editRestaurant(restaurant_id):
             if restaurant.user_id != login_session['user_id']:
 
                 flash("You do not have permission to edit this restaurant")
-                return redirect('/restaurants/'+str(restaurant.id)+'/')
+                return redirect(url_for('restaurant',
+                    restaurant_id=restaurant.id))
         else:
 
             flash("You must log in to edit a restaurant")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         cuisines = RestaurantManager.getCuisines()
@@ -1019,8 +1064,12 @@ def editRestaurant(restaurant_id):
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
+
+                if len(newName) > 100:
+                    newName = None
+                    flash("Did not change name; it was too long")
                 
-            if request.form['cuisineID'] != "noNewCuisine":
+            if request.form['cuisineID'] != "-1":
                 newCuisineID = request.form['cuisineID']
                 newCuisine = RestaurantManager.\
                              getCuisine(cuisine_id=newCuisineID)
@@ -1037,11 +1086,12 @@ def editRestaurant(restaurant_id):
                     if allowed_file(picFile.filename):
                         # overwrites pic for restaurant if already there
                         newText = 'restaurant' + str(restaurant.id)
-                        picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], newText))
+                        picFile.save(os.path.join(app.\
+                            config['UPLOAD_FOLDER'], newText))
                     else:
 
-                        flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
-                                '.jpg.  Did not change picture.')
+                        flash("Did not edit pic; uploaded pic was not "+\
+                            ".png, .jpeg, or .jpg.  Did not change picture.")
 
                     if picture.serve_type == 'link':
 
@@ -1050,7 +1100,10 @@ def editRestaurant(restaurant_id):
                     # user gave a link
                     newText = bleach.clean(request.form['pictureLink'])
 
-                    if picture.serve_type == 'upload':
+                    if len(newText) > 300:
+                        newText = None
+                        flash("Did not edit pic; link too long")
+                    elif picture.serve_type == 'upload':
                         # change serve type and delete old, uploaded pic
                         newServe_Type = 'link'
                         relPath = 'pics/'+picture.text
@@ -1114,12 +1167,13 @@ def deleteRestaurant(restaurant_id):
             if restaurant.user_id != login_session['user_id']:
 
                 flash("You do not have permission to delete this restaurant")
-                return redirect('/restaurants/'+str(restaurant.id)+'/')
+                return redirect(url_for('restaurants',
+                    restaurant_id=restaurant.id))
 
         else:
             
             flash("You must log in to delete a restaurant")
-            return redirect('/login')
+            return redirect(url_for('login'))
 
         if request.method == 'POST':
 
@@ -1172,7 +1226,7 @@ def addBaseMenuItem(cuisine_id):
         else:
             
             flash("You must log in to add a base menu item")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
@@ -1194,8 +1248,36 @@ def addBaseMenuItem(cuisine_id):
                 return redirect(url_for('cuisine', cuisine_id=cuisine.id))
 
             name = bleach.clean(request.form['name'])
+
+            if len(name) > 80:
+
+                flash('Did not add item; name was too long.')
+                return redirect(url_for('user', user_id=user.id))
+
             description = bleach.clean(request.form['description'])
+
+            if len(description) > 250:
+
+                flash('Did not add item; description was too long.')
+                return redirect(url_for('user', user_id=user.id))
+
             price = bleach.clean(request.form['price'])
+
+            if len(price) > 20:
+
+                flash('Did not add item; price was too long.')
+                return redirect(url_for('cuisine', 
+                    cuisine_id=cuisine.id))
+
+            match = re.search(r'[0-9]*(.[0-9][0-9])?', price)
+
+            if match.group(0) != price:
+
+                flash('Did not add item; price was in an invalid format.'+\
+                    ' Use only numerals optionally followed by a decimal '+\
+                    'and two more numerals.')
+                return redirect(url_for('cuisine',
+                    cuisine_id=cuisine.id))
 
             if request.files['pictureFile']:
                 picFile = request.files['pictureFile']
@@ -1209,9 +1291,11 @@ def addBaseMenuItem(cuisine_id):
                         addPicture(text=picFile.filename, serve_type='upload')
                 else:
 
-                    flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
-                        '.jpg.  Please edit the restaurant to change the "+\
-                         picture.')
+                    flash("Did not add item; the uploaded pic was not "+\
+                        ".png, .jpeg, or .jpg.")
+                    return redirect(url_for('cuisine',
+                        cuisine_id=cuisine.id))
+
             elif request.form['pictureLink']:
 
                 pictureLink = bleach.clean(request.form['pictureLink'])
@@ -1237,10 +1321,7 @@ def addBaseMenuItem(cuisine_id):
             flash("added '" + name + "'' to " + cuisine.name + \
                 "'s base menu")
 
-            return redirect(url_for('cuisine', cuisine_id=cuisine.id,
-                                intBooleanLoggedIn=intBooleanLoggedIn,
-                                loginStatusMessage=loginStatusMessage,
-                                displayNoneIfLoggedIn=displayNoneIfLoggedIn))
+            return redirect(url_for('cuisine', cuisine_id=cuisine.id))
         else:
             return render_template('AddBaseMenuItem.html',
                                 cuisine=cuisine,
@@ -1306,7 +1387,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         else:
 
             flash("You must log in to edit a base menu item")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
@@ -1335,12 +1416,36 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
+
+                if len(newName) > 80 :
+
+                    newName = None
+                    flash("Did not change name; it's too long")
                 
             if request.form['description']:
                 newDescription = bleach.clean(request.form['description'])
-                
+
+                if len(newDescription) > 250:
+
+                    newDescription = None
+                    flash("Did not change description; it's too long")
+
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
+
+                if len(newPrice) > 20:
+
+                    newPrice = None
+                    flash("Did not change price; it's too long.")
+
+                match = re.search(r'[0-9]*(.[0-9][0-9])?', newPrice)
+
+                if match.group(0) != newPrice:
+
+                    newPrice = None
+                    flash("Did not change price; it was in an invalid "+\
+                        "format.  Use only numerals optionally followed "+\
+                        "by a decimal and two more numerals.")
 
             if request.form['pictureLink'] or request.files['pictureFile']:
 
@@ -1354,20 +1459,25 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                     if allowed_file(picFile.filename):
                         # overwrites pic for base menu item if already there
                         newText = 'baseMenuItem' + str(baseMenuItem.id)
-                        picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], newText))
+                        picFile.save(os.path.join(app.\
+                            config['UPLOAD_FOLDER'], newText))
+
+                        if picture.serve_type == 'link':
+
+                            newServe_Type = 'upload'
                     else:
 
-                        flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
-                                '.jpg.  Did not change picture.')
-
-                    if picture.serve_type == 'link':
-
-                        newServe_Type = 'upload'
+                        flash("Did not edit the pic; the uploaded pic was "+\
+                            "not .png, .jpeg, or .jpg.")
                 else:
                     # user gave a link
                     newText = bleach.clean(request.form['pictureLink'])
 
-                    if picture.serve_type == 'upload':
+                    if len(newText) > 300:
+
+                        newText = None
+                        flash("Did not change picture; link too long")
+                    elif picture.serve_type == 'upload':
                         # change serve type and delete old, uploaded pic
                         newServe_Type = 'link'
                         relPath = 'pics/'+picture.text
@@ -1429,7 +1539,7 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
         else:
 
             flash("You must log in to delete a base menu item")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
@@ -1517,11 +1627,12 @@ def addRestaurantMenuItem(restaurant_id):
 
                 flash("You do not have permission to add an item to "+\
                 " this restaurant's menu")
-                return redirect('/restaurants/'+str(restaurant.id)+'/menu/')  
+                return redirect(url_for('restaurantMenu',
+                    restaurant_id=restaurant.id))  
         else:
 
             flash("You must log in add an item to this restaurant's menu")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         baseMenuItems = RestaurantManager.getBaseMenuItems()
         menuSections = RestaurantManager.getMenuSections()
@@ -1548,33 +1659,64 @@ def addRestaurantMenuItem(restaurant_id):
             if request.form['name']:
                 name = bleach.clean(request.form['name'])
 
+                if len(name) > 80:
+
+                    flash("Did not add item; name too long")
+                    return redirect(url_for('restaurantMenu',
+                        restaurant_id=restaurant_id))
+
             if request.form['description']:
                 description = bleach.clean(request.form['description'])
 
+                if len(description) > 250:
+
+                    flash("Did not add item; description too long")
+                    return redirect(url_for('restaurantMenu',
+                        restaurant_id=restaurant_id))
+
             if request.form['price']:
                 price = bleach.clean(request.form['price'])
+
+                if len(price) > 20:
+
+                    flash('Did not add item; price was too long.')
+                    return redirect(url_for('restaurantMenu',
+                        restaurant_id=restaurant.id))
+
+                match = re.search(r'[0-9]*(.[0-9][0-9])?', price)
+
+                if match.group(0) != price:
+
+                    flash("Did not add item; price was in an invalid "+\
+                        "format.  Use only numerals optionally followed "+\
+                        "by a decimal and two more numerals.")
+                    return redirect(url_for('restaurantMenu', 
+                        restaurant_id=restaurant_id))        
 
             if request.files['pictureFile']:
                 picFile = request.files['pictureFile']
 
                 if allowed_file(picFile.filename):
                     # this name will be overwritten.
-                    # can't provide proper name now because don't have restaurant_id
+                    # can't provide proper name now because 
+                    # don't have restaurant_id
                     picFile.filename = secure_filename(picFile.filename)
-                    picture_id = RestaurantManager.addPicture(text=picFile.filename,
-                                                              serve_type='upload')
+                    picture_id = RestaurantManager.\
+                        addPicture(text=picFile.filename,
+                            serve_type='upload')
                 else:
 
-                    flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
-                        '.jpg.  Please edit the restaurant to change the picture.')
+                    flash("Did not add restaurant menu item; uploaded pic "+\
+                        "was not .png, .jpeg, or .jpg.")
+                    return redirect(url_for('restaurantMenu'),
+                                            restaurant_id=restaurant.id)
             elif request.form['pictureLink']:
 
                 pictureLink = bleach.clean(request.form['pictureLink'])
                 picture_id = RestaurantManager.addPicture(text=pictureLink, 
                                                           serve_type='link')
 
-            # don't need to provide scenario for no pic provided
-            # defaults to base menu item pic
+            # everything defaults to base attribute if none
             RestaurantManager.addRestaurantMenuItem(
                 name=name,
                 restaurant_id=restaurant_id,
@@ -1633,13 +1775,14 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
                 flash("You do not have permission to view the details for this "+\
                 "restaurant menu item")
-                return redirect('/restaurants/'+str(restaurant.id)+'/menu/')
+                return redirect(url_for('restaurantMenu',
+                    restaurant_id=restaurant.id))
 
         else:
 
             flash("You must be logged in to view the details for this "+\
                 " restaurant menu item")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
@@ -1701,11 +1844,12 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
                 flash("You do not have permission to edit this restaurant"+\
                 "menu item")
-                return redirect('/restaurants/'+str(restaurant.id)+'/menu/')  
+                return redirect(url_for('restaurantMenu',
+                    restaurant_id=restaurant.id))  
         else:
 
             flash("You must log in to edit this restaurant menu item")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
@@ -1734,12 +1878,36 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
+
+                if len(newName) > 80:
+
+                    newName = None
+                    flash("Did not change name; it was too long")
                 
             if request.form['description']:
                 newDescription = bleach.clean(request.form['description'])
+
+                if len(newDesription) > 250:
+
+                    newDesription = None
+                    flash("Did not change description; it was too long")
                 
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
+
+                if len(newPrice) > 20:
+
+                    newPrice = None
+                    flash("Did not change price; it's too long.")
+
+                match = re.search(r'[0-9]*(.[0-9][0-9])?', newPrice)
+
+                if match.group(0) != newPrice:
+
+                    newPrice = None
+                    flash("Did not change price; it was in an invalid "+\
+                        "format.  Use only numerals optionally followed "+\
+                        "by a decimal and two more numerals.")
 
             if request.form['pictureLink'] or request.files['pictureFile']:
                 newText = None
@@ -1751,21 +1919,26 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
                     if allowed_file(picFile.filename):
                         # overwrites pic for restaurant menu item if already there
-                        newText = 'restaurantMenuItem' + str(restaurantMenuItem.id)
-                        picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], newText))
+                        newText = 'restaurantMenuItem' +\
+                            str(restaurantMenuItem.id)
+                        picFile.save(os.path.join(app.\
+                            config['UPLOAD_FOLDER'], newText))
+
+                        if picture.serve_type == 'link':
+
+                            newServe_Type = 'upload'
                     else:
 
-                        flash('Sorry, the uploaded pic was not .png, .jpeg, or ' +\
-                                '.jpg.  Did not change picture.')
-
-                    if picture.serve_type == 'link':
-
-                        newServe_Type = 'upload'
+                        flash("Sorry, the uploaded pic was not .png, "+\
+                            ".jpeg, or .jpg.  Did not change picture.")
                 else:
                     # user gave a link
                     newText = bleach.clean(request.form['pictureLink'])
 
-                    if picture.serve_type == 'upload':
+                    if len(newText) > 300:
+                        newText = None
+                        flash("Did not change pic; link too long")     
+                    elif picture.serve_type == 'upload':
                         # change serve type and delete old, uploaded pic
                         newServe_Type = 'link'
                         relPath = 'pics/'+picture.text
@@ -1784,21 +1957,21 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                 newPrice=newPrice)
 
             if newName is not None:
-                flash("changed restaurant menu item " + str(restaurantMenuItem.id) + \
+                flash("changed restaurant menu item " + \
+                    str(restaurantMenuItem.id) + \
                     "'s name from '" + oldName + "' to '" + newName + "'")
 
             if newDescription is not None:
-                flash("changed restaurant menu item " + str(restaurantMenuItem.id) + \
+                flash("changed restaurant menu item " + \
+                    str(restaurantMenuItem.id) + \
                     "'s description from '"+ oldDescription + "' to '" + \
                     newDescription + "'")
 
             if newPrice is not None:
-                flash("changed restaurant menu item " + str(restaurantMenuItem.id) + \
+                flash("changed restaurant menu item " + \
+                    str(restaurantMenuItem.id) + \
                     "'s price from '" + oldPrice + "' to '" + \
                     newPrice + "'")
-            
-            if newPicture is not None:
-                flash("updated restaurant menu item picture!")
 
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
@@ -1836,11 +2009,12 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
                 flash("You do not have permission to delete this "+\
                 " restaurant menu item")
-                return redirect('/restaurants/'+str(restaurant.id)+'/menu/')  
+                return redirect(url_for('restaurantMenu',
+                    restaurant_id=restaurant.id))  
         else:
 
             flash("You must log in to delte this restaurant menu item")
-            return redirect('/login/')
+            return redirect(url_for('login'))
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
@@ -2053,7 +2227,7 @@ def editUser(user_id):
             if user.id != login_session['user_id']:
 
                 flash("You do not have permission to edit this profile")
-                return redirect_uri(url_for('users'))
+                return redirect(url_for('users'))
 
         picture = RestaurantManager.getPicture(user.picture_id)
 
@@ -2072,6 +2246,19 @@ def editUser(user_id):
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
+                match = \
+                    re.search(r"[^~`!@#\$%\^&\*\(\)_=\+\{}\[\]\\\|\.<>\?/;:]"\
+                    , newText)
+                if match is not None:
+
+                    newName = None
+                    flash("Did not change username; contained an "+\
+                        "illegal character")
+
+                if len(newName) > 30:
+
+                    newName = None
+                    flash("Did not change username; it was too long")             
 
             if request.form['pictureLink'] or request.files['pictureFile']:
 
@@ -2087,10 +2274,14 @@ def editUser(user_id):
                         newText = 'user' + str(user.id)
                         picFile.save(os.path.join(app.config['UPLOAD_FOLDER'],\
                             newText))
+
+                        if picture.serve_type == 'link':
+                            # change type and delete any old, uploaded pic
+                            newServe_Type = 'upload'
                     else:
 
-                        flash('Sorry, the uploaded pic was not .png, .jpeg,'+\
-                                ' or .jpg.  Did not change picture.')
+                        flash("Did not change pic; the uploaded pic was not "+\
+                            ".png, .jpeg, or .jpg.")
 
                     if picture.serve_type == 'link':
 
@@ -2099,7 +2290,11 @@ def editUser(user_id):
                     # user gave a link
                     newText = bleach.clean(request.form['pictureLink'])
 
-                    if picture.serve_type == 'upload':
+                    if len(newText) > 250:
+
+                        newText = None
+                        flash('Did not change pic; link too long')
+                    elif picture.serve_type == 'upload':
                         # change type and delete any old, uploaded pic
                         newServe_Type = 'link'
                         relPath = 'pics/'+picture.text
@@ -2150,7 +2345,7 @@ def deleteUser(user_id):
             if user.id != login_session['user_id']:
 
                 flash("You do not have permission to edit this profile")
-                return redirect_uri(url_for('users'))
+                return redirect(url_for('users'))
 
         if request.method == 'POST':
 

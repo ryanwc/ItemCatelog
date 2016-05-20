@@ -113,7 +113,7 @@
 
 		<!-- try to accept other language scripts (e.g., chinese) in name -->
 		<p>Change Username Name to:</p>
-		<input type='text' otpional size='30' name='name' maxlength='30' pattern='[^~`!@#\$%\^&\*\(\)_=\+\{}\[\]\\\|\.<>\?/;:]+' placeholder='{{user.name}}'>
+		<input type='text' otpional size='30' name='name' maxlength='30' pattern='[^~`!@#\$%\^&\*\(\)_=\+\{}\[\]\\\|\.<>\?/;:]' placeholder='{{user.name}}' value="">
 
 		<p>
 			Current Picture:
@@ -125,7 +125,7 @@
 		<p>Change Your Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
 		<div id='photoOr'>or provide link (must start with 'http://' or 'https://'):</div>
-		<input type='url' optional maxlength='300' pattern="https?://.+" name='pictureLink' size='80' placeholder='{{picture.text}}'>
+		<input type='url' optional maxlength='300' pattern="https?://.+" name='pictureLink' size='80' placeholder='{{picture.text}}' value="">
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 

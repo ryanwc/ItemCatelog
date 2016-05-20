@@ -67,6 +67,14 @@ li				{margin: 0 0 3px 0;}
 #masterToggle	{color: #ffcc99; font-size: .75em; 
 				 font-style: italic; cursor: pointer;}
 
+form input[type~="text"] {
+
+	background-color: #e6e6e6;
+}
+form input[type~="url"] {
+
+	background-color: #e6e6e6;
+}
 form input[type~="text"]:invalid {
 
 	background-image: url(invalidInput.png); 

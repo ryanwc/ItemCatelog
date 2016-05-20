@@ -116,7 +116,7 @@
 
 		<p>Restaurant Cuisine:</p>
 		<select optional name="cuisineID">
-			<option value="custom">Custom (enter in text box below)</option>
+			<option value="-1">Custom (enter in text box below)</option>
   			{% for cuisine in cuisines %}
   				<option value="{{cuisine.id}}">{{cuisine.name}}</option>
   			{% endfor %}
