@@ -105,7 +105,7 @@
 	<div class='stats'>
 
 		<div class='photo'>
-			<img id='photo' src="{{picture.text}}" alt='[picture of {{restaurant.name}}]' max-width=100%>
+			<img id='photo' src="{{picture.text}}" alt='[picture of {{restaurantMenuItem.name}}]' max-width=100%>
 		</div>
 
 		</br>
@@ -118,6 +118,9 @@
 		<ul>
 			<li>
 				ID: {{restaurantMenuItem.id}}
+			</li>
+			<li>
+				Restaurant: {{restaurant.name}} (ID {{restaurant.id}})
 			</li>
 			<li>
 				Description: {{restaurantMenuItem.description}}

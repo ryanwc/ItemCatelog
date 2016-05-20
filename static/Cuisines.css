@@ -73,6 +73,10 @@ form input[type~="url"] {
 
 	background-color: #e6e6e6;
 }
+form input:required:invalid {
+
+	border: 2px solid #ff0000;
+}
 form input[type~="text"]:invalid {
 
 	background-image: url(invalidInput.png); 

@@ -161,6 +161,8 @@ def addBaseMenuItem(name, cuisine_id, description,
     """
     session = getRestaurantDBSession()
 
+    print "adding " + name
+    
     baseMenuItem = BaseMenuItem(
             name=name, 
             description=description,
@@ -360,7 +362,7 @@ def getRestaurantMenuItems(restaurant_id=None, baseMenuItem_id=None,
     elif cuisine_id is not None:
         restaurantMenuItemList = session.query(RestaurantMenuItem).\
                                  join(BaseMenuItem).\
-                                 filter(cuisine_id=cuisine_id).\
+                                 filter(BaseMenuItem.cuisine_id==cuisine_id).\
                                  all()
     else:
         restaurantMenuItemList = session.query(RestaurantMenuItem).\

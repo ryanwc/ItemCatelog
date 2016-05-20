@@ -43,7 +43,7 @@ APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(APP_ROOT, 'pics')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # These are the extentions we allow to be uploaded
-ALLOWED_PIC_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+ALLOWED_PIC_EXTENSIONS = set(['png','PNG','jpg','JPG','jpeg','JPEG'])
 
 ### for returning user-uploaded images to the browser
 @app.route(app.config['UPLOAD_FOLDER']+'/<filename>/')
@@ -483,7 +483,7 @@ def addCuisine():
         else:
 
             flash("You must log in to add a cuisine")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         if request.method == 'POST':
 
@@ -493,7 +493,7 @@ def addCuisine():
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             if not request.form['name']:
 
@@ -529,11 +529,11 @@ def cuisine(cuisine_id):
         baseMenuItems = RestaurantManager.\
                         getBaseMenuItems(cuisine_id=cuisine_id)
         restaurantMenuItems = RestaurantManager.\
-                        getRestaurantMenuItems(cuisine_id=cuisine_id)
+            getRestaurantMenuItems(cuisine_id=cuisine_id)
         sectionedBaseMenuItems = RestaurantManager.\
                                  getBaseMenuItems(cuisine_id=cuisine_id,
                                                   byMenuSection=True)
-        
+
         # set login HTML
         user_id = -99
         intBooleanLoggedIn = 0
@@ -567,10 +567,12 @@ def cuisine(cuisine_id):
         sectionedBaseItemsWithChildren = {}
         for section, baseItemList in sectionedBaseMenuItems.iteritems():
 
+            print section
             sectionedBaseItemsWithChildren[section] = {}
 
             for baseItem in baseItemList:
 
+                print baseItem.name
                 baseItemID = baseItem.id
 
                 childrenItems = RestaurantManager.\
@@ -579,6 +581,7 @@ def cuisine(cuisine_id):
 
                 for item in childrenItems:
 
+                    print item.name
                     itemRestaurant = RestaurantManager.\
                                      getRestaurant(item.restaurant_id)
                     itemUserID = itemRestaurant.user_id
@@ -595,7 +598,7 @@ def cuisine(cuisine_id):
 
                     children[item.id] = child
 
-                itemWithChildren = {'item':item, 'children':children}
+                itemWithChildren = {'item':baseItem, 'children':children}
                 sectionedBaseItemsWithChildren[section][baseItem.id] = \
                     itemWithChildren
 
@@ -660,7 +663,7 @@ def editCuisine(cuisine_id):
         else:
 
             flash("You must log in to add a cuisine")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
@@ -672,7 +675,7 @@ def editCuisine(cuisine_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             oldName = cuisine.name
             newName = None
@@ -723,7 +726,7 @@ def deleteCuisine(cuisine_id):
         else:
 
             flash("You must log in to delete a cuisine")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
@@ -735,7 +738,7 @@ def deleteCuisine(cuisine_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             cuisineName = cuisine.name
             cuisineID = cuisine.id
@@ -854,7 +857,7 @@ def addRestaurant():
         else:
 
             flash("You must log in to add a restaurant")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         if request.method == 'POST':
 
@@ -864,11 +867,11 @@ def addRestaurant():
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             if ( not (request.form['cuisineID'] or 
                       request.form['customCuisine']) or
-                 (requestion.form['cuisineID'] == "-1" and 
+                 (request.form['cuisineID'] == "-1" and 
                   not request.form['customCuisine']) ):
 
                 flash("Did not add a restaurant; You did not provide "+\
@@ -1039,7 +1042,7 @@ def editRestaurant(restaurant_id):
         else:
 
             flash("You must log in to edit a restaurant")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
         cuisines = RestaurantManager.getCuisines()
@@ -1053,7 +1056,7 @@ def editRestaurant(restaurant_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             oldName = restaurant.name
             oldCuisine = RestaurantManager.\
@@ -1173,7 +1176,7 @@ def deleteRestaurant(restaurant_id):
         else:
             
             flash("You must log in to delete a restaurant")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         if request.method == 'POST':
 
@@ -1183,7 +1186,7 @@ def deleteRestaurant(restaurant_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             restaurantMenuItems = RestaurantManager.\
                                   getRestaurantMenuItems(restaurant_id=restaurant_id)
@@ -1226,9 +1229,10 @@ def addBaseMenuItem(cuisine_id):
         else:
             
             flash("You must log in to add a base menu item")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
+        menuSections = RestaurantManager.getMenuSections()
 
         if request.method == 'POST':
 
@@ -1238,13 +1242,15 @@ def addBaseMenuItem(cuisine_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             if (not request.form['name'] or
                 not request.form['description'] or
-                not request.form['price']):
+                not request.form['price'] or
+                not request.form['menuSection']):
 
-                flash('You must provide a name, description, and price.')
+                flash("You must provide a name, description, "+\
+                    "menu section, and price.")
                 return redirect(url_for('cuisine', cuisine_id=cuisine.id))
 
             name = bleach.clean(request.form['name'])
@@ -1279,6 +1285,8 @@ def addBaseMenuItem(cuisine_id):
                 return redirect(url_for('cuisine',
                     cuisine_id=cuisine.id))
 
+            menuSection_id = request.form['menuSection']
+
             if request.files['pictureFile']:
                 picFile = request.files['pictureFile']
 
@@ -1306,25 +1314,29 @@ def addBaseMenuItem(cuisine_id):
                 flash('You must provide a picture.')
                 return redirect(url_for('cuisine', cuisine_id=cuisine.id))
 
-            RestaurantManager. addBaseMenuItem(name, cuisine_id,
-                description=description, price=price, picture_id=picture_id)
+            baseMenuItem_id = RestaurantManager.\
+                addBaseMenuItem(name, cuisine_id, description=description, 
+                price=price, menuSection_id=menuSection_id, 
+                picture_id=picture_id)
 
             # if pic was uploaded, save actual file for serving
             # set the appropriate name in the database
             if request.files['pictureFile']:
-                picfilename = 'baseMenuItem' + str(restaurant_id)
+                picfilename = 'baseMenuItem' + str(baseMenuItem_id)
                 picFile.save(os.path.\
                     join(app.config['UPLOAD_FOLDER'], picfilename))
                 RestaurantManager.editPicture(picture_id=picture_id,
                                               newText=picfilename)
 
-            flash("added '" + name + "'' to " + cuisine.name + \
+            flash("added '" + name + "' to " + cuisine.name + \
                 "'s base menu")
 
             return redirect(url_for('cuisine', cuisine_id=cuisine.id))
         else:
             return render_template('AddBaseMenuItem.html',
                                 cuisine=cuisine,
+                                menuSections=menuSections,
+                                hiddenToken=login_session['state'],
                                 intBooleanLoggedIn=intBooleanLoggedIn,
                                 loginStatusMessage=loginStatusMessage,
                                 displayNoneIfLoggedIn=displayNoneIfLoggedIn,
@@ -1387,7 +1399,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         else:
 
             flash("You must log in to edit a base menu item")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
@@ -1405,7 +1417,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             oldName = baseMenuItem.name
             oldDescription = baseMenuItem.description
@@ -1539,7 +1551,7 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
         else:
 
             flash("You must log in to delete a base menu item")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         baseMenuItem = RestaurantManager.\
                        getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
@@ -1552,7 +1564,7 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
             restaurantMenuItems = RestaurantManager.\
@@ -1632,9 +1644,14 @@ def addRestaurantMenuItem(restaurant_id):
         else:
 
             flash("You must log in add an item to this restaurant's menu")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         baseMenuItems = RestaurantManager.getBaseMenuItems()
+        for item in baseMenuItems:
+            pic = RestaurantManager.getPicture(item.picture_id)
+            item.picText = pic.text
+            item.picServeType = pic.serve_type
+
         menuSections = RestaurantManager.getMenuSections()
 
         # display nicely
@@ -1649,7 +1666,7 @@ def addRestaurantMenuItem(restaurant_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             name = None
             description = None
@@ -1782,7 +1799,7 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
             flash("You must be logged in to view the details for this "+\
                 " restaurant menu item")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
@@ -1849,7 +1866,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         else:
 
             flash("You must log in to edit this restaurant menu item")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
@@ -1866,7 +1883,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             oldName = restaurantMenuItem.name
             oldDescription = restaurantMenuItem.description
@@ -2014,7 +2031,7 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         else:
 
             flash("You must log in to delte this restaurant menu item")
-            return redirect(url_for('login'))
+            return redirect(url_for('restaurantManagerIndex'))
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
@@ -2027,7 +2044,7 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             restaurantMenuItemName = restaurantMenuItem.name
 
@@ -2140,7 +2157,7 @@ def user(user_id):
                 thisRestaurantAvgItemPrice = \
                     totalRestaurantPrices/numItemsThisRestaurant
             else:
-                thisRestaurantAvgItemPrice = 0
+                thisRestaurantAvgItemPrice = None
 
             if (mostExpensiveRest is None and
                 numItemsThisRestaurant > 0):
@@ -2149,7 +2166,7 @@ def user(user_id):
                     userThings[restaurantID]['restaurant']
                 mostExpensiveRestAvgPrice = thisRestaurantAvgItemPrice
 
-            elif thisRestaurantAvgItemPrice > thisRestaurantAvgItemPrice:
+            elif thisRestaurantAvgItemPrice > mostExpensiveRestAvgPrice:
 
                 mostExpensiveRest = \
                     userThings[restaurantID]['restaurant']
@@ -2174,7 +2191,7 @@ def user(user_id):
         
         if leastExpensiveRestAvgPrice:
             leastExpensiveRestAvgPrice = \
-                Decimal(mostExpensiveRestAvgPrice).\
+                Decimal(leastExpensiveRestAvgPrice).\
                 quantize(Decimal('0.01'))
 
         if (isLoggedIn() and
@@ -2239,7 +2256,7 @@ def editUser(user_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             oldName = user.name
             newName = None
@@ -2355,7 +2372,7 @@ def deleteUser(user_id):
                 flash("An unknown error occurred.  Try signing out"+\
                     ", signing back in, and repeating the operation.")
 
-                return redirect(url_for('login'))
+                return redirect(url_for('restaurantManagerIndex'))
 
             RestaurantManager.deleteUser(user.id)
 
