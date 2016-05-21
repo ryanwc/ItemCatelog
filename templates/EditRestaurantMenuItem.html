@@ -112,7 +112,7 @@
 					Leave a box blank if you do not wish to change its value.
 				</li>
 				<li>
-					You cannot change the base menu item.  If you want to do that, you're better off creating a new restaurant menu item.
+					You cannot change the item's base menu item.  If you want to do that, you're better off creating a new restaurant menu item.
 				</li>
 			</ul>
 		</p>
@@ -144,7 +144,7 @@
 
 		<p>Change Item Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
-		<div id='photoOr'>or provide link (must start with 'http://' or 'https://'):</div>
+		<div id='orText'>or provide link (must start with 'http://' or 'https://'):</div>
 		<input type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to item picture'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>

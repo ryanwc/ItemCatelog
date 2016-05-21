@@ -123,7 +123,7 @@ class BaseMenuItem(Base):
                         'description': self.description,
                         'id': self.id,
                         'price': self.price,
-                        'picture_id': self.picture,
+                        'picture_id': self.picture_id,
                         'menuSection_id': self.menuSection_id,
                         'cuisine_id':self.cuisine_id,
                 }

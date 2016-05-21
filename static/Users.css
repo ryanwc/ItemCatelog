@@ -67,6 +67,7 @@ li				{margin: 0 0 3px 0;}
 #masterToggle	{color: #ffcc99; font-size: .75em; 
 				 font-style: italic; cursor: pointer;}
 
+/* background for all input boxes */
 form input[type="text"] {
 
 	background-color: #e6e6e6;
@@ -75,43 +76,53 @@ form input[type="url"] {
 
 	background-color: #e6e6e6;
 }
-form input[type="text"]:valid.notUnique {
 
-	background-image: url(invalidInput.png); 
-	background-position: right top;
-	background-size: 13px 13px;
-	background-repeat: no-repeat;
-	border: 2px solid #ff0000;
-}
-form input:required:invalid {
+/* red outline for invalid required input */
+form .reqiured {
 
 	border: 2px solid #ff0000;
 }
-form input[type="text"]:invalid {
 
-	background-image: url(invalidInput.png); 
-	background-position: right top;
-	background-size: 13px 13px;
-	background-repeat: no-repeat;
-}
+/* for valid input */
 form input[type="text"]:valid {
 
 	background-image: url(validInput.png); 
-	background-position: right top;
-	background-size: 13px 13px;
-	background-repeat: no-repeat;
-}
-form input[type="url"]:invalid {
-
-	background-image: url(invalidInput.png); 
-	background-position: right top;
+	background-position: right;
 	background-size: 13px 13px;
 	background-repeat: no-repeat;
 }
 form input[type="url"]:valid {
 
 	background-image: url(validInput.png); 
-	background-position: right top;
+	background-position: right;
 	background-size: 13px 13px;
 	background-repeat: no-repeat;
+}
+
+/* for valid input that does not meet some database requirement */
+form input[type="text"]:valid.notUnique {
+
+	background-image: url(invalidInput.png); 
+	background-position: right;
+	background-size: 13px 13px;
+	background-repeat: no-repeat;
+	border: 2px solid #ff0000;
+}
+
+/* for invalid input */
+form input[type="text"]:invalid {
+
+	background-image: url(invalidInput.png); 
+	background-position: right;
+	background-size: 13px 13px;
+	background-repeat: no-repeat;
+	border: 2px solid #ff0000;
+}
+form input[type="url"]:invalid {
+
+	background-image: url(invalidInput.png); 
+	background-position: right;
+	background-size: 13px 13px;
+	background-repeat: no-repeat;
+	border: 2px solid #ff0000;
 }

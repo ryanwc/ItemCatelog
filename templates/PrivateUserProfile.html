@@ -287,7 +287,7 @@
 (function() {
 	if ('{{picture.serve_type}}' === 'upload') {
 
-	console.log("is upload");
+		console.log("is upload");
 		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
 	}
 })();

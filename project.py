@@ -384,6 +384,12 @@ def baseMenuItemJSON(cuisine_id, baseMenuItem_id):
         return jsonify(BaseMenuItem=baseMenuItem.serialize,
                        RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
 
+@app.route('/baseMenuItems/JSON/')
+def baseMenuItemsJSON():
+        baseMenuItems = RestaurantManager.getBaseMenuItems()
+
+        return jsonify(BaseMenuItems=[i.serialize for i in baseMenuItems])
+
 @app.route('/restaurants/JSON/')
 def restaurantsJSON():
         restaurants = RestaurantManager.getRestaurants()
