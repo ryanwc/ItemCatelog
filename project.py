@@ -50,7 +50,6 @@ ALLOWED_PIC_EXTENSIONS = set(['png','PNG','jpg','JPG','jpeg','JPEG'])
 def uploaded_picture(filename):
         return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 
 
-
 ### ajax enpoint for google sign in authentication
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -1868,6 +1867,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             flash("You must log in to edit this restaurant menu item")
             return redirect(url_for('restaurantManagerIndex'))
 
+        user_id = restaurant.user_id
         restaurantMenuItem = RestaurantManager.\
             getRestaurantMenuItem(restaurantMenuItem_id)
 

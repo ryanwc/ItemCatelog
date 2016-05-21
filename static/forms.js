@@ -16,15 +16,27 @@ function placeholdWithBaseMenuItem() {
     document.getElementById("menuSection").value = placeholderMenuSection;  
 };
 
-//
-//var form = 
+function checkUnique(columnValue, JSONTableObj, column) {
 
-//form.addEventListener("submit", function(evt) {
+    for (var tableName in JSONTableObj) {
 
-  //  if (form.checkValidity() === false) {
+        var table = JSONTableObj[tableName];
 
-    //    evt.preventDefault();
-      //  alert("Form contains invalid input");
-        //return false;
-    //}
-//});
+        for (i = 0; i < table.length; i++) {
+
+            var row = table[i];
+
+            if (row.hasOwnProperty(column)) {
+
+                var thisColumn = row[column];
+
+                if (columnValue == thisColumn) {
+
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+};
