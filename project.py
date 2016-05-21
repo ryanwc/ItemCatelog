@@ -386,6 +386,7 @@ def baseMenuItemJSON(cuisine_id, baseMenuItem_id):
 
 @app.route('/baseMenuItems/JSON/')
 def baseMenuItemsJSON():
+
         baseMenuItems = RestaurantManager.getBaseMenuItems()
 
         return jsonify(BaseMenuItems=[i.serialize for i in baseMenuItems])
@@ -1449,15 +1450,13 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
+                match = re.search(r'[0-9]*(.[0-9][0-9])?', newPrice)
 
                 if len(newPrice) > 20:
 
                     newPrice = None
                     flash("Did not change price; it's too long.")
-
-                match = re.search(r'[0-9]*(.[0-9][0-9])?', newPrice)
-
-                if match.group(0) != newPrice:
+                elif match.group(0) != newPrice:
 
                     newPrice = None
                     flash("Did not change price; it was in an invalid "+\
@@ -1917,15 +1916,13 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                 
             if request.form['price']:
                 newPrice = bleach.clean(request.form['price'])
+                match = re.search(r'[0-9]*(.[0-9][0-9])?', newPrice)
 
                 if len(newPrice) > 20:
 
                     newPrice = None
                     flash("Did not change price; it's too long.")
-
-                match = re.search(r'[0-9]*(.[0-9][0-9])?', newPrice)
-
-                if match.group(0) != newPrice:
+                elif match.group(0) != newPrice:
 
                     newPrice = None
                     flash("Did not change price; it was in an invalid "+\
@@ -2269,16 +2266,17 @@ def editUser(user_id):
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
+                # in spirit of trying to include names from other scripts
+                # (like chinese, thai)
                 match = \
-                    re.search(r"[^~`!@#\$%\^&\*\(\)_=\+\{}\[\]\\\|\.<>\?/;:]"\
-                    , newText)
+                    re.search(r"[^~`!@#\$%\^&\*\(\)_=\+\{}\[\]\\\|\.<>\?/;:]\+"\
+                    , newName)
                 if match is not None:
 
                     newName = None
                     flash("Did not change username; contained an "+\
                         "illegal character")
-
-                if len(newName) > 30:
+                elif len(newName) > 30:
 
                     newName = None
                     flash("Did not change username; it was too long")             
@@ -2305,10 +2303,6 @@ def editUser(user_id):
 
                         flash("Did not change pic; the uploaded pic was not "+\
                             ".png, .jpeg, or .jpg.")
-
-                    if picture.serve_type == 'link':
-
-                        newServe_Type = 'upload'
                 else:
                     # user gave a link
                     newText = bleach.clean(request.form['pictureLink'])

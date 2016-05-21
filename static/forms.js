@@ -40,3 +40,46 @@ function checkUnique(columnValue, JSONTableObj, column) {
 
     return true;
 };
+
+function checkForm(form) {
+
+    if (form.id == 'editUserForm') {
+
+        var picFile = document.getElementById("pictureFile").value;
+
+        if (document.getElementById("name").value > 30) {
+
+            window.alert("Name is too long");
+            return false;
+        }
+        else if (document.getElementById("pictureFile").value == "" &&
+                 document.getElementById("pictureLink").value != "" &&
+                 (document.getElementById("pictureLink").value.substring(0,7) != 'http://' ||
+                  document.getElementById("pictureLink").value.substring(0,8) != 'https://')) {
+
+            window.alert("Link must start with 'http://' or 'https://'");
+            return false;
+        }
+        else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
+                 picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
+                 picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
+
+            window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
+            return false;
+        }
+        else {
+
+            if (document.getElementById("name").value == 'Ryan Connor') {
+
+                window.alert("Your name is awesome");
+            }
+
+            return true;
+        }
+    }
+    else {
+
+        window.alert("Sorry, this form is not supported yet.")
+        return false;
+    }
+}
