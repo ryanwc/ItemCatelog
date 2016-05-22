@@ -164,7 +164,6 @@ $('#name').on('input', function() {
   	// if appropriate, changes src of #photo from link to served file
     if ('{{picture.serve_type}}' === 'upload') {
 
-    	console.log("is upload");
 		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
     }
 </script>

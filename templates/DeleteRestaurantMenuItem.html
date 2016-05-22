@@ -90,16 +90,11 @@
 	</div>
 
 	<p>
-		<a class='backLink' href="{{url_for('restaurantMenuItem',
-					   restaurant_id=restaurant.id,
-					   restaurantMenuItem_id=restaurantMenuItem.id)}}">
+		<a class='backLink' href="{{url_for('restaurantMenuItem', restaurant_id=restaurant.id, restaurantMenuItem_id=restaurantMenuItem.id)}}">
 			Cancel</a>
 	</p>
 
-	<form class='form' action="{{url_for('deleteRestaurantMenuItem', 
-							restaurant_id=restaurant.id,
-							restaurantMenuItem_id=restaurantMenuItem.id)}}"
-		method='post'>
+	<form class='form' action="{{url_for('deleteRestaurantMenuItem', restaurant_id=restaurant.id, restaurantMenuItem_id=restaurantMenuItem.id)}}" method='post'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 

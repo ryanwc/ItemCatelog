@@ -94,7 +94,7 @@
 		Cancel
 	</a>
 
-	<form class='form' id='form' action="{{url_for('addBaseMenuItem', cuisine_id=cuisine.id)}}" method='post' enctype=multipart/form-data>
+	<form class='form' id='addBaseMenuItemForm' action="{{url_for('addBaseMenuItem', cuisine_id=cuisine.id)}}" method='post' onsubmit="return checkForm(document.getElementById('addBaseMenuItemForm'));" enctype=multipart/form-data>
 
 		<h3 class='header'>
 			Info for New Base Menu Item
@@ -102,13 +102,13 @@
 
 		<p>Item Name:</p>
 		<input class='unique' id='name' type='text' required maxlength='80' size='30' name='name'>
-		<span id='uniqueAlert'>OK: Not in use yet</span>
+		<span id='nameUniqueAlert'>OK: Not in use yet</span>
 		
 		<p>Item Description:</p>
-		<input type='text' required maxlength='250' size='80' name='description'>
+		<input id='name' type='text' required maxlength='250' size='80' name='description'>
 
 		<p>Item Price (must containly only digits and a decimal point):</p>
-		<input type='text' required pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price'>
+		<input id='price' type='text' maxlength='20' required pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price'>
 
 		<p>Item Menu Section:</p>
 		<select required id='menuSection' name="menuSection">
@@ -118,9 +118,9 @@
 		</select>
 
 		<p>Item Picture (uploaded pics must be .jpg, .jpeg, or .png):</p>
-		<input type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
+		<input type='file' id='pictureFile' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
 		<div id='orText'>or provide link (must start with 'http://' or 'https://'):</div>
-		<input type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to item picture'>
+		<input type='url' id='pictureLink' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to item picture'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
@@ -142,35 +142,7 @@
 <script>
 $('#name').on('input', function() { 
 
-	var baseItemName = $(this).val();
-
-    var xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function() {
-
-        if (xhttp.readyState == 4 && xhttp.status == 200) {
-
-        	var baseItems = JSON.parse(xhttp.responseText);
-
-        	var column = 'name';
-
-        	if (checkUnique(baseItemName, baseItems, column)) {
-
-            	document.getElementById('uniqueAlert').
-                	innerHTML = "OK: Not in use yet";
-            	$('#name').addClass("unique").removeClass("notUnique");
-        	}
-        	else {
-
-            	document.getElementById('uniqueAlert').
-                	innerHTML = "NOT OK: Already in use";
-            	$('#name').addClass("notUnique").removeClass("unique");
-        	}
-        }
-    }
-
-    xhttp.open("GET", "/baseMenuItems/JSON", true);
-    xhttp.send();
+	realTimeUniqueCheck($(this).val(), 'BaseMenuItem', 'name', $(this));
 });
 </script>
 </body>

@@ -53,18 +53,15 @@ def uploaded_picture(filename):
 ### ajax enpoint for google sign in authentication
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-        print 'trying state'
         # confirm entity with correct 3rd party credentials is same entity 
         # that is trying to login from the current login page's session.
         if request.args.get('state') != login_session['state']:
-            print 'state'
             response = make_response(json.dumps('Invalid state parameter'), 
                 401)
             response.headers['Content-Type'] = 'application/json'
 
             return response
 
-        print 'state is correct'
         code = request.data
 
         try:
@@ -97,7 +94,6 @@ def gconnect():
         # verify that the access token is used for the intended user
         gplus_id = credentials.id_token['sub']
         if result['user_id'] != gplus_id:
-            print 'gplus'
             response = make_response(json.dumps("Token's user ID doesn't match given user"), 401)
             response.headers['Content-Type'] = 'application/json'
 
@@ -105,24 +101,19 @@ def gconnect():
         
         # verify that the access token is valid for this app
         if result['issued_to'] != CLIENT_ID:
-            print 'client id'
             response = make_response(json.dumps("Token's client ID doesn't match app's ID"), 401)
-            print "Token's client ID doesn't match match app's ID."
             response.headers['Content-Type'] = 'application/json'
 
             return response
             
         # check to see if the user is already logged into the system
         stored_credentials = login_session.get('credentials')
-        print 'stored crendentials: ', login_session.get('credentials')
         stored_gplus_id = login_session.get('gplus_id')
-        print 'stored gplus id: ', login_session.get('gplus_id')
         if stored_credentials is not None and gplus_id == stored_gplus_id:
             response = make_response(json.dumps("Current user is already connected."), 200)
             response.headers['Content-Type'] = 'application/json'
         
         # store the access token in the session for later use
-        print 'storing access token and credentials'
         login_session['g_credentials'] = credentials
         login_session['credentials'] = {'access_token':access_token}
         login_session['gplus_id'] = gplus_id
@@ -137,8 +128,6 @@ def gconnect():
         #### DONE WITH GOOGLE STUFF needs own method combine with fbook
 
         login_session['email'] = data['email']
-        login_session['username'] = data['name']
-        login_session['picture'] = data['picture']
 
         # create the user if the user doesn't exist
         user = RestaurantManager.getUser(email=login_session['email'])
@@ -151,29 +140,30 @@ def gconnect():
             user = RestaurantManager.getUser(email=login_session['email'])
 
         login_session['user_id'] = user.id
-        # reset these to what the user has for our app
+
+        # set these to what the user has for our app
+
         picture = RestaurantManager.getPicture(user.picture_id)
         login_session['username'] = user.name
-        login_session['picture'] = picture.text
         login_session['picture_serve_type'] = picture.serve_type
 
+        if picture.serve_type == 'upload':
+            login_session['picture'] = "{{url_for('uploaded_picture', " +\
+            "filename=" + picture.text + ")}}"
+        elif picture.serve_type == 'link':
+            login_session['picture'] = picture.text
+
         # HTML output for successful authentication call
-        output = ''
-        output += '<div class="gSignIn">'
-        output += '<h1>Welcome, '
-        output += login_session['username']
-        output += '!</h1>'
-        output += '<img src="'
-        if login_session['picture_serve_type'] == 'link':
-            output += login_session['picture']
-        elif login_session['picture_serve_type'] == 'upload':
-            output += "{{url_for('uploaded_picture', filename='"+login_session['picture']+"'}}"
-        output += '" style = "width: 200px; height: 200px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
-        output += '</div>'
+        outputDict = {}
+
+        outputDict['loginMessage'] = "Welcome, " + \
+            login_session['username'] + "!"
+        outputDict['picture'] = login_session['picture']
+        outputDict['picture_serve_type'] = login_session['picture_serve_type']
 
         flash("you are now logged in as %s" % login_session['username'])
 
-        return output
+        return json.dumps(outputDict)
 
 ### ajax enpoint for facebook sign in authentication
 @app.route('/fbconnect', methods=['POST'])
@@ -509,9 +499,16 @@ def addCuisine():
 
             name = bleach.clean(request.form['name'])
 
+            sameName = RestaurantManager.getCuisine(name=name)
+
             if len(name) > 80:
 
                 flash("Did not add cuisine; name too long.")
+                return redirect(url_for('cuisines'))
+
+            if sameName is not None:
+
+                flash("Did not add cuisine; name not unique.")
                 return redirect(url_for('cuisines'))
 
             RestaurantManager.addCuisine(name)
@@ -885,10 +882,7 @@ def addRestaurant():
 
                 return redirect(url_for('restaurantManagerIndex'))
 
-            if ( not (request.form['cuisineID'] or 
-                      request.form['customCuisine']) or
-                 (request.form['cuisineID'] == "-1" and 
-                  not request.form['customCuisine']) ):
+            if not request.form['cuisineID']:
 
                 flash("Did not add a restaurant; You did not provide "+\
                     "a cuisine type.")
@@ -906,13 +900,7 @@ def addRestaurant():
                 flash("Did not add restaurant; name too long")
                 return redirect(url_for('restaurants'))    
 
-            if request.form['cuisineID'] == "-1":
-                custCuisineName = bleach.clean(request.form['customCuisine'])
-                RestaurantManager.addCuisine(name=custCuisineName)
-                custCuisine = RestaurantManager.getCuisine(name=custCuisineName)
-                cuisine_id = custCuisine.id
-            else:
-                cuisine_id = request.form['cuisineID']
+            cuisine_id = request.form['cuisineID']
 
             cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
@@ -932,10 +920,28 @@ def addRestaurant():
                     flash("Did not add restaurant; the uploaded pic was "+\
                         "not .png, .jpeg, or .jpg.")
                     return redirect(url_for('restaurants'))   
-
             elif request.form['pictureLink']:
 
                 pictureLink = bleach.clean(request.form['pictureLink'])
+
+                if len(pictureLink) > 300:
+
+                    flash("Did not add resaurant; link was too long")
+                    return redirect(url_for('restaurants'))                  
+                
+                # print str(len(pictureLink))
+                # print pictureLink[:7]
+                if (len(pictureLink) < 7 or 
+                    (len(pictureLink) == 8 and 
+                     pictureLink[:7] != 'http://') or
+                    (len(pictureLink) == 9 and 
+                     pictureLink[:8] != 'https://') or
+                    (pictureLink[:7] != 'http://' and
+                     pictureLink[:8] != 'https://')):
+
+                    flash("Did not add resaurant; the link was not a url")
+                    return redirect(url_for('restaurants'))  
+
                 picture_id = RestaurantManager.addPicture(text=pictureLink, 
                                                           serve_type='link')
             else:
@@ -960,11 +966,7 @@ def addRestaurant():
                 RestaurantManager.editPicture(picture_id=picture_id,
                                               newText=picfilename)
 
-            if request.form['cuisineID'] == "-1":
-                flash("added a cuisine to the database!")
-            else:
-                RestaurantManager.\
-                    populateMenuWithBaseItems(restaurant_id)
+            RestaurantManager.populateMenuWithBaseItems(restaurant_id)
 
             flash("restaurant '" + name + "' added to the database!")
 
@@ -1120,8 +1122,19 @@ def editRestaurant(restaurant_id):
                     newText = bleach.clean(request.form['pictureLink'])
 
                     if len(newText) > 300:
+
                         newText = None
                         flash("Did not edit pic; link too long")
+                    elif (len(pictureLink) < 7 or 
+                          (len(pictureLink) == 8 and 
+                           pictureLink[:7] != 'http://') or
+                          (len(pictureLink) == 9 and 
+                           pictureLink[:8] != 'https://') or
+                          (pictureLink[:7] != 'http://' and
+                           pictureLink[:8] != 'https://')):
+
+                        newText = None
+                        flash("Did not edit pic; the link was not a url")
                     elif picture.serve_type == 'upload':
                         # change serve type and delete old, uploaded pic
                         newServe_Type = 'link'
@@ -1323,6 +1336,23 @@ def addBaseMenuItem(cuisine_id):
             elif request.form['pictureLink']:
 
                 pictureLink = bleach.clean(request.form['pictureLink'])
+
+                if len(pictureLink) > 300:
+
+                    flash("Did not add item; the link was too long")
+                    return redirect(url_for('restaurants'))    
+
+                if (len(pictureLink) < 7 or 
+                    (len(pictureLink) == 8 and 
+                     pictureLink[:7] != 'http://') or
+                    (len(pictureLink) == 9 and 
+                     pictureLink[:8] != 'https://') or
+                    (pictureLink[:7] != 'http://' and
+                     pictureLink[:8] != 'https://')):
+
+                    flash("Did not add item; the link was not a url")
+                    return redirect(url_for('restaurants'))  
+
                 picture_id = RestaurantManager.addPicture(text=pictureLink, 
                                                           serve_type='link')
             else:
@@ -1511,6 +1541,16 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 
                         newText = None
                         flash("Did not change picture; link too long")
+                    elif (len(pictureLink) < 7 or 
+                          (len(pictureLink) == 8 and 
+                           pictureLink[:7] != 'http://') or
+                          (len(pictureLink) == 9 and 
+                           pictureLink[:8] != 'https://') or
+                          (pictureLink[:7] != 'http://' and
+                           pictureLink[:8] != 'https://')):
+
+                        newText = None
+                        flash("Did not change picture; link was not a url")  
                     elif picture.serve_type == 'upload':
                         # change serve type and delete old, uploaded pic
                         newServe_Type = 'link'
@@ -1753,6 +1793,18 @@ def addRestaurantMenuItem(restaurant_id):
             elif request.form['pictureLink']:
 
                 pictureLink = bleach.clean(request.form['pictureLink'])
+
+                if (len(pictureLink) < 7 or 
+                    (len(pictureLink) == 8 and 
+                     pictureLink[:7] != 'http://') or
+                    (len(pictureLink) == 9 and 
+                     pictureLink[:8] != 'https://') or
+                    (pictureLink[:7] != 'http://' and
+                     pictureLink[:8] != 'https://')):
+
+                    flash("Did not add item; the link was not a url")
+                    return redirect(url_for('restaurants'))
+
                 picture_id = RestaurantManager.addPicture(text=pictureLink, 
                                                           serve_type='link')
 
@@ -1977,7 +2029,17 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
                     if len(newText) > 300:
                         newText = None
-                        flash("Did not change pic; link too long")     
+                        flash("Did not change pic; link too long")
+                    elif (len(pictureLink) < 7 or 
+                          (len(pictureLink) == 8 and 
+                           pictureLink[:7] != 'http://') or
+                          (len(pictureLink) == 9 and 
+                           pictureLink[:8] != 'https://') or
+                          (pictureLink[:7] != 'http://' and
+                           pictureLink[:8] != 'https://')):
+
+                        newText = None
+                        flash("Did not change pic; the link was not a url")  
                     elif picture.serve_type == 'upload':
                         # change serve type and delete old, uploaded pic
                         newServe_Type = 'link'
@@ -2327,10 +2389,19 @@ def editUser(user_id):
                     # user gave a link
                     newText = bleach.clean(request.form['pictureLink'])
 
-                    if len(newText) > 250:
+                    if len(newText) > 300:
 
                         newText = None
                         flash('Did not change pic; link too long')
+                    elif (len(pictureLink) < 7 or 
+                          (len(pictureLink) == 8 and 
+                           pictureLink[:7] != 'http://') or
+                         (len(pictureLink) == 9 and 
+                          pictureLink[:8] != 'https://') or
+                         (pictureLink[:7] != 'http://' and
+                          pictureLink[:8] != 'https://')):
+
+                        flash("Did change pic; the link was not a url")
                     elif picture.serve_type == 'upload':
                         # change type and delete any old, uploaded pic
                         newServe_Type = 'link'

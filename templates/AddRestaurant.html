@@ -1,7 +1,6 @@
 <html>
 <head>
-	<link rel=stylesheet type=text/css href="{{url_for('static',
-											           filename='Restaurants.css')}}">
+	<link rel=stylesheet type=text/css href="{{url_for('static',filename='Restaurants.css')}}">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
 	</script>
 </head>
@@ -95,7 +94,7 @@
 		Cancel
 	</a>
 
-	<form class='form' id='form' action="{{url_for('addRestaurant')}}" method='post' enctype=multipart/form-data>
+	<form class='form' id='addRestaurantForm' action="{{url_for('addRestaurant')}}" method='post' onsubmit="return checkForm(document.getElementById('addRestaurantForm'));" enctype=multipart/form-data>
 
 		<h3 class='header'>
 			Info for New Restaurant
@@ -111,31 +110,27 @@
 					If the restaurant doesn't have a specific cuisine, select "No Specific Cuisine" from the dropdown.  The restaurant will not start with any items on its menu.
 				</li>
 				<li>
-					If the restaurant has a specific cuisine but the cuisine is not listed in the dropdown, select "Custom (enter in text box below)" from the dropdown and type the new cuisine in the box.  This will create a new cuisine in the database with no base menu items and assign it to the restaurant.  You'll have to manually add base menu items for the cuisine and restaurant menu items for the restaurant.
+					If the restaurant has a specific cuisine but the cuisine is not listed in the dropdown, you should go <a class='actionLink' href="{{url_for('addCuisine')}}">here</a> first to create the cuisine.
 				</li>
 			</ul>
 		</p>
 
 		<p>Restaurant Cuisine:</p>
 
-		<select optional name="cuisineID">
-			<option value="-1">Choose an existing cuisine</option>
+		<select id='cuisine' optional name="cuisineID">
   			{% for cuisine in cuisines %}
   				<option value="{{cuisine.id}}">{{cuisine.name}}</option>
   			{% endfor %}
-		</select>
-		<div class='orText'>or enter a custom cuisine:</div>
-		<input id='customCuisine' optional type='text' size='30' name='customCuisine' placeholder='Custom Cuisine Name'>
-		<span id='uniqueAlert'>OK: Not in use yet</span>		
+		</select>		
 
 		<p>Restaruant Name:</p>
-		<input type='text' required maxlength='100' size='30' name='name'>
+		<input id='name' type='text' required maxlength='100' size='30' name='name'>
 
 		<p>Restaurant Picture (uploaded pics must be .jpg, .jpeg, or .png):</p>
 
-		<input type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
+		<input id='pictureFile' type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
 		<div class='orText'>or provide link (must start with 'http://' or 'https://'):</div>
-		<input type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to restaurant picture'>
+		<input id='pictureLink' type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to restaurant picture'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 		</br>
@@ -153,42 +148,6 @@
 <script src="{{url_for('static', filename='forms.js')}}">
 </script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
-</script>
-<script>
-$('#customCuisine').on('input', function() { 
-
-	var cuisineName = $(this).val();
-
-    var xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function() {
-
-        if (xhttp.readyState == 4 && xhttp.status == 200) {
-
-        	var cuisines = JSON.parse(xhttp.responseText);
-
-        	var column = 'name';
-
-        	console.log("did")
-
-        	if (checkUnique(cuisineName, cuisines, column)) {
-
-            	document.getElementById('uniqueAlert').
-                	innerHTML = "OK: Not in use yet";
-            	$('#customCuisine').addClass("unique").removeClass("notUnique");
-        	}
-        	else {
-
-            	document.getElementById('uniqueAlert').
-                	innerHTML = "NOT OK: Already in use";
-            	$('#customCuisine').addClass("notUnique").removeClass("unique");
-        	}
-        }
-    }
-
-    xhttp.open("GET", "/cuisines/JSON", true);
-    xhttp.send();
-});
 </script>
 </body>
 </html>
