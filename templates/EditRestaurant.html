@@ -93,7 +93,7 @@
 			Cancel</a>
 	</p>
 
-	<form class='form' id='form' action="{{url_for('editRestaurant', restaurant_id=restaurant.id)}}" method='post' enctype=multipart/form-data>
+	<form class='form' id='editRestaurantForm' action="{{url_for('editRestaurant', restaurant_id=restaurant.id)}}" method='post' onsubmit="return checkForm(document.getElementById('editRestaurantMenuItemForm'));" enctype=multipart/form-data>
 
 		<h3 class='header'>
 			Restaurant Attributes to Edit
@@ -115,7 +115,7 @@
 		</p>
 
 		<p>Change Restaurant Cuisine to:</p>
-		<select optional name="cuisineID">
+		<select id='cuisine' optional name="cuisineID">
 		  <option value="-1">Do not change cuisine</option>
   		{% for cuisine in cuisines %}
   			<option value="{{cuisine.id}}">{{cuisine.name}}</option>
@@ -123,7 +123,7 @@
 		</select>
 
 		<p>Change Restaurant Name to:</p>
-		<input optional type='text' maxlength='100' size='30' name='name' placeholder='{{restaurant.name}}'>
+		<input id='name' optional type='text' maxlength='100' size='30' name='name' placeholder='{{restaurant.name}}'>
 
 		<p>
 			Current Picture:
@@ -133,9 +133,9 @@
 		</div>
 
 		<p>Change Restaurant Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
-		<input type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
+		<input id='pictureFile' type='file' maxlength='300' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
 		<div id='orText'>or provide link (must start with 'http://' or 'https://'):</div>
-		<input type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='{{picture.text}}'>
+		<input id='pictureLink' type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='{{picture.text}}'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
@@ -150,6 +150,8 @@
 </script>
 <script src="{{url_for('static', filename='signOut.js')}}">
 </script>
+<script src="{{url_for('static', filename='forms.js')}}">
+</script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
 </script>
 <script>
@@ -157,7 +159,6 @@
 (function() {
 	if ('{{picture.serve_type}}' === 'upload') {
 
-	console.log("is upload");
 		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
 	}
 })();

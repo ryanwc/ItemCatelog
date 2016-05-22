@@ -96,10 +96,7 @@
 			Cancel</a>
 	</p>
 
-	<form class='form' action="{{url_for('editRestaurantMenuItem', 
-							restaurant_id=restaurant.id,
-							restaurantMenuItem_id=restaurantMenuItem.id)}}"
-		method='post' enctype=multipart/form-data>
+	<form class='form' id='editRestaurantMenuItemForm' action="{{url_for('editRestaurantMenuItem', restaurant_id=restaurant.id, restaurantMenuItem_id=restaurantMenuItem.id)}}" method='post' onsubmit="return checkForm(document.getElementById('editRestaurantMenuItemForm'));" enctype=multipart/form-data>
 
 		<h3 class='header'>
 			Restaurant Menu Item Attributes to Edit
@@ -118,14 +115,14 @@
 		</p>
 
 		<p>Change Item Name to:</p>
-		<input type='text' optional maxlength='80' size='30' name='name' placeholder='{{restaurantMenuItem.name}}'>
+		<input type='text' id='name' optional maxlength='80' size='30' name='name' placeholder='{{restaurantMenuItem.name}}'>
 
 		<p>Change Item Description to:</p>
-		<input type='text' optional maxlength='250' size='80' name='description' 
+		<input type='text' id='description' optional maxlength='250' size='80' name='description' 
 			placeholder='{{restaurantMenuItem.description}}'>
 
-		<p>Change Item Price to (must containly only digits and a decimal point):</p>
-		<input type='text' optional pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price' placeholder="{{restaurantMenuItem.price}}">
+		<p>Change Item Price to (must contain only digits and a decimal point):</p>
+		<input type='text' id='price' optional pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price' placeholder="{{restaurantMenuItem.price}}">
 
 		<p>Change Item Menu Section to:</p>
 		<select required id='menuSection' name="menuSection">
@@ -143,9 +140,9 @@
 		</div>
 
 		<p>Change Item Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
-		<input type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
+		<input type='file' id='pictureFile' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
 		<div id='orText'>or provide link (must start with 'http://' or 'https://'):</div>
-		<input type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to item picture'>
+		<input type='url' id='pictureLink' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to item picture'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
@@ -160,6 +157,8 @@
 </script>
 <script src="{{url_for('static', filename='signOut.js')}}">
 </script>
+<script src="{{url_for('static', filename='forms.js')}}">
+</script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
 </script>
 <script>
@@ -167,7 +166,6 @@
 (function() {
 	if ('{{picture.serve_type}}' === 'upload') {
 
-	console.log("is upload");
 		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
 	}
 })();

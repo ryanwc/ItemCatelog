@@ -8,8 +8,6 @@ function toggleList(listName) {
     var listToggleID = String(listName+"Toggle");
     var listToggle = document.getElementById(listToggleID);
 
-    console.log(list);
-    console.log(listToggle);
     // toggle its display
     if (list.style.display  == "none") {
 
@@ -28,7 +26,7 @@ function toggleAllLists() {
 
 	var masterToggle = document.getElementById("masterToggle");
 	var nonTopLevelLists = document.getElementsByClassName("nonTopLevelList");
-	console.log(nonTopLevelLists);
+
 	var listToggles = document.getElementsByClassName("listToggle");
 
 	if (masterToggle.innerHTML == '(show all)') {
@@ -53,8 +51,7 @@ function toggleAllLists() {
         	listToggles[i].innerHTML = '(show)';
 		}
 		for (i = 0; i < nonTopLevelLists.length; i++) {
-			console.log('changing to none');
-			console.log(nonTopLevelLists[i]);
+
         	nonTopLevelLists[i].style.display = "none";
 		}
 	}

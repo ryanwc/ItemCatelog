@@ -1,6 +1,5 @@
 function displayBasedOnLogin(intBooleanLoggedIn) {
 
-	console.log("is logged in?")
 	if (intBooleanLoggedIn==1) { 
 
 		hide = document.getElementsByClassName("hideLoggedIn");
@@ -20,7 +19,6 @@ function displayBasedOnLogin(intBooleanLoggedIn) {
 
 function displayBasedOnOwner(loggedInUserID, thingOwnerID) {
 
-	console.log("is owner?")
 	if (loggedInUserID == thingOwnerID) {
 
 		hide = document.getElementsByClassName("hideIfOwner");

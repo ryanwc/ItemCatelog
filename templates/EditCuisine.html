@@ -95,7 +95,7 @@
 		Cancel
 	</a>
 
-	<form class='form' id='form' action="{{url_for('editCuisine', cuisine_id=cuisine.id)}}" method='post'>
+	<form class='form' id='editCuisineForm' action="{{url_for('editCuisine', cuisine_id=cuisine.id)}}" onsubmit="return checkForm(document.getElementById('editCuisineForm'));" method='post'>
 
 		<h3 class='header'>
 			Cuisine Attributes to Edit
@@ -107,8 +107,9 @@
 
 		<p>Change Cuisine Name to:</p>
 		<input id='name' optional type='text' maxlength='80' size='50' name='name' placeholder='{{cuisine.name}}'>
-		<span id='uniqueAlert'>OK: Not in use yet</span>
-
+		<span id='nameUniqueAlert'>OK: Not in use yet</span>
+		</br>
+		</br>
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
 
 		<input type='submit' value='Submit Changes'>
@@ -125,35 +126,7 @@
 <script>
 $('#name').on('input', function() { 
 
-	var cuisineName = $(this).val();
-
-    var xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function() {
-
-        if (xhttp.readyState == 4 && xhttp.status == 200) {
-
-        	var cuisines = JSON.parse(xhttp.responseText);
-
-        	var column = 'name';
-
-        	if (checkUnique(cuisineName, cuisines, column)) {
-
-            	document.getElementById('uniqueAlert').
-                	innerHTML = "OK: Not in use yet";
-            	$('#name').addClass("unique").removeClass("notUnique");
-        	}
-        	else {
-
-            	document.getElementById('uniqueAlert').
-                	innerHTML = "NOT OK: Already in use";
-            	$('#name').addClass("notUnique").removeClass("unique");
-        	}
-        }
-    }
-
-    xhttp.open("GET", "/cuisines/JSON", true);
-    xhttp.send();
+	realTimeUniqueCheck($(this).val(), 'Cuisine', 'name', $(this));
 });
 </script>
 </body>

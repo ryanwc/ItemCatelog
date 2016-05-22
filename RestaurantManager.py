@@ -162,7 +162,7 @@ def addBaseMenuItem(name, cuisine_id, description,
     session = getRestaurantDBSession()
 
     print "adding " + name
-    
+
     baseMenuItem = BaseMenuItem(
             name=name, 
             description=description,
@@ -403,7 +403,8 @@ def getRestaurantMenuItem(restaurantMenuItem_id):
     session.close()
     return restaurantMenuItem
 
-def getBaseMenuItem(baseMenuItem_id):
+def getBaseMenuItem(baseMenuItem_id=None,
+                    baseMenuItemName=None):
     """Return the base menu item with the given id
 
     Args:
@@ -411,8 +412,14 @@ def getBaseMenuItem(baseMenuItem_id):
     """
     session = getRestaurantDBSession()
 
-    baseMenuItem = session.query(BaseMenuItem).\
-                   filter_by(id=baseMenuItem_id).first()
+    baseMenuItem = None
+
+    if baseMenuItem_id is not None:
+        baseMenuItem = session.query(BaseMenuItem).\
+            filter_by(id=baseMenuItem_id).first()
+    elif baseMenuItemName is not None:
+         baseMenuItem = session.query(BaseMenuItem).\
+            filter_by(name=baseMenuItemName).first()       
 
     session.close()
     return baseMenuItem
@@ -716,7 +723,8 @@ def deleteRestaurantMenuItem(restaurantMenuItem_id=None):
     if restaurantMenuItem_id is not None:
 
         restaurantMenuItem = getRestaurantMenuItem(restaurantMenuItem_id)
-        baseMenuItem = getBaseMenuItem(restaurantMenuItem.baseMenuItem_id)
+        baseMenuItem = getBaseMenuItem(baseMenuItem_id=
+            restaurantMenuItem.baseMenuItem_id)
 
         if restaurantMenuItem.picture_id != baseMenuItem.picture_id:
             picture = getPicture(restaurantMenuItem.picture_id)
@@ -838,7 +846,7 @@ def deleteBaseMenuItem(baseMenuItem_id=None):
 
     if baseMenuItem_id is not None:
 
-        baseMenuItem = getBaseMenuItem(baseMenuItem_id)
+        baseMenuItem = getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
         restaurantMenuItems = \
             getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
 

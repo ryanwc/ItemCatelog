@@ -122,7 +122,7 @@
 		</div>
 
 		<p>Change Your Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
-		<input type='file' id='pictureFile' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
+		<input type='file' id='pictureFile' optional maxlength='300' name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
 		<div id='photoOr'>or provide link (must start with 'http://' or 'https://'):</div>
 		<input type='url' id='pictureLink' optional maxlength='300' name='pictureLink' pattern="https?://.+" size='80' placeholder='{{picture.text}}' value="">
 

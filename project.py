@@ -377,7 +377,8 @@ def cuisineJSON(cuisine_id):
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/JSON/')
 def baseMenuItemJSON(cuisine_id, baseMenuItem_id):
-        baseMenuItem = RestaurantManager.getBaseMenuItem(baseMenuItem_id)
+        baseMenuItem = RestaurantManager.\
+            getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
 
@@ -620,7 +621,7 @@ def cuisine(cuisine_id):
         else:
             ## got to be a better way to do this
             mostExpensiveBaseMenuItem = RestaurantManager.\
-                                        getBaseMenuItem(-1)
+                getBaseMenuItem(baseMenuItem_id=-1)
             mostExpensiveBaseMenuItem.name = "N/A"
             mostExpensiveBaseMenuItem.price = "N/A"
 
@@ -635,7 +636,7 @@ def cuisine(cuisine_id):
         else:
             ## got to be a better way to do this
             mostExpensiveRestaurantMenuItem = RestaurantManager.\
-                                              getBaseMenuItem(-1)
+                getBaseMenuItem(baseMenuItem_id=-1)
             mostExpensiveRestaurantMenuItem.name = "N/A"
             mostExpensiveRestaurantMenuItem.price = "N/A"
 
@@ -686,14 +687,22 @@ def editCuisine(cuisine_id):
             oldName = cuisine.name
             newName = None
 
+            cuisines = RestaurantManager.getCuisines()
+
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
+
+                sameName = RestaurantManager.getCuisine(name=newName)
 
                 if len(newName) > 80:
 
                     newName = None
                     flash("Did not change name; it was too long")
-
+                elif sameName is not None:
+                    
+                    newName = None
+                    flash("Did not change name; conflicts with "+\
+                        "existing cusine")
 
             RestaurantManager.editCuisine(cuisine_id, newName=newName)
             
@@ -757,7 +766,8 @@ def deleteCuisine(cuisine_id):
             baseMenuItems = RestaurantManager.\
                             getBaseMenuItems(cuisine_id=cuisine_id)
             numItemsDeleted = len(baseMenuItems)
-            itemBaseForNoCuisine = RestaurantManager.getBaseMenuItem(-1)
+            itemBaseForNoCuisine = RestaurantManager.\
+                getBaseMenuItem(baseMenuItem_id=-1)
             restaurantBaseForNoCuisine = RestaurantManager.\
                                          getCuisine(cuisine_id=-1)
 
@@ -1350,7 +1360,8 @@ def addBaseMenuItem(cuisine_id):
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/')
 def baseMenuItem(cuisine_id, baseMenuItem_id):
-        baseMenuItem = RestaurantManager.getBaseMenuItem(baseMenuItem_id)
+        baseMenuItem = RestaurantManager.\
+            getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
         baseMenuItem.price = Decimal(baseMenuItem.price).\
             quantize(Decimal('0.01'))
         cuisine = RestaurantManager.\
@@ -1434,11 +1445,18 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
             
             if request.form['name']:
                 newName = bleach.clean(request.form['name'])
+                sameName = RestaurantManager.\
+                    getBasemenuItem(baseMenuItemName=newName)
 
-                if len(newName) > 80 :
+                if len(newName) > 80:
 
                     newName = None
                     flash("Did not change name; it's too long")
+                
+                if sameName is not None:
+
+                    newName = None
+                    flash("Did not change name; it's not unique")
                 
             if request.form['description']:
                 newDescription = bleach.clean(request.form['description'])
@@ -1519,8 +1537,8 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                     newDescription + "'")
 
             if newPrice is not None:
-                flash("changed price from '" + oldPrice + "' to '" + \
-                    newPrice + "'")
+                flash("changed price from '" + str(oldPrice) + "' to '" + \
+                    str(newPrice) + "'")
 
             return redirect(url_for('baseMenuItem',
                                     cuisine_id=cuisine_id,
@@ -1573,7 +1591,8 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
             cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
             restaurantMenuItems = RestaurantManager.\
                                   getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
-            baseForNoCuisine = RestaurantManager.getBaseMenuItem(-1)
+            baseForNoCuisine = RestaurantManager.\
+                getBaseMenuItem(baseMenuItem_id=-1)
 
             RestaurantManager.deleteBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
 
@@ -1807,16 +1826,17 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
         restaurantMenuItem = RestaurantManager.\
                              getRestaurantMenuItem(restaurantMenuItem_id)
-        restaurantMenuItem.price = Decimal(restaurantMenuItem.price).quantize(Decimal('0.01'))
+        restaurantMenuItem.price = Decimal(restaurantMenuItem.price).\
+            quantize(Decimal('0.01'))
 
         restaurantCuisineObj = RestaurantManager.\
                                getCuisine(cuisine_id=restaurant.cuisine_id)
         restaurantCuisine = restaurantCuisineObj.name
         restaurantMenuItemSection = RestaurantManager.\
-                                    getMenuSection(menuSection_id=restaurantMenuItem.menuSection_id)
+            getMenuSection(menuSection_id=restaurantMenuItem.menuSection_id)
 
         baseMenuItem = RestaurantManager.\
-                       getBaseMenuItem(restaurantMenuItem.baseMenuItem_id)
+            getBaseMenuItem(baseMenuItem_id=restaurantMenuItem.baseMenuItem_id)
         baseMenuItem.price = Decimal(baseMenuItem.price).quantize(Decimal('0.01'))
         baseMenuItemCuisineObj = RestaurantManager.\
                                  getCuisine(cuisine_id=baseMenuItem.cuisine_id)
@@ -1990,8 +2010,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             if newPrice is not None:
                 flash("changed restaurant menu item " + \
                     str(restaurantMenuItem.id) + \
-                    "'s price from '" + oldPrice + "' to '" + \
-                    newPrice + "'")
+                    "'s price from '" + str(oldPrice) + "' to '" + \
+                    str(newPrice) + "'")
 
             return redirect(url_for('restaurantMenu',
                                     restaurant_id=restaurant_id))
