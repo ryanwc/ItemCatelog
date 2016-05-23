@@ -494,7 +494,6 @@ function checkForm(form) {
             window.alert("Name is not unique");
             return false;
         }
-
         return true;
     }
     else if (form.id == 'addRestaurantForm') {

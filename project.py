@@ -359,7 +359,7 @@ def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
 
 @app.route(app.config['UPLOAD_FOLDER']+'/<filename>/')
 def uploaded_picture(filename):
-    '''Endpoint for serving an uploaded picture
+    '''Serving an uploaded picture
     '''
     return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 
 
@@ -372,6 +372,8 @@ def uploaded_picture(filename):
 @app.route('/index/')
 @app.route('/login/')
 def restaurantManagerIndex():
+    '''Serve the homepage
+    '''
     # create a state token to prevent CSRF
     # store it in the session for later validation
     state = ''.join(random.choice(string.ascii_uppercase + \
@@ -396,7 +398,7 @@ def cuisines():
 
 @app.route('/cuisines/add/', methods=['GET', 'POST'])
 def addCuisine():
-    '''Add a cuisine to the database
+    '''Serve form for adding a cuisine to the database
     '''
     if not isLoggedIn():
 
@@ -411,9 +413,11 @@ def addCuisine():
                         "url_for('restaurantManagerIndex')")
 
         name = validateName(name=bleach.clean(request.form['name']), 
-                    CRUDType='create', itemType='cuisine', 
-                    maxlength=80, required=True,
-                    unique=True, redirectURL="url_for('cuisines')")
+                    CRUDtype='create', itemType='cuisine', 
+                    maxlength=80, required=True, unique=True)
+
+        if name == None:
+            return redirect(url_for('cuisines'))
 
         RestaurantManager.addCuisine(name)
 
@@ -428,6 +432,8 @@ def addCuisine():
 
 @app.route('/cuisines/<int:cuisine_id>/')
 def cuisine(cuisine_id):
+    '''Serve cuisine info page
+    '''
     cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
     restaurants = RestaurantManager.\
                   getRestaurants(cuisine_id=cuisine_id)
@@ -534,61 +540,31 @@ def cuisine(cuisine_id):
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
-    # set login HTML
-    intLoginStatus = 0
-    displayNoneIfLoggedIn = ""
-    loginStatusMessage = "Not logged in"
-    user_id = -99
+    '''Serve form to edit a cuisine
+    '''
+    if not isLoggedIn():
 
-    if isLoggedIn():
-
-        displayNoneIfLoggedIn = "none"
-        loginStatusMessage = "Logged in as " + \
-            login_session['username']
-        # passed to javascript function
-        intLoginStatus = 1
-        user_id = login_session['user_id']
-    else:
-
-        flash("You must log in to add a cuisine")
+        flash("You must log in to edit a cuisine")
         return redirect(url_for('restaurantManagerIndex'))
+    
+    client_login_session = getClientLoginSession()
 
     cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
-
-            return redirect(url_for('restaurantManagerIndex'))
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
         oldName = cuisine.name
-        newName = None
 
-        cuisines = RestaurantManager.getCuisines()
-
-        if request.form['name']:
-            newName = bleach.clean(request.form['name'])
-
-            sameName = RestaurantManager.getCuisine(name=newName)
-
-            if len(newName) > 80:
-
-                newName = None
-                flash("Did not change name; it was too long")
-            elif sameName is not None:
-                
-                newName = None
-                flash("Did not change name; conflicts with "+\
-                    "existing cusine")
+        newName = validateName(name=bleach.clean(request.form['name']), 
+                    CRUDtype='edit', itemType='cuisine', 
+                    maxlength=80, unique=True, oldName=oldName)
 
         RestaurantManager.editCuisine(cuisine_id, newName=newName)
         
-        if (newName is not oldName and
-            newName is not None):
+        if newName is not None:
             
             flash("Changed cuisine's name from '" + oldName +\
                 "' to '" + newName + "'")
@@ -599,43 +575,27 @@ def editCuisine(cuisine_id):
         return render_template("EditCuisine.html",
                                cuisine=cuisine,
                                hiddenToken=login_session['state'],
-                               intLoginStatus=intLoginStatus,
-                               displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                               loginStatusMessage=loginStatusMessage,
-                               user_id=user_id)
+                               client_login_session=client_login_session)
 
 @app.route('/cuisines/<int:cuisine_id>/delete/', methods=['GET', 'POST'])
 def deleteCuisine(cuisine_id):
-    # set login HTML
-    intLoginStatus = 0
-    displayNoneIfLoggedIn = ""
-    loginStatusMessage = "Not logged in"
-    user_id = -99
-
-    if isLoggedIn():
-
-        user_id = login_session['user_id']
-        displayNoneIfLoggedIn = "none"
-        loginStatusMessage = "Logged in as " + login_session['username']
-        # passed to javascript function
-        intLoginStatus = 1
-    else:
+    '''Serve form to delete a cuisine
+    '''
+    if not isLoggedIn():
 
         flash("You must log in to delete a cuisine")
         return redirect(url_for('restaurantManagerIndex'))
+    
+    client_login_session = getClientLoginSession()
 
     cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
 
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
-            return redirect(url_for('restaurantManagerIndex'))
-
+        # all of this is for flash messaging
         cuisineName = cuisine.name
         cuisineID = cuisine.id
         restaurantMenuItems = RestaurantManager.\
@@ -649,6 +609,8 @@ def deleteCuisine(cuisine_id):
         numItemsDeleted = len(baseMenuItems)
         itemBaseForNoCuisine = RestaurantManager.\
             getBaseMenuItem(baseMenuItem_id=-1)
+
+        # here is the logic
         restaurantBaseForNoCuisine = RestaurantManager.\
                                      getCuisine(cuisine_id=-1)
 
@@ -673,10 +635,7 @@ def deleteCuisine(cuisine_id):
         return render_template("DeleteCuisine.html",
                                cuisine=cuisine,
                                hiddenToken=login_session['state'],
-                               intLoginStatus=intLoginStatus,
-                               displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                               loginStatusMessage=loginStatusMessage,
-                               user_id=user_id)
+                               client_login_session=client_login_session)
 
 @app.route('/restaurants/')
 def restaurants():
@@ -2437,7 +2396,7 @@ def getClientLoginSession():
     return client_login_session
 
 ###
-### Form input validation
+### Form validation
 ###
 
 def checkCSRFAttack(currentState, redirectURL):
@@ -2451,36 +2410,42 @@ def checkCSRFAttack(currentState, redirectURL):
         return redirect(redirectURL)
 
 def validateName(name, CRUDtype, itemType, maxlength=None, 
-                 required=False, unique=False, redirectURL=None):
+                 required=False, unique=False, oldName=None):
     '''Validate a name field
 
-    Redirects with error flash message if the field is required
-    Proceeds as normal, but with error flash message, if name is optional
+    Upon test failure, flash a message and return None
     '''
-    badResult = "Did not " + CRUDtype + itemType
+    badResult = "Did not " + CRUDtype + " " + itemType
+    neutralResult = "Did not edit name;"
 
-    if required:
-        if not name or len(name) < 1:
+    if not name or len(name) < 1:
+
+        if required:
 
             flash(badResult + "; must provide a name") 
-            return redirect(redirectURL)
+        else:
 
-    if maxlength:
+            flash(neutralResult + " nothing provided")
+
+        return None
+
+    if name and maxlength:
         if len(name) > maxlength:
 
-            name = None
             flash(badResult + "; name too long.")
+            return None
 
-            if required:
-                return redirect(redirectURL)
-
-    if unique:
+    if name and unique:
         if RestaurantManager.getCuisine(name=name):
             
-            flash(badResult + "; name is not unique") 
-            if required:
+            flash(result + "; name is not unique")
+            return None
 
-                return redirect(redirectURL)
+    if name and oldName:
+        if name == oldName:
+
+            flash(rResult + "; name is same as old name")    
+            return None
 
     return name
 
