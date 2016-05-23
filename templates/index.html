@@ -11,8 +11,6 @@
   	<script>
 	// detect if logged in, if so hide the appropriate stuff
     $(document).ready(function() {
-    	// is is an access token for this session
-    	console.log({{isAccessToken}});
     	if ({{isAccessToken}}==1) { 
     		$('#signInMessage').html('Signed in as ' + '{{userName}}');
     		$('#profileLink').html('View/edit your profile');
@@ -28,13 +26,11 @@
 <!--LOAD PRE-REQUISITES FOR FACEBOOK SIGN IN -->
 <script>
 	window.fbAsyncInit = function() {
-		console.log("trying to init FB");
     	FB.init({
       		appId      : '1106203452759411',
       		xfbml      : true,
       		version    : 'v2.6'
     	});
-    	console.log("finished trying");
   	};
   	// Load the SDK asynchronously
   	(function(d, s, id) {
@@ -45,7 +41,6 @@
     	js = d.createElement(s); js.id = id;
     	js.src = "//connect.facebook.net/en_US/sdk.js";
     	fjs.parentNode.insertBefore(js, fjs);
-    	console.log("loading");
 	}(document, 'script', 'facebook-jssdk'));
 </script>
 <!-- END PRE-REQUISITES FOR FACEBOOK SIGN IN -->
@@ -117,7 +112,12 @@
     </div>
     </br>
 	</br>
-    <div id='result'></div>
+    <div class='notDisplayed' id='result'>
+    	<p id='resultMessage'></p>
+    	<h1 id='welcome'></h1>
+    	<img id='signInPhoto' src="{{url_for('uploaded_picture',filename='ph')}}" alt='[your pic]'/>
+    	<div id='redirectMessage'></div>
+    </div>
 <script>
 // called when facebook login button clicked
 function sendTokenToServer() {
@@ -125,12 +125,10 @@ function sendTokenToServer() {
 	var access_token = FB.getAuthResponse()['accessToken'];
 
 	console.log("Welcome! Fetching your access token...");
-	console.log(access_token);   
 
     FB.api('/me', function(response) {
-    	console.log('Successfull Facebook login for: ' + response.name);
     	// hide the login
-		$('#signIn').attr('style', 'display: none');
+		$('#signIn').addClass('notDisplayed');
     	// send the on-time-use code to the server, if the server responds, write
 		// the output of the /fbconnect method to the web page then refresh
 		$.ajax({
@@ -141,7 +139,29 @@ function sendTokenToServer() {
 			contentType: 'application/octet-stream; charset=utf-8',
 			success: function(result) {
 				if (result) {
-					$('#result').html('Login Sucessful!<br>' + result + '</br>Redirecting...');
+
+					resultObj = JSON.parse(result);
+					$('#result').addClass('fbSignIn');
+
+					$('#result').removeClass('notDisplayed');
+					$('#resultMessage').html('Login Sucessful!');
+
+					$('#welcome').html(resultObj['loginMessage']);
+
+					if (resultObj['picture_serve_type'] == 'upload') {
+
+						var currSRC = $('#signInPhoto').attr("src");
+						var path = currSRC.substring(0,currSRC.length-3);
+						var newSRC = path.concat(resultObj['picture']);
+        				$('#signInPhoto').attr("src", newSRC);
+					}
+					else if (resultObj['picture_serve_type'] == 'link') {
+
+        				$('#signInPhoto').attr("src", resultObj['picture']);
+					}
+
+					$('#redirectMessage').html('Redirecting...');
+
 					setTimeout(function() {
 						location.reload();
 					}, 4000);
@@ -164,10 +184,9 @@ function signInCallback(authResult) {
 
 	if (authResult['code']) {
 		// hide the sign-in button
-		$('#signIn').attr('style', 'display: none');
+		$('#signIn').addClass('notDisplayed');
 		// send the on-time-use code to the server, if the server responds, write
 		// the output of the /gconnect method to the web page then refresh
-		console.log("trying");
 		$.ajax({
 			type: 'POST',
 			url:'/gconnect?state={{state}}',
@@ -176,7 +195,29 @@ function signInCallback(authResult) {
 			data: authResult['code'],
 			success: function(result) {
 				if (result) {
-					$('#result').html('Login Sucessful!<br>' + result + '</br>Redirecting...');
+
+					resultObj = JSON.parse(result);
+					$('#result').addClass('gSignIn');
+
+					$('#result').removeClass('notDisplayed');
+					$('#resultMessage').html('Login Sucessful!');
+
+					$('#welcome').html(resultObj['loginMessage']);
+
+					if (resultObj['picture_serve_type'] == 'upload') {
+
+						var currSRC = $('#signInPhoto').attr("src");
+						var path = currSRC.substring(0,currSRC.length-3);
+						var newSRC = path.concat(resultObj['picture']);
+        				$('#signInPhoto').attr("src", newSRC);
+					}
+					else if (resultObj['picture_serve_type'] == 'link') {
+
+        				$('#signInPhoto').attr("src", resultObj['picture']);
+					}
+
+					$('#redirectMessage').html('Redirecting...');
+
 					setTimeout(function() {
 						location.reload();
 					}, 4000);

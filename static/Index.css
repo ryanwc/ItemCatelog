@@ -22,8 +22,11 @@ li				{margin: 0 0 3px 0;}
 .signOut		{border: 2px solid; border-radius: 5px; padding: 5px; 
 				 margin: 5px; border-color: #262626;
 				 background-color: #ffffff; width: 70px;}
+.notDisplayed	{display: none;}
 				 
 #signInMessage	{color: #ffffff;}
 #result 		{position: absolute;}
 #title			{color: #8000ff; font-family: 'Impact', sans-serif; 
 				 font-style: italic;}
+#signInPhoto	{width: 200px; height: 200px;
+				 border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;}

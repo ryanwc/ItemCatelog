@@ -145,13 +145,8 @@ def gconnect():
 
         picture = RestaurantManager.getPicture(user.picture_id)
         login_session['username'] = user.name
+        login_session['picture'] = picture.text
         login_session['picture_serve_type'] = picture.serve_type
-
-        if picture.serve_type == 'upload':
-            login_session['picture'] = "{{url_for('uploaded_picture', " +\
-            "filename=" + picture.text + ")}}"
-        elif picture.serve_type == 'link':
-            login_session['picture'] = picture.text
 
         # HTML output for successful authentication call
         outputDict = {}
@@ -222,34 +217,28 @@ def fbconnect():
                                       picture_id=picture_id)
             user = RestaurantManager.getUser(email=login_session['email'])
 
-        login_session['user_id'] = user.id
-        # reset these to what the user has for our app
+        # our app user settings
         picture = RestaurantManager.getPicture(user.picture_id)
+        login_session['user_id'] = user.id
         login_session['username'] = user.name
         login_session['picture'] = picture.text
         login_session['picture_serve_type'] = picture.serve_type
+
+        # HTML output for successful authentication call
+        outputDict = {}
+
+        outputDict['loginMessage'] = "Welcome, " + \
+            login_session['username'] + "!"
+        outputDict['picture'] = login_session['picture']
+        outputDict['picture_serve_type'] = login_session['picture_serve_type']
 
         # this is for my app checking for login status
         credentials = {'access_token':token}
         login_session['credentials'] = credentials
 
-        # HTML output for successful authentication call
-        output = ''
-        output += '<div class="fbSignIn">'
-        output += '<h1>Welcome, '
-        output += login_session['username']
-        output += '!</h1>'
-        output += '<img src="'
-        if login_session['picture_serve_type'] == 'link':
-            output += login_session['picture']
-        elif login_session['picture_serve_type'] == 'upload':
-            output += "{{url_for('uploaded_picture', filename='"+login_session['picture']+"'}}"
-        output += ' " style = "width: 200px; height: 200px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
-        output += '</div>'
-
         flash("you are now logged in as %s" % login_session['username'])
 
-        return output
+        return json.dumps(outputDict)
 
 # disconnect - logout a user that is currently logged in
 @app.route('/disconnect', methods=['POST'])

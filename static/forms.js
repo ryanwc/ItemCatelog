@@ -67,14 +67,12 @@ function checkUnique(columnValue, JSONTableObj, column) {
 
                 if (columnValue == thisColumn) {
 
-                    console.log("is not unique");
                     return false;
                 }
             }
         }
     }
 
-    console.log("is unique");
     return true;
 };
 
@@ -158,7 +156,13 @@ function checkForm(form) {
             }
         }
         else if (picLink.length > 0) {
-                 
+            
+            if (picLink.length < 8) {
+
+                window.alert("Pic link is not a valid url");
+                return false;
+            }
+
             if (picLink.substring(0,7) != 'http://' ||
                 picLink.substring(0,8) != 'https://') {
 
@@ -218,7 +222,7 @@ function checkForm(form) {
 
             if (price.length > 20) {
 
-                window.alert("too long");
+                window.alert("Price is too long");
                 return false;
             }
         }
@@ -248,6 +252,13 @@ function checkForm(form) {
         }
         else if (picLink.length > 0) {
                  
+
+            if (picLink.length < 8) {
+
+                window.alert("Pic link is not a valid url");
+                return false;
+            }
+
             if (picLink.substring(0,7) != 'http://' ||
                 picLink.substring(0,8) != 'https://') {
 
@@ -304,6 +315,12 @@ function checkForm(form) {
         }
         else if (picLink.length > 0) {
                  
+            if (picLink.length < 8) {
+
+                window.alert("Pic link is not a valid url");
+                return false;
+            }
+
             if (picLink.substring(0,7) != 'http://' ||
                 picLink.substring(0,8) != 'https://') {
 
@@ -377,7 +394,6 @@ function checkForm(form) {
         
         if (description.length > 0) {
 
-            console.log(typeof description);
             if (description.length > 250) {
 
                 return false;
@@ -396,7 +412,7 @@ function checkForm(form) {
 
             if (price.length > 20) {
 
-                window.alert("too long");
+                window.alert("Price is too long");
                 return false;
             }
         }
@@ -426,6 +442,13 @@ function checkForm(form) {
         }
         else if (picLink.length > 0) {
                  
+
+            if (picLink.length < 8) {
+
+                window.alert("Pic link is not a valid url");
+                return false;
+            }
+
             if (picLink.substring(0,7) != 'http://' ||
                 picLink.substring(0,8) != 'https://') {
 
@@ -440,6 +463,318 @@ function checkForm(form) {
             }
         }
         
+        return true;
+    }
+    else if (form.id == 'addCuisineForm') {
+
+        var name = document.getElementById("name").value;
+        
+        if (name.length < 1) {
+
+            window.alert("Please enter a name");
+            return false;
+        }
+
+        var uniqueAlert = document.getElementById("nameUniqueAlert").innerHTML;
+        var nameIsUnique = false;
+
+        if (uniqueAlert == 'OK: Not in use yet') {
+
+            nameIsUnique = true;
+        }
+
+        if (name > 80) {
+
+            window.alert("Name is too long");
+            return false;
+        }
+            
+        if (!nameIsUnique) {
+
+            window.alert("Name is not unique");
+            return false;
+        }
+
+        return true;
+    }
+    else if (form.id == 'addRestaurantForm') {
+
+        var name = document.getElementById("name").value;
+        var picFile = document.getElementById("pictureFile").value;
+        var picLink = document.getElementById("pictureLink").value;
+
+        if (name.length < 1) {
+
+            window.alert("Please provide a name");
+            return false;
+        }
+
+        if (picFile.length < 1 && picLink.length < 1) {
+
+            window.alert("Please provide a picutre");
+            return false;
+        }
+
+
+        if (name.length > 100) {
+
+            window.alert("Name is too long");
+            return false;               
+        }
+        
+        if (picFile.length > 0) {
+
+            if (picFile.length < 5) {
+
+                window.alert("Uploaded pic was in invalid format");
+                return false;    
+            }
+            else if (picFile.length == 5) {
+
+                if (picFile.substring(1, 5).toLowerCase() != '.png') {
+
+                    window.alert("Uploaded pic was in invalid format");
+                    return false;          
+                }
+            }
+            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
+                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
+                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
+
+                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
+                return false;
+            }
+        }
+        else {
+                 
+            if (picLink.length < 8) {
+
+                window.alert("Pic link is not a valid url");
+                return false;
+            }
+
+            if (picLink.substring(0,7) != 'http://' ||
+                picLink.substring(0,8) != 'https://') {
+
+                window.alert("Link must start with 'http://' or 'https://'");
+                return false;
+            }
+
+            if (picLink.length > 300) {
+
+                window.alert("Pic link is too long")
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    else if (form.id == 'addBaseMenuItemForm') {
+
+        var name = document.getElementById("name").value;
+        var uniqueAlert = document.getElementById("nameUniqueAlert").innerHTML;
+
+        var description = document.getElementById("description").value;
+
+        var price = document.getElementById("price").value;
+
+        var picFile = document.getElementById("pictureFile").value;
+        var picLink = document.getElementById("pictureLink").value;
+
+        if (name.length < 1) {
+
+            window.alert("Please provide name");
+            return false;           
+        }
+
+        if (description.length < 1) {
+
+            window.alert("Please provide description");
+            return false; 
+        }
+
+        if (price.length < 1) {
+
+            window.alert("Please provide price");
+            return false; 
+        }
+
+        if (picFile.length < 1 && picLink < 1) {
+
+            window.alert("Please provide picture");
+            return false; 
+        }
+
+        if (name.length > 80) {
+
+            window.alert("Name is too long");
+            return false;
+        }
+            
+        if (uniqueAlert != 'OK: Not in use yet') {
+
+            window.alert("Name is not unique");
+            return false;
+        }
+
+        if (description.length > 250) {
+
+            return false;
+        }
+            
+        var priceMatch = price.match(/[0-9]*(?:.[0-9][0-9])?/);
+            
+        if (priceMatch[0] != price) {
+
+            window.alert("Price is in invalid format");
+            return false;
+        }
+
+        if (price.length > 20) {
+
+            window.alert("Price is too long");
+            return false;
+        }
+            
+        if (picFile.length > 0) {
+
+            if (picFile.length < 5) {
+
+                window.alert("Uploaded pic was in invalid format");
+                return false;    
+            }
+            else if (picFile.length == 5) {
+
+                if (picFile.substring(1, 5).toLowerCase() != '.png') {
+
+                    window.alert("Uploaded pic was in invalid format");
+                    return false;          
+                }
+            }
+            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
+                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
+                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
+
+                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
+                return false;
+            }
+        }
+        else {     
+
+            if (picLink.length < 8) {
+
+                window.alert("Pic link is not a valid url");
+                return false;
+            }
+
+            if (picLink.substring(0,7) != 'http://' ||
+                picLink.substring(0,8) != 'https://') {
+
+                window.alert("Link must start with 'http://' or 'https://'");
+                return false;
+            }
+
+            if (picLink.length > 300) {
+
+                window.alert("Pic link is too long")
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    else if (form.id == 'addRestaurantMenuItemForm') {
+
+        var name = document.getElementById("name").value;
+        var description = document.getElementById("description").value;
+        var picFile = document.getElementById("pictureFile").value;
+        var picLink = document.getElementById("pictureLink").value;
+        var price = document.getElementById("price").value;
+
+        // don't need to alert empty input
+        // defaults to base item attribute
+
+        if (name.length > 0) {
+
+            if (name.length > 80) {
+
+                window.alert("Name is too long");
+                return false;
+            }
+        }
+        
+        if (description.length > 0) {
+
+            if (description.length > 250) {
+
+                window.alert("Description is too long");
+                return false;
+            }
+        }
+        
+        if (price.length > 0) {
+
+            var priceMatch = price.match(/[0-9]*(?:.[0-9][0-9])?/);
+
+            if (priceMatch[0] != price) {
+
+                window.alert("Price is in invalid format");
+                return false;
+            }
+
+            if (price.length > 20) {
+
+                window.alert("Price is too long");
+                return false;
+            }
+        }
+
+        if (picFile.length > 0) {
+
+            if (picFile.length < 5) {
+
+                window.alert("Uploaded pic was in invalid format");
+                return false;    
+            }
+            else if (picFile.length == 5) {
+
+                if (picFile.substring(1, 5).toLowerCase() != '.png') {
+
+                    window.alert("Uploaded pic was in invalid format");
+                    return false;          
+                }
+            }
+            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
+                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
+                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
+
+                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
+                return false;
+            }
+        }
+        else if (picLink.length > 0) {
+                 
+
+            if (picLink.length < 8) {
+
+                window.alert("Pic link is not a valid url");
+                return false;
+            }
+
+            if (picLink.substring(0,7) != 'http://' ||
+                picLink.substring(0,8) != 'https://') {
+
+                window.alert("Link must start with 'http://' or 'https://'");
+                return false;
+            }
+
+            if (picLink.length > 300) {
+
+                window.alert("Pic link is too long")
+                return false;
+            }
+        }
+
         return true;
     }
     else {
