@@ -5,7 +5,6 @@
 	<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
 	</script>
-
 	<script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
 	<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
   	<script>
@@ -118,139 +117,12 @@
     	<img id='signInPhoto' src="{{url_for('uploaded_picture',filename='ph')}}" alt='[your pic]'/>
     	<div id='redirectMessage'></div>
     </div>
-<script>
-// called when facebook login button clicked
-function sendTokenToServer() {
-
-	var access_token = FB.getAuthResponse()['accessToken'];
-
-	console.log("Welcome! Fetching your access token...");
-
-    FB.api('/me', function(response) {
-    	// hide the login
-		$('#signIn').addClass('notDisplayed');
-    	// send the on-time-use code to the server, if the server responds, write
-		// the output of the /fbconnect method to the web page then refresh
-		$.ajax({
-			type: 'POST',
-			url:'/fbconnect?state={{state}}',
-			processData: false,
-			data: access_token,
-			contentType: 'application/octet-stream; charset=utf-8',
-			success: function(result) {
-				if (result) {
-
-					resultObj = JSON.parse(result);
-					$('#result').addClass('fbSignIn');
-
-					$('#result').removeClass('notDisplayed');
-					$('#resultMessage').html('Login Sucessful!');
-
-					$('#welcome').html(resultObj['loginMessage']);
-
-					if (resultObj['picture_serve_type'] == 'upload') {
-
-						var currSRC = $('#signInPhoto').attr("src");
-						var path = currSRC.substring(0,currSRC.length-3);
-						var newSRC = path.concat(resultObj['picture']);
-        				$('#signInPhoto').attr("src", newSRC);
-					}
-					else if (resultObj['picture_serve_type'] == 'link') {
-
-        				$('#signInPhoto').attr("src", resultObj['picture']);
-					}
-
-					$('#redirectMessage').html('Redirecting...');
-
-					setTimeout(function() {
-						location.reload();
-					}, 4000);
-				}
-				else if (authResult['error']) {
-					
-					console.log('There was an error: ' + authResult['error']);
-				}
-				else {
-
-					$('#result').html('Failed to make a server-side call.  Check your configuration and console.');
-				}
-			}
-		});
-    });
-}
-
-// called when Google calls back after sending the user the access code
-function signInCallback(authResult) {
-
-	if (authResult['code']) {
-		// hide the sign-in button
-		$('#signIn').addClass('notDisplayed');
-		// send the on-time-use code to the server, if the server responds, write
-		// the output of the /gconnect method to the web page then refresh
-		$.ajax({
-			type: 'POST',
-			url:'/gconnect?state={{state}}',
-			processData: false,
-			contentType: 'application/octet-stream; charset=utf-8',
-			data: authResult['code'],
-			success: function(result) {
-				if (result) {
-
-					resultObj = JSON.parse(result);
-					$('#result').addClass('gSignIn');
-
-					$('#result').removeClass('notDisplayed');
-					$('#resultMessage').html('Login Sucessful!');
-
-					$('#welcome').html(resultObj['loginMessage']);
-
-					if (resultObj['picture_serve_type'] == 'upload') {
-
-						var currSRC = $('#signInPhoto').attr("src");
-						var path = currSRC.substring(0,currSRC.length-3);
-						var newSRC = path.concat(resultObj['picture']);
-        				$('#signInPhoto').attr("src", newSRC);
-					}
-					else if (resultObj['picture_serve_type'] == 'link') {
-
-        				$('#signInPhoto').attr("src", resultObj['picture']);
-					}
-
-					$('#redirectMessage').html('Redirecting...');
-
-					setTimeout(function() {
-						location.reload();
-					}, 4000);
-				}
-				else if (authResult['error']) {
-					
-					console.log('There was an error: ' + authResult['error']);
-				}
-				else {
-
-					$('#result').html('Failed to make a server-side call.  Check your configuration and console.');
-				}
-			}
-		});
-	}
-}
-
-function signOut() {
-
-	$.ajax({
-		type: 'POST',
-		url: '/disconnect',
-		success: function(result) {
-			if (result) {
-				window.alert(result);
-				location.reload();
-			}
-			else {
-				$('#result').html('Failed to make a server-side call.  Check your configuration and console.');
-			}
-		}
-	});
-  }
+<div class='notDisplayed' id='state'>{{state}}</div>
+<script src="{{url_for('static', filename='login.js')}}">
+</script>
+<script src="{{url_for('static', filename='signOut.js')}}">
+</script>
+<script>displayBasedOnLogin({{intBooleanLoggedIn}});
 </script>
 </body>
 </html>

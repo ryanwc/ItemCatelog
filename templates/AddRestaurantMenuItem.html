@@ -186,11 +186,10 @@
 </div>
 <script src="{{url_for('static', filename='login.js')}}">
 </script>
-<script src="{{url_for('static', filename='signOut.js')}}">
-</script>
 <script>displayBasedOnLogin({{intBooleanLoggedIn}});
 </script>
-<script src="{{url_for('static', filename='forms.js')}}"></script>
+<script src="{{url_for('static', filename='forms.js')}}">
+</script>
 <script>
 	// (could not get this to work properly in external .js file --
 	//  the setAttribute would take this page's url and append the "url for" part)
