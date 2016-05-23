@@ -1,25 +1,11 @@
 <html>
 <head>
-	<link rel=stylesheet type=text/css href="{{url_for('static',
-											           filename='index.css')}}">
+	<link rel=stylesheet type=text/css href="{{url_for('static',filename='index.css')}}">
 	<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
 	</script>
 	<script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
 	<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
-  	<script>
-	// detect if logged in, if so hide the appropriate stuff
-    $(document).ready(function() {
-    	if ({{isAccessToken}}==1) { 
-    		$('#signInMessage').html('Signed in as ' + '{{userName}}');
-    		$('#profileLink').html('View/edit your profile');
-    		$('#signInButtons').css("cssText", "display: none !important;");
-    	}
-    	else {
-       		$('.signOut').css("cssText", "display: none !important;");
-    	}
-	});
-	</script>
 </head>
 <body>
 <!--LOAD PRE-REQUISITES FOR FACEBOOK SIGN IN -->
@@ -86,9 +72,12 @@
 <!-- data-approvalprompt="force" means user has to log in 
 	each time visit login page // useful for debugging, not so in production -->
 	<div id="signIn">
-		<div id='signInMessage'></div>
-		<div><a class='actionLink' id='profileLink' href="{{url_for('user',user_id=userID)}}"></div>
-		<div id='signInButtons'>
+		<div class='hideLoggedOut'>
+			<span id='signInMessage'>Signed in as {{client_login_session['username']}}</span>
+			</br>
+			<a class='actionLink' id='profileLink' href="{{url_for('user',user_id=client_login_session['user_id'])}}">View/edit your profile</a>
+		</div>
+		<div class='hideLoggedIn' id='signInButtons'>
 			<div class="g-signin"
 				data-scope="openid email"
             	data-redirecturi="postmessage"
@@ -105,22 +94,22 @@
 			</fb:login-button>
 			</div>
     	</div>
-    	<div class='signOut'>
+    	<div class='hideLoggedOut' class='signOut'>
     		<a class="backLink" href="#" onclick="signOut();">Sign out</a>
     	</div>
     </div>
     </br>
 	</br>
-    <div class='notDisplayed' id='result'>
+    <div class='hiddenClass' id='result'>
     	<p id='resultMessage'></p>
     	<h1 id='welcome'></h1>
     	<img id='signInPhoto' src="{{url_for('uploaded_picture',filename='ph')}}" alt='[your pic]'/>
     	<div id='redirectMessage'></div>
     </div>
-<div class='notDisplayed' id='state'>{{state}}</div>
+<div class='hiddenClass' id='state'>{{state}}</div>
 <script src="{{url_for('static', filename='login.js')}}">
 </script>
-<script>displayBasedOnLogin({{intBooleanLoggedIn}});
+<script>displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 </body>
 </html>

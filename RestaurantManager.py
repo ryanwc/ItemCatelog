@@ -161,8 +161,6 @@ def addBaseMenuItem(name, cuisine_id, description,
     """
     session = getRestaurantDBSession()
 
-    print "adding " + name
-
     baseMenuItem = BaseMenuItem(
             name=name, 
             description=description,

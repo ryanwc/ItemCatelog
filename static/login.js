@@ -1,12 +1,12 @@
-function displayBasedOnLogin(intBooleanLoggedIn) {
+function displayBasedOnLogin(message) {
 
-	if (intBooleanLoggedIn==1) { 
+	if (message == 'Not logged in') { 
 
-		hide = document.getElementsByClassName("hideLoggedIn");
+		hide = document.getElementsByClassName("hideLoggedOut");
 	}
 	else {
 
-		hide = document.getElementsByClassName("hideLoggedOut");
+		hide = document.getElementsByClassName("hideLoggedIn");
 	}
 
 	for (i = 0; i < hide.length; i++) {
@@ -14,7 +14,7 @@ function displayBasedOnLogin(intBooleanLoggedIn) {
 		hide[i].style.display = "none";
 	}
 
-	return intBooleanLoggedIn;
+	return message;
 };
 
 function displayBasedOnOwner(loggedInUserID, thingOwnerID) {
@@ -54,7 +54,7 @@ function sendTokenToServer() {
 
     FB.api('/me', function(response) {
     	// hide the login
-		$('#signIn').addClass('notDisplayed');
+		$('#signIn').addClass('hiddenClass');
 		
 		// get parameters for connect
 		var urlWithState = '/fbconnect?state=' + $('#state').html();
@@ -71,7 +71,7 @@ function signInCallback(authResult) {
 
 	if (authResult['code']) {
 		// hide the sign-in button
-		$('#signIn').addClass('notDisplayed');
+		$('#signIn').addClass('hiddenClass');
 
 		// get data for connect
 		var urlWithState = '/gconnect?state=' + $('#state').html();
@@ -107,7 +107,7 @@ function handleSignInResult(loginClass, result) {
 
 		resultObj = JSON.parse(result);
 		$('#result').addClass(loginClass);
-		$('#result').removeClass('notDisplayed');
+		$('#result').removeClass('hiddenClass');
 		$('#resultMessage').html('Login Sucessful!');
 
 		$('#welcome').html(resultObj['loginMessage']);

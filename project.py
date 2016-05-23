@@ -32,6 +32,10 @@ import bleach
 import random, string, decimal
 
 
+###
+### Global variables
+###
+
 app = Flask(__name__)
 
 # set google client secrets
@@ -42,17 +46,24 @@ CLIENT_ID = json.loads(open('client_secrets.json',
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(APP_ROOT, 'pics')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 # These are the extentions we allow to be uploaded
 ALLOWED_PIC_EXTENSIONS = set(['png','PNG','jpg','JPG','jpeg','JPEG'])
 
-### for returning user-uploaded images to the browser
-@app.route(app.config['UPLOAD_FOLDER']+'/<filename>/')
-def uploaded_picture(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 
 
-### ajax enpoint for google sign in authentication
+###############################################################################
+# Main Server Code
+###############################################################################
+
+
+###
+### Login endpoints
+###
+
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    '''Ajax enpoint for google sign in authentication
+    '''
     # confirm entity with correct 3rd party credentials is same entity 
     # that is trying to login from the current login page's session.
     if request.args.get('state') != login_session['state']:
@@ -133,9 +144,10 @@ def gconnect():
 
     return getSignInAlert()
 
-### ajax enpoint for facebook sign in authentication
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
+    '''Ajax endpoint for facebook sign in authentication
+    '''
     # confirm entity with correct 3rd party credentials is same entity 
     # that is trying to login from the current login page's session.
     if request.args.get('state') != login_session['state']:
@@ -181,9 +193,10 @@ def fbconnect():
 
     return getSignInAlert()
 
-# disconnect - logout a user that is currently logged in
 @app.route('/disconnect', methods=['POST'])
 def disconnect():
+    '''Logout a user that is currently logged in
+    '''
     # only disconnects if valid credentials exist
     if 'credentials' not in login_session:
         if 'access_token' not in login_session['credentials']:
@@ -231,9 +244,10 @@ def disconnect():
 
     return logoutMessage
 
-# disconnect - revoke a current user's google access token
 @app.route('/gdisconnect', methods=['POST'])
 def gdisconnect():
+    '''Disconnect a user from Google oauth
+    '''
     access_token = login_session['credentials']['access_token']
     
     # execute HTTP GET request to revoke current token
@@ -253,9 +267,10 @@ def gdisconnect():
 
     return disconnectResult
 
-# disconnect - revoke a current user's fb access token
 @app.route('/fbdisconnect', methods=['POST'])
 def fbdisconnect():
+    '''Disconnect a user from Facebook oauth
+    '''
     # only disconnects if current user has access token (i.e., is logged in)
     access_token = login_session['credentials']['access_token']
     
@@ -273,7 +288,9 @@ def fbdisconnect():
     return disconnectResult
 
 
-### JSON API Endpoints
+###
+### JSON endpoints
+###
 
 @app.route('/cuisines/JSON/')
 def cuisinesJSON():
@@ -335,32 +352,36 @@ def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
 
     return jsonify(RestaurantMenuItem=restaurantMenuItem.serialize)
 
-### Retrieve and post data
 
-# create a state token to prevent request forgery
-# store it in the session for later validation
+###
+### Other endpoints
+###
+
+@app.route(app.config['UPLOAD_FOLDER']+'/<filename>/')
+def uploaded_picture(filename):
+    '''Endpoint for serving an uploaded picture
+    '''
+    return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 
+
+
+###
+### HTML endpoints
+###
+
 @app.route('/')
 @app.route('/index/')
 @app.route('/login/')
 def restaurantManagerIndex():
-    # get state to verify same session after login
+    # create a state token to prevent CSRF
+    # store it in the session for later validation
     state = ''.join(random.choice(string.ascii_uppercase + \
         string.ascii_lowercase + string.digits) for x in xrange(32))
     login_session['state'] = state
 
-    # for dynamic client-side content (and avoid passing login_session)
-    # (does 'login_session' still show up in browser cookies anyway?)
-    client_login_session = {}
-    client_login_session['userName'] = None
-    client_login_session['userID'] = None
-    if isLoggedIn():
+    client_login_session = getClientLoginSession()
 
-        client_login_session['userName'] = login_session['userName']
-        client_login_session['userID'] = login_session['userID']
-
-    return render_template("index.html", state=state,
-                           userName=userName, userID=userID,
-                           isAccessToken=isAccessToken)
+    return render_template("index.html", state=state, 
+                           client_login_session=client_login_session)
 
 @app.route('/cuisines/')
 def cuisines():
@@ -368,70 +389,31 @@ def cuisines():
     '''
     cuisines = RestaurantManager.getCuisines()
 
-    # set login HTML
-    user_id = -99
-    intLoginStatus = 0
-    loginStatusMessage = "Not logged in"
-    if isLoggedIn():
-
-        user_id = login_session['user_id']
-        loginStatusMessage = "Logged in as " + login_session['username']
-        intLoginStatus = 1
+    client_login_session = getClientLoginSession()
 
     return render_template("Cuisines.html", cuisines=cuisines,
-                           loginStatusMessage=loginStatusMessage,
-                           intLoginStatus=intLoginStatus)
+                           client_login_session=client_login_session)
 
 @app.route('/cuisines/add/', methods=['GET', 'POST'])
 def addCuisine():
     '''Add a cuisine to the database
     '''
-    # set login HTML
-    user_id = -99
-    intLoginStatus = 0
-    displayNoneIfLoggedIn = ""
-    loginStatusMessage = "Not logged in"
-
-    if isLoggedIn():
-
-        user_id = login_session['user_id']
-        displayNoneIfLoggedIn = "none"
-        loginStatusMessage = "Logged in as " + login_session['username']
-        # passed to javascript function
-        intLoginStatus = 1
-    else:
+    if not isLoggedIn():
 
         flash("You must log in to add a cuisine")
         return redirect(url_for('restaurantManagerIndex'))
 
+    client_login_session = getClientLoginSession()
+
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
-            return redirect(url_for('restaurantManagerIndex'))
-
-        if not request.form['name']:
-
-            flash("Did not add cuisine; you must provide a name.")
-            return redirect(url_for('cuisines'))
-
-        name = bleach.clean(request.form['name'])
-
-        sameName = RestaurantManager.getCuisine(name=name)
-
-        if len(name) > 80:
-
-            flash("Did not add cuisine; name too long.")
-            return redirect(url_for('cuisines'))
-
-        if sameName is not None:
-
-            flash("Did not add cuisine; name not unique.")
-            return redirect(url_for('cuisines'))
+        name = validateName(name=bleach.clean(request.form['name']), 
+                    CRUDType='create', itemType='cuisine', 
+                    maxlength=80, required=True,
+                    unique=True, redirectURL="url_for('cuisines')")
 
         RestaurantManager.addCuisine(name)
 
@@ -442,10 +424,7 @@ def addCuisine():
 
         return render_template('AddCuisine.html',
                                hiddenToken=login_session['state'],
-                               displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                               loginStatusMessage=loginStatusMessage,
-                               intLoginStatus=intLoginStatus,
-                               user_id=user_id)
+                               client_login_session=client_login_session)
 
 @app.route('/cuisines/<int:cuisine_id>/')
 def cuisine(cuisine_id):
@@ -460,18 +439,7 @@ def cuisine(cuisine_id):
                              getBaseMenuItems(cuisine_id=cuisine_id,
                                               byMenuSection=True)
 
-    # set login HTML
-    user_id = -99
-    intLoginStatus = 0
-    displayNoneIfLoggedIn = ""
-    loginStatusMessage = "Not logged in"
-
-    if isLoggedIn():
-        user_id = login_session['user_id']
-        displayNoneIfLoggedIn = "none"
-        loginStatusMessage = "Logged in as " + login_session['username']
-        # passed to javascript function
-        intLoginStatus = 1
+    client_login_session = getClientLoginSession()
 
     # get restaurants labeled with user or non-user
     restaurantDicts = {}
@@ -490,16 +458,25 @@ def cuisine(cuisine_id):
     # get the base items with their children 
     # in format that plays nice with jinja
     # and labels things user or non-user
+    # and also calculate some data about the items
+    mostExpensiveBaseMenuItem = RestaurantManager.\
+    getBaseMenuItem(baseMenuItem_id=-1)
+
+    mostExpensiveRestaurantMenuItem = RestaurantManager.\
+        getBaseMenuItem(baseMenuItem_id=-1)
+
     sectionedBaseItemsWithChildren = {}
+
     for section, baseItemList in sectionedBaseMenuItems.iteritems():
 
-        print section
         sectionedBaseItemsWithChildren[section] = {}
 
         for baseItem in baseItemList:
 
-            print baseItem.name
             baseItemID = baseItem.id
+
+            if baseItem.price > mostExpensiveBaseMenuItem.price:
+                mostExpensiveBaseMenuItem = baseItem
 
             childrenItems = RestaurantManager.\
                 getRestaurantMenuItems(baseMenuItem_id=baseItem.id)
@@ -507,7 +484,9 @@ def cuisine(cuisine_id):
 
             for item in childrenItems:
 
-                print item.name
+                if item.price > mostExpensiveRestaurantMenuItem.price:
+                    mostExpensiveRestaurantMenuItem = item
+
                 itemRestaurant = RestaurantManager.\
                                  getRestaurant(item.restaurant_id)
                 itemUserID = itemRestaurant.user_id
@@ -517,8 +496,6 @@ def cuisine(cuisine_id):
                 if (isLoggedIn() and
                     itemUserID == login_session['user_id']):
                     child['ownership'] = 'user'
-
-
                 else:
                     child['ownership'] = 'non-user'
 
@@ -528,36 +505,24 @@ def cuisine(cuisine_id):
             sectionedBaseItemsWithChildren[section][baseItem.id] = \
                 itemWithChildren
 
-    if len(baseMenuItems) > 0:
-        # also put in normal dollar format
-        mostExpensiveBaseMenuItem = baseMenuItems[0]
-        for item in baseMenuItems:
-            if item.price > mostExpensiveBaseMenuItem.price:
-                mostExpensiveBaseMenuItem = item
-        mostExpensiveBaseMenuItem.price = \
-            Decimal(mostExpensiveBaseMenuItem.price).\
-            quantize(Decimal('0.01'))
+    # this means there were no items, so display N/A
+    if mostExpensiveRestaurantMenuItem.id == -1:
+        mostExpensiveRestaurantMenuItem.name = "N/A"
+        mostExpensiveRestaurantMenuItem.price = "N/A"
+        mostExpensiveRestaurantMenuItem.restaurant_id = "N/A"
     else:
-        ## got to be a better way to do this
-        mostExpensiveBaseMenuItem = RestaurantManager.\
-            getBaseMenuItem(baseMenuItem_id=-1)
-        mostExpensiveBaseMenuItem.name = "N/A"
-        mostExpensiveBaseMenuItem.price = "N/A"
-
-    if len(restaurantMenuItems) > 0:
-        mostExpensiveRestaurantMenuItem = restaurantMenuItems[0]
-        for item in restaurantMenuItems:
-            if item.price > mostExpensiveRestaurantMenuItem.price:
-                mostExpensiveRestaurantMenuItem = item
+        # display nicely
         mostExpensiveRestaurantMenuItem.price = \
             Decimal(mostExpensiveRestaurantMenuItem.price).\
             quantize(Decimal('0.01'))
+
+    if mostExpensiveBaseMenuItem.id == -1:
+        mostExpensiveBaseMenuItem.name = "N/A"
+        mostExpensiveBaseMenuItem.price = "N/A"
     else:
-        ## got to be a better way to do this
-        mostExpensiveRestaurantMenuItem = RestaurantManager.\
-            getBaseMenuItem(baseMenuItem_id=-1)
-        mostExpensiveRestaurantMenuItem.name = "N/A"
-        mostExpensiveRestaurantMenuItem.price = "N/A"
+        mostExpensiveBaseMenuItem.price = \
+            Decimal(mostExpensiveBaseMenuItem.price).\
+            quantize(Decimal('0.01'))
 
     return render_template("Cuisine.html",
         cuisine=cuisine,
@@ -565,10 +530,7 @@ def cuisine(cuisine_id):
         mostExpensiveRestaurantMenuItem=mostExpensiveRestaurantMenuItem,
         restaurantDicts=restaurantDicts,
         sectionedBaseItemsWithChildren=sectionedBaseItemsWithChildren,
-        displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-        loginStatusMessage=loginStatusMessage,
-        intLoginStatus=intLoginStatus,
-        user_id=user_id)
+        client_login_session=client_login_session)
 
 @app.route('/cuisines/<int:cuisine_id>/edit/', methods=['GET', 'POST'])
 def editCuisine(cuisine_id):
@@ -1022,7 +984,6 @@ def editRestaurant(restaurant_id):
             newServe_Type = None
 
             if request.files['pictureFile']: 
-                print "user provided file"
                 # user uploaded a file
                 picFile = request.files['pictureFile']
 
@@ -2403,6 +2364,11 @@ def deleteUser(user_id):
                            displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                            loginStatusMessage=loginStatusMessage)
 
+
+###############################################################################
+# Helper Functions
+###############################################################################
+
 def allowed_pic(filename):
     '''Return true if the file name is a valid pic filename
     '''
@@ -2450,6 +2416,82 @@ def getSignInAlert():
     flash("you are now logged in as %s" % login_session['username'])
 
     return json.dumps(outputDict)
+
+def getClientLoginSession():
+    ''' Return a dict with entries for setting dynamic client-side content
+
+    Also avoids passing all of current session.
+    '''
+    client_login_session = {}
+    client_login_session['username'] = ""
+    client_login_session['user_id'] = -99
+    client_login_session['message'] = 'Not logged in'
+
+    if isLoggedIn():
+
+        client_login_session['username'] = login_session['username']
+        client_login_session['user_id'] = login_session['user_id']
+        client_login_session['message'] = "Logged in as " + \
+            login_session['username']
+
+    return client_login_session
+
+###
+### Form input validation
+###
+
+def checkCSRFAttack(currentState, redirectURL):
+    '''Validate the request came from the same session that logged in
+    at the homepage.
+    '''
+    if currentState != login_session['state']:
+        
+        flash("An unknown error occurred.  Sorry!  Try signing out, "+\
+            "signing back in, and repeating the operation.")
+        return redirect(redirectURL)
+
+def validateName(name, CRUDtype, itemType, maxlength=None, 
+                 required=False, unique=False, redirectURL=None):
+    '''Validate a name field
+
+    Redirects with error flash message if the field is required
+    Proceeds as normal, but with error flash message, if name is optional
+    '''
+    badResult = "Did not " + CRUDtype + itemType
+
+    if required:
+        if not name or len(name) < 1:
+
+            flash(badResult + "; must provide a name") 
+            return redirect(redirectURL)
+
+    if maxlength:
+        if len(name) > maxlength:
+
+            name = None
+            flash(badResult + "; name too long.")
+
+            if required:
+                return redirect(redirectURL)
+
+    if unique:
+        if RestaurantManager.getCuisine(name=name):
+            
+            flash(badResult + "; name is not unique") 
+            if required:
+
+                return redirect(redirectURL)
+
+    return name
+
+
+
+###############################################################################
+###############################################################################
+
+###
+### Set properties if this app is the main program
+###
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
