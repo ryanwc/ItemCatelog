@@ -151,7 +151,6 @@ displayBasedOnOwner({{user_id}}, {{restaurant.user_id}});
 (function() {
 	if ('{{picture.serve_type}}' === 'upload') {
 
-	console.log("is upload");
 		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
 	}
 })();

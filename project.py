@@ -90,6 +90,8 @@ def gconnect():
         if result.get('error') is not None:
             response = make_response(json.dumps(result.get('error')), 500)
             response.headers['Content-Type'] = 'application/json'
+
+            return response
         
         # verify that the access token is used for the intended user
         gplus_id = credentials.id_token['sub']
@@ -106,14 +108,15 @@ def gconnect():
 
             return response
             
-        # check to see if the user is already logged into the system
-        stored_credentials = login_session.get('credentials')
-        stored_gplus_id = login_session.get('gplus_id')
-        if stored_credentials is not None and gplus_id == stored_gplus_id:
+        # check to see if the google account is already logged into the system
+        if ('gplus_id' in login_session and
+            login_session['gplus_id'] == gplus_id):
             response = make_response(json.dumps("Current user is already connected."), 200)
             response.headers['Content-Type'] = 'application/json'
+
+            return response
         
-        # store the access token in the session for later use
+        # store relevant credentials
         login_session['g_credentials'] = credentials
         login_session['credentials'] = {'access_token':access_token}
         login_session['gplus_id'] = gplus_id
@@ -124,49 +127,17 @@ def gconnect():
         answer = requests.get(userinfo_url, params=params)
         data = json.loads(answer.text)
 
-
-        #### DONE WITH GOOGLE STUFF needs own method combine with fbook
-
         login_session['email'] = data['email']
 
-        # create the user if the user doesn't exist
-        user = RestaurantManager.getUser(email=login_session['email'])
-        if user is None:
-            picture_id = RestaurantManager.addPicture(text=login_session['picture'],
-                                                      serve_type='link')
-            RestaurantManager.addUser(name=login_session['username'],
-                                      email=login_session['email'],
-                                      picture_id=picture_id)
-            user = RestaurantManager.getUser(email=login_session['email'])
+        setProfile()
 
-        login_session['user_id'] = user.id
-
-        # set these to what the user has for our app
-
-        picture = RestaurantManager.getPicture(user.picture_id)
-        login_session['username'] = user.name
-        login_session['picture'] = picture.text
-        login_session['picture_serve_type'] = picture.serve_type
-
-        # HTML output for successful authentication call
-        outputDict = {}
-
-        outputDict['loginMessage'] = "Welcome, " + \
-            login_session['username'] + "!"
-        outputDict['picture'] = login_session['picture']
-        outputDict['picture_serve_type'] = login_session['picture_serve_type']
-
-        flash("you are now logged in as %s" % login_session['username'])
-
-        return json.dumps(outputDict)
+        return getSignInAlert()
 
 ### ajax enpoint for facebook sign in authentication
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
         # confirm entity with correct 3rd party credentials is same entity 
         # that is trying to login from the current login page's session.
-        print "connecting to facebook"
-
         if request.args.get('state') != login_session['state']:
             response = make_response(json.dumps('Invalid state parameter'), 
                 401)
@@ -183,8 +154,6 @@ def fbconnect():
         h = httplib2.Http()
         result = h.request(url, 'GET')[1]
 
-        # use token to get user info from API [why is this next line here?]
-        userinfo_url = "https://graph.facebook.com/v2.4/me"
         # strip expire tag from access token
         token = result.split("&")[0]
 
@@ -193,7 +162,6 @@ def fbconnect():
         result = h.request(url, 'GET')[1]
         data = json.loads(result)
 
-        login_session['username'] = data['name']
         login_session['email'] = data['email']
         login_session['facebook_id'] = data['id']
 
@@ -205,40 +173,13 @@ def fbconnect():
 
         login_session['picture'] = data['data']['url']
 
-        # create the user if the user doesn't exist
-        user = RestaurantManager.getUser(email=login_session['email'])
-        if user is None:
-            picture_id = RestaurantManager.addPicture(text=login_session['picture'],
-                                                      serve_type='link')
-            RestaurantManager.addPicture(text=login_session['picture'],
-                                         serve_type='link')
-            RestaurantManager.addUser(name=login_session['username'],
-                                      email=login_session['email'],
-                                      picture_id=picture_id)
-            user = RestaurantManager.getUser(email=login_session['email'])
-
-        # our app user settings
-        picture = RestaurantManager.getPicture(user.picture_id)
-        login_session['user_id'] = user.id
-        login_session['username'] = user.name
-        login_session['picture'] = picture.text
-        login_session['picture_serve_type'] = picture.serve_type
-
-        # HTML output for successful authentication call
-        outputDict = {}
-
-        outputDict['loginMessage'] = "Welcome, " + \
-            login_session['username'] + "!"
-        outputDict['picture'] = login_session['picture']
-        outputDict['picture_serve_type'] = login_session['picture_serve_type']
-
-        # this is for my app checking for login status
+        # store relevant credentials
         credentials = {'access_token':token}
         login_session['credentials'] = credentials
 
-        flash("you are now logged in as %s" % login_session['username'])
+        setProfile()
 
-        return json.dumps(outputDict)
+        return getSignInAlert()
 
 # disconnect - logout a user that is currently logged in
 @app.route('/disconnect', methods=['POST'])
@@ -896,7 +837,7 @@ def addRestaurant():
             if request.files['pictureFile']:
                 picFile = request.files['pictureFile']
 
-                if allowed_file(picFile.filename):
+                if allowed_pic(picFile.filename):
                     # this name will be overwritten.
                     # can't provide proper name now because 
                     # don't have restaurant_id
@@ -1093,7 +1034,7 @@ def editRestaurant(restaurant_id):
                     # user uploaded a file
                     picFile = request.files['pictureFile']
 
-                    if allowed_file(picFile.filename):
+                    if allowed_pic(picFile.filename):
                         # overwrites pic for restaurant if already there
                         newText = 'restaurant' + str(restaurant.id)
                         picFile.save(os.path.join(app.\
@@ -1308,7 +1249,7 @@ def addBaseMenuItem(cuisine_id):
             if request.files['pictureFile']:
                 picFile = request.files['pictureFile']
 
-                if allowed_file(picFile.filename):
+                if allowed_pic(picFile.filename):
                     # this name will be overwritten.
                     # can't provide proper name now because don't 
                     # have restaurant_id
@@ -1509,7 +1450,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                     # user uploaded a file
                     picFile = request.files['pictureFile']
 
-                    if allowed_file(picFile.filename):
+                    if allowed_pic(picFile.filename):
                         # overwrites pic for base menu item if already there
                         newText = 'baseMenuItem' + str(baseMenuItem.id)
                         picFile.save(os.path.join(app.\
@@ -1765,7 +1706,7 @@ def addRestaurantMenuItem(restaurant_id):
             if request.files['pictureFile']:
                 picFile = request.files['pictureFile']
 
-                if allowed_file(picFile.filename):
+                if allowed_pic(picFile.filename):
                     # this name will be overwritten.
                     # can't provide proper name now because 
                     # don't have restaurant_id
@@ -1998,7 +1939,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                     # user uploaded a file
                     picFile = request.files['pictureFile']
 
-                    if allowed_file(picFile.filename):
+                    if allowed_pic(picFile.filename):
                         # overwrites pic for restaurant menu item if already there
                         newText = 'restaurantMenuItem' +\
                             str(restaurantMenuItem.id)
@@ -2361,7 +2302,7 @@ def editUser(user_id):
                     # user uploaded a file
                     picFile = request.files['pictureFile']
 
-                    if allowed_file(picFile.filename):
+                    if allowed_pic(picFile.filename):
                         # overwrites pic for base menu item if already there
                         newText = 'user' + str(user.id)
                         picFile.save(os.path.join(app.config['UPLOAD_FOLDER'],\
@@ -2470,15 +2411,53 @@ def deleteUser(user_id):
                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
                                loginStatusMessage=loginStatusMessage)
 
-# for checking picture filename input
-def allowed_file(filename):
-        return '.' in filename and \
-            filename.rsplit('.', 1)[1] in ALLOWED_PIC_EXTENSIONS
+def allowed_pic(filename):
+    '''Return true if the file name is a valid pic filename
+    '''
+    return ('.' in filename and 
+            filename.rsplit('.', 1)[1] in ALLOWED_PIC_EXTENSIONS)
 
 def isLoggedIn():
-        return ('credentials' in login_session and
-                'access_token' in login_session['credentials'] and
-                'user_id' in login_session)
+    '''Return true if the user is logged in
+    '''
+    return ('credentials' in login_session and
+            'access_token' in login_session['credentials'] and
+            'user_id' in login_session)
+
+def setProfile():
+    '''Populate the login session with the logged in user's settings
+    '''
+    user = RestaurantManager.getUser(email=login_session['email'])
+
+    # create the user if the user doesn't exist
+    if user is None:
+        picture_id = RestaurantManager.addPicture(text=login_session['picture'],
+                                                  serve_type='link')
+        RestaurantManager.addUser(name=login_session['username'],
+                                  email=login_session['email'],
+                                  picture_id=picture_id)
+        user = RestaurantManager.getUser(email=login_session['email'])
+
+    # set this user's saved settings for our app
+    picture = RestaurantManager.getPicture(user.picture_id)
+    login_session['user_id'] = user.id
+    login_session['username'] = user.name
+    login_session['picture'] = picture.text
+    login_session['picture_serve_type'] = picture.serve_type
+
+def getSignInAlert():
+    ''' Return a JSON-format object representing a successful signin
+    '''
+    outputDict = {}
+
+    outputDict['loginMessage'] = "Welcome, " + \
+        login_session['username'] + "!"
+    outputDict['picture'] = login_session['picture']
+    outputDict['picture_serve_type'] = login_session['picture_serve_type']
+
+    flash("you are now logged in as %s" % login_session['username'])
+
+    return json.dumps(outputDict)
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
