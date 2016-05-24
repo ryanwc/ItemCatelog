@@ -139,6 +139,8 @@ def gconnect():
     data = json.loads(answer.text)
 
     login_session['email'] = data['email']
+    login_session['picture'] = data['picture']
+    login_session['username'] = data['user_name']
 
     setProfile()
 
@@ -852,11 +854,6 @@ def editRestaurant(restaurant_id):
             link=request.form['pictureLink'], maxlength=300)
 
         if providedPic is not None:
-            # edit the pic
-            RestaurantManager.editPicture(restaurant.picture_id,
-                newText=providedPic['text'], 
-                newServe_Type=providedPic['serve_type'])
-
             # delete the old pic if it was an upload and new is a link
             # or save the new pic if it was an upload
             if (providedPic['serve_type'] == 'link' and
@@ -869,8 +866,12 @@ def editRestaurant(restaurant_id):
                 picfilename = 'restaurant' + str(restaurant_id)
                 request.files['pictureFile'].save(os.path.\
                     join(app.config['UPLOAD_FOLDER'], picfilename))
-                RestaurantManager.editPicture(picture_id=oldPicture.id,
-                                              newText=picfilename)
+                providedPic['text'] = picfilename
+
+            # edit the pic
+            RestaurantManager.editPicture(restaurant.picture_id,
+                newText=providedPic['text'], 
+                newServe_Type=providedPic['serve_type'])
 
             flash("updated base menu item picture")
 
@@ -1124,11 +1125,6 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
             link=request.form['pictureLink'], maxlength=300)
 
         if providedPic is not None:
-            # edit the pic
-            RestaurantManager.editPicture(baseMenuItem.picture_id,
-                newText=providedPic['text'], 
-                newServe_Type=providedPic['serve_type'])
-
             # delete the old pic if it was an upload and new is a link
             # or save the new pic if it was an upload
             if (providedPic['serve_type'] == 'link' and
@@ -1142,8 +1138,12 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                 picfilename = 'baseMenuItem' + str(baseMenuItem_id)
                 request.files['pictureFile'].save(os.path.\
                     join(app.config['UPLOAD_FOLDER'], picfilename))
-                RestaurantManager.editPicture(picture_id=oldPicture.id,
-                                              newText=picfilename)
+                providedPic['text'] = picfilename
+
+            # edit the pic
+            RestaurantManager.editPicture(baseMenuItem.picture_id,
+                newText=providedPic['text'], 
+                newServe_Type=providedPic['serve_type'])
 
             flash("updated base menu item picture")
 
@@ -1526,15 +1526,10 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             newMenuSection_id = None
 
         providedPic = validateUserPicture('edit', 'restaurant menu item',
-            file=request.form['pictureLink'], 
-            link=request.files['pictureFile'], maxlength=300)
+            file=request.files['pictureFile'], 
+            link=request.form['pictureLink'], maxlength=300)
 
         if providedPic is not None:
-            # edit the pic
-            RestaurantManager.editPicture(restaurantMenuItem.picture_id,
-                newText=providedPic['text'], 
-                newServe_Type=providedPic['serve_type'])
-
             # delete the old pic if it was an upload and new is a link
             # or save the new pic if it was an upload
             if (providedPic['serve_type'] == 'link' and
@@ -1549,8 +1544,12 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                     str(restaurantMenuItem_id)
                 request.files['pictureFile'].save(os.path.\
                     join(app.config['UPLOAD_FOLDER'], picfilename))
-                RestaurantManager.editPicture(picture_id=oldPicture.id,
-                                              newText=picfilename)
+                providedPic['text'] = picfilename
+
+            # edit the pic
+            RestaurantManager.editPicture(restaurantMenuItem.picture_id,
+                newText=providedPic['text'], 
+                newServe_Type=providedPic['serve_type'])
 
             flash("updated restaurant menu item picture")
 
@@ -1658,6 +1657,7 @@ def user(user_id):
     picture = RestaurantManager.getPicture(user.picture_id)
     userThings = RestaurantManager.getUserThings(user.id)
 
+    # calculate some stats to show
     loggedInStats = {}
 
     numRestaurants = 0
@@ -1746,11 +1746,8 @@ def user(user_id):
         login_session['user_id'] == user.id):
         # could put stats in a loginStats dictionary
         return render_template('PrivateUserProfile.html',
-            user=user,
-            picture=picture,
-            userThings=userThings,
-            numRestaurants=numRestaurants,
-            numMenuItems=numMenuItems,
+            user=user, picture=picture, userThings=userThings,
+            numRestaurants=numRestaurants, numMenuItems=numMenuItems,
             mostExpensiveRest=mostExpensiveRest,
             mostExpensiveRestAvgPrice=mostExpensiveRestAvgPrice,
             leastExpensiveRest=leastExpensiveRest,
@@ -1761,12 +1758,9 @@ def user(user_id):
     else:
 
         return render_template('PublicUserProfile.html',
-                               user=user,
-                               picture=picture,
-                               userThings=userThings,
-                               numRestaurants=numRestaurants,
-                               numMenuItems=numMenuItems,
-                               client_login_session=client_login_session)
+            user=user, picture=picture, userThings=userThings,
+            numRestaurants=numRestaurants, numMenuItems=numMenuItems,
+            client_login_session=client_login_session)
 
 @app.route('/users/<int:user_id>/edit/', methods=['GET','POST'])
 def editUser(user_id):
@@ -1790,85 +1784,48 @@ def editUser(user_id):
 
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
-
-            return redirect(url_for('restaurantManagerIndex'))
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
         oldName = user.name
-        newName = None
+        oldPicture = picture
         
-        if request.form['name']:
-            newName = bleach.clean(request.form['name'])
-            # in spirit of trying to include names from other scripts
-            # (like chinese, thai)
-            match = \
-                re.search(r"[^~`!@#\$%\^&\*\(\)_=\+\{}\[\]\\\|\.<>\?/;:]\+"\
-                , newName)
-            if match is not None:
+        newName = validateUserInput(request.form['name'], 'name',
+            'edit', 'user', maxlength=30, oldInput=oldName,
+            usernameFormat=True)       
 
-                newName = None
-                flash("Did not change username; contained an "+\
-                    "illegal character")
-            elif len(newName) > 30:
+        providedPic = validateUserPicture('edit', 'user',
+            file=request.files['pictureFile'], 
+            link=request.form['pictureLink'], maxlength=300)
 
-                newName = None
-                flash("Did not change username; it was too long")             
+        if providedPic is not None:
+            # delete the old pic if it was an upload and new is a link
+            # or save the new pic if it was an upload
+            if (providedPic['serve_type'] == 'link' and
+                oldPicture.serve_type == 'upload'):
 
-        if request.form['pictureLink'] or request.files['pictureFile']:
+                relPath = 'pics/'+oldPicture.text
+                os.remove(relPath)
+                flash("deleted old uploaded pic")
+            elif providedPic['serve_type'] == 'upload':
 
-            newText = None
-            newServe_Type = None
-
-            if request.files['pictureFile']: 
-                # user uploaded a file
-                picFile = request.files['pictureFile']
-
-                if allowed_pic(picFile.filename):
-                    # overwrites pic for base menu item if already there
-                    newText = 'user' + str(user.id)
-                    picFile.save(os.path.join(app.config['UPLOAD_FOLDER'],\
-                        newText))
-
-                    if picture.serve_type == 'link':
-                        # change type and delete any old, uploaded pic
-                        newServe_Type = 'upload'
-                else:
-
-                    flash("Did not change pic; the uploaded pic was not "+\
-                        ".png, .jpeg, or .jpg.")
-            else:
-                # user gave a link
-                newText = bleach.clean(request.form['pictureLink'])
-
-                if len(newText) > 300:
-
-                    newText = None
-                    flash('Did not change pic; link too long')
-                elif (len(pictureLink) < 7 or 
-                      (len(pictureLink) == 8 and 
-                       pictureLink[:7] != 'http://') or
-                     (len(pictureLink) == 9 and 
-                      pictureLink[:8] != 'https://') or
-                     (pictureLink[:7] != 'http://' and
-                      pictureLink[:8] != 'https://')):
-
-                    flash("Did change pic; the link was not a url")
-                elif picture.serve_type == 'upload':
-                    # change type and delete any old, uploaded pic
-                    newServe_Type = 'link'
-                    relPath = 'pics/'+picture.text
-                    os.remove(relPath)
+                picfilename = 'user' + str(user_id)
+                request.files['pictureFile'].save(os.path.\
+                    join(app.config['UPLOAD_FOLDER'], picfilename))
+                providedPic['text'] = picfilename
             
+            # edit the pic
+            print providedPic['serve_type']
+            print providedPic['text']
             RestaurantManager.editPicture(user.picture_id,
-                newText=newText,
-                newServe_Type=newServe_Type)
+                newText=providedPic['text'], 
+                newServe_Type=providedPic['serve_type'])
 
-            if (newText is not None or newServe_Type is not None):
-                flash("updated your picture!")
+            picture = RestaurantManager.getPicture(user.picture_id)
+
+            login_session['picture'] = picture.text
+            login_session['picture_serve_type'] = picture.serve_type
+            flash("updated your picture!")
 
         # we edited the pic directly, no need to include here
         RestaurantManager.editUser(user.id, newName=newName)
@@ -1908,17 +1865,12 @@ def deleteUser(user_id):
 
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
-
-            return redirect(url_for('restaurantManagerIndex'))
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
         RestaurantManager.deleteUser(user.id)
 
-        flash(disconnect())
+        disconnect()
 
         flash("deleted " + user.name + " from " +\
             "the database")
@@ -2019,7 +1971,7 @@ def validateUserInput(userInput, columnName, CRUDtype, itemNameForMsg,
                       columnNameForMsg=None, maxlength=None, 
                       required=False, unique=False, oldInput=None, 
                       tableName=None, priceFormat=False, 
-                      validInputs=None):
+                      validInputs=None, usernameFormat=False):
     '''Validate (and strip HTML) from user input
 
     Returns the validated name, 
@@ -2040,6 +1992,7 @@ def validateUserInput(userInput, columnName, CRUDtype, itemNameForMsg,
         tableName only needed if unique is True.
         priceFormat: true if this input should be in standard price format
         validInputs: dictionary with keys that are the only valid inputs
+        usernameFormat: true if the input should be a legal username
     '''
     if not columnNameForMsg:
         columnNameForMsg = columnName
@@ -2126,6 +2079,23 @@ def validateUserInput(userInput, columnName, CRUDtype, itemNameForMsg,
 
             return None
 
+    if userInput and usernameFormat:
+        match = \
+            re.search(r"[^~`!@#\$%\^&\*\(\)_=\+\{}\[\]\\\|\.<>\?/;:]\+",
+                userInput)
+        if match is not None:
+
+            if required:
+
+                flash(badResult + columnNameForMsg + \
+                    " was contained an illegal character.")
+            else:
+
+                flash(neutralResult + \
+                    "It contained an illegal character.")
+
+            return None
+
     return userInput
 
 def validateUserPicture(CRUDtype, itemNameForMsg, file=None, link=None,
@@ -2155,6 +2125,8 @@ def validateUserPicture(CRUDtype, itemNameForMsg, file=None, link=None,
 
     if file:
 
+        print file.filename
+        print "tehre was a file"
         file.filename = bleach.clean(file.filename)
 
         if allowed_pic(file.filename):
@@ -2178,6 +2150,8 @@ def validateUserPicture(CRUDtype, itemNameForMsg, file=None, link=None,
 
         link = bleach.clean(link)
 
+        print "was link"
+        print link
         if maxlength:
             if len(link) > maxlength:
 
