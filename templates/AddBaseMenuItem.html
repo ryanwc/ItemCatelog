@@ -12,7 +12,7 @@
 			<div id='signIn'>
 
 				<div id='loginStatus'>
-					{{loginStatusMessage}}
+					{{client_login_session['message']}}
 				</div>
 
 				<span class='hideLoggedIn' id='loginSpan'>
@@ -21,7 +21,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='profileSpan'>
-					<a class='actionLink' href="{{url_for('user',user_id=user_id)}}">
+					<a class='actionLink' href="{{url_for('user',user_id=client_login_session['user_id'])}}">
 						View/edit profile</a>
 				</span>
 
@@ -38,7 +38,7 @@
 			<div id='fakeSignIn'>
 
 				<div id='fakeLoginStatus'>
-					{{loginStatusMessage}}
+					{{client_login_session['message']}}
 				</div>
 
 				<span class='hideLoggedIn' id='fakeLoginSpan'>
@@ -47,7 +47,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='fakeProfileSpan'>
-					<a class='actionLink' href="{{url_for('user',user_id=user_id)}}">
+					<a class='actionLink' href="{{url_for('user',user_id=client_login_session['user_id'])}}">
 						View/edit profile</a>
 				</span>
 
@@ -135,7 +135,7 @@
 </script>
 <script src="{{url_for('static', filename='forms.js')}}">
 </script>
-<script>displayBasedOnLogin({{intBooleanLoggedIn}});
+<script>displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 <script>
 $('#name').on('input', function() { 

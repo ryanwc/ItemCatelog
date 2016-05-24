@@ -138,7 +138,7 @@
 	</div>
 <script src="{{url_for('static', filename='login.js')}}">
 </script>
-<script>displayBasedOnLogin({{intBooleanLoggedIn}});
+<script>displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 </body>
 </html>

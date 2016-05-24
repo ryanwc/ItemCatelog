@@ -10,7 +10,7 @@
 			<div id='signIn'>
 
 				<div id='loginStatus'>
-					{{loginStatusMessage}}
+					{{client_login_session['message']}}
 				</div>
 
 				<span class='hideLoggedIn' id='loginSpan'>
@@ -36,7 +36,7 @@
 			<div id='fakeSignIn'>
 
 				<div id='fakeLoginStatus'>
-					{{loginStatusMessage}}
+					{{client_login_session['message']}}
 				</div>
 
 				<span class='hideLoggedIn' id='fakeLoginSpan'>
@@ -108,6 +108,6 @@
 </body>
 <script src="{{url_for('static', filename='login.js')}}">
 </script>
-<script>displayBasedOnLogin({{intBooleanLoggedIn}});
+<script>displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 </html>

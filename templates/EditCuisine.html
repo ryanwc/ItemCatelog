@@ -38,7 +38,7 @@
 			<div id='fakeSignIn'>
 
 				<div id='fakeLoginStatus'>
-					{{loginStatusMessage}}
+					{{client_login_session['message']}}
 				</div>
 
 				<span class='hideLoggedIn' id='fakeLoginSpan'>
@@ -119,7 +119,7 @@
 </script>
 <script src="{{url_for('static', filename='forms.js')}}">
 </script>
-<script>displayBasedOnLogin("client_login_session['message']");
+<script>displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 <script>
 $('#name').on('input', function() { 

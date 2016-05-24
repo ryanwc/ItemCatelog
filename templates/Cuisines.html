@@ -18,7 +18,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='profileSpan'>
-					<a class='actionLink' href="{{url_for('user',user_id=client_login_session['user_id'])}}">
+					<a class='actionLink' href="{{url_for('user', user_id=client_login_session['user_id'])}}">
 						View/edit profile</a>
 				</span>
 
@@ -35,7 +35,7 @@
 			<div id='fakeSignIn'>
 
 				<div id='fakeLoginStatus'>
-					{{loginStatusMessage}}
+					{{client_login_session['message']}}
 				</div>
 
 				<span class='hideLoggedIn' id='fakeLoginSpan'>
@@ -44,7 +44,7 @@
 				</span>
 
 				<span class='hideLoggedOut' id='fakeProfileSpan'>
-					<a class='actionLink' href="{{url_for('user',user_id=client_login_session['user_id'])}}">
+					<a class='actionLink' href="{{url_for('user', user_id=client_login_session['user_id'])}}">
 						View/edit profile</a>
 				</span>
 
