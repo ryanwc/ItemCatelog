@@ -140,7 +140,7 @@ def gconnect():
 
     login_session['email'] = data['email']
     login_session['picture'] = data['picture']
-    login_session['username'] = data['user_name']
+    login_session['username'] = data['name']
 
     setProfile()
 
@@ -176,6 +176,7 @@ def fbconnect():
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
 
+    login_session['username'] = data['name']
     login_session['email'] = data['email']
     login_session['facebook_id'] = data['id']
 
