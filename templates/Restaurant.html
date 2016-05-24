@@ -135,8 +135,7 @@
 							   restaurant_id=restaurant.id)}}">
 			Edit Restaurant</a>
 		</li>
-		<li><a class='actionLink' href="{{url_for('deleteRestaurant', 
-							   restaurant_id=restaurant.id)}}">
+		<li><a class='actionLink' href="{{url_for('deleteRestaurant', restaurant_id=restaurant.id)}}">
 			Delete Restaurant</a>
 		</li>
 	</ul>
@@ -146,7 +145,7 @@
 </script>
 <script>
 displayBasedOnLogin("{{client_login_session['message']}}");
-displayBasedOnOwner({{user_id}}, {{restaurant.user_id}});
+displayBasedOnOwner({{client_login_session['user_id']}}, {{restaurant.user_id}});
 // if appropriate, changes src of #photo from link to served file
 (function() {
 	if ('{{picture.serve_type}}' === 'upload') {

@@ -639,19 +639,9 @@ def deleteCuisine(cuisine_id):
 
 @app.route('/restaurants/')
 def restaurants():
-    # set login HTML
-    user_id = -99
-    intLoginStatus = 0
-    displayNoneIfLoggedIn = ""
-    loginStatusMessage = "Not logged in"
-
-    if isLoggedIn():
-
-        user_id = login_session['user_id']
-        displayNoneIfLoggedIn = "none"
-        loginStatusMessage = "Logged in as " + login_session['username']
-        # passed to javascript function
-        intLoginStatus = 1
+    '''Serve info about all of the restaurants
+    '''
+    client_login_session = getClientLoginSession()
 
     cuisines = RestaurantManager.getCuisines()
 
@@ -669,7 +659,7 @@ def restaurants():
 
         for restaurant in restaurants:
 
-            numRestaurants = numRestaurants+1
+            numRestaurants += 1
             restaurantDict = {}
             restaurantDict['restaurant'] = restaurant
                       
@@ -689,109 +679,54 @@ def restaurants():
     return render_template("Restaurants.html",
                     cuisineToRestaurantsDict=cuisineToRestaurantsDict,
                     numRestaurants=numRestaurants,
-                    intLoginStatus=intLoginStatus,
-                    displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                    loginStatusMessage=loginStatusMessage,
-                    user_id=user_id)
+                    client_login_session=client_login_session)
 
 @app.route('/restaurants/add/', methods=['GET','POST'])
 def addRestaurant():
-    # set login HTML
-    user_id = -99
-    intLoginStatus = 0
-    displayNoneIfLoggedIn = ""
-    loginStatusMessage = "Not logged in"
-
-    if isLoggedIn():
-
-        user_id = login_session['user_id']
-        displayNoneIfLoggedIn = "none"
-        loginStatusMessage = "Logged in as " + login_session['username']
-        # passed to javascript function
-        intLoginStatus = 1
-        
-    else:
+    '''Serve form to add a restaurant
+    '''
+    if not isLoggedIn():
 
         flash("You must log in to add a restaurant")
         return redirect(url_for('restaurantManagerIndex'))
+    
+    client_login_session = getClientLoginSession()
+
+    cuisines = RestaurantManager.getCuisines()
 
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
-            return redirect(url_for('restaurantManagerIndex'))
+        validCuisineIDs = {}
+        for cuisine in cuisines:
+            validCuisineIDs[str(cuisine.id)] = True
 
-        if not request.form['cuisineID']:
+        cuisine_id = validateUserInput(request.form['cuisineID'],
+                'cuisine_id', 'create', 'restaurant', 
+                columnNameForMsg='cuisine', required=True,
+                validInputs=validCuisineIDs)
 
-            flash("Did not add a restaurant; You did not provide "+\
-                "a cuisine type.")
-            return redirect(url_for('restaurants'))
+        if cuisine_id is None:
+            return redirect(url_for('restaurants'))               
 
-        if not request.form['name']:
+        name = validateUserInput(request.form['name'], 'name', 'create',
+            'restaurant', maxlength=100, required=True)
 
-            flash("Did not add restaurant; you did not provide a name")
-            return redirect(url_for('restaurants'))                
-
-        name = bleach.clean(request.form['name'])
-
-        if len(name) > 80:
-
-            flash("Did not add restaurant; name too long")
+        if name is None:
             return redirect(url_for('restaurants'))    
 
-        cuisine_id = request.form['cuisineID']
+        providedPic = validateUserPicture('create', 'restaurant',
+            file=request.files['pictureFile'],
+            link=request.form['pictureLink'],
+            maxlength=300, required=True)
 
-        cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
-
-        if request.files['pictureFile']:
-            picFile = request.files['pictureFile']
-
-            if allowed_pic(picFile.filename):
-                # this name will be overwritten.
-                # can't provide proper name now because 
-                # don't have restaurant_id
-                picFile.filename = secure_filename(picFile.filename)
-                picture_id = RestaurantManager.\
-                    addPicture(text=picFile.filename,
-                        serve_type='upload')
-            else:
-
-                flash("Did not add restaurant; the uploaded pic was "+\
-                    "not .png, .jpeg, or .jpg.")
-                return redirect(url_for('restaurants'))   
-        elif request.form['pictureLink']:
-
-            pictureLink = bleach.clean(request.form['pictureLink'])
-
-            if len(pictureLink) > 300:
-
-                flash("Did not add resaurant; link was too long")
-                return redirect(url_for('restaurants'))                  
-            
-            # print str(len(pictureLink))
-            # print pictureLink[:7]
-            if (len(pictureLink) < 7 or 
-                (len(pictureLink) == 8 and 
-                 pictureLink[:7] != 'http://') or
-                (len(pictureLink) == 9 and 
-                 pictureLink[:8] != 'https://') or
-                (pictureLink[:7] != 'http://' and
-                 pictureLink[:8] != 'https://')):
-
-                flash("Did not add resaurant; the link was not a url")
-                return redirect(url_for('restaurants'))  
-
-            picture_id = RestaurantManager.addPicture(text=pictureLink, 
-                                                      serve_type='link')
-        else:
-            
-            flash("Did not add restaurant; you must provide a "+\
-                    "picture.")
+        if providedPic is None:
             return redirect(url_for('restaurants'))
+        
+        picture_id = RestaurantManager.addPicture(text=providedPic['text'], 
+            serve_type=providedPic['serve_type'])
 
         restaurant_id = RestaurantManager.addRestaurant(
                             name=name,
@@ -800,12 +735,12 @@ def addRestaurant():
                             picture_id=picture_id
                         )
 
-        # if pic was uploaded, save actual file for serving
-        # set the appropriate name in the database
-        if picFile:
+        # if pic was uploaded, now that we know item id, 
+        # save actual file for serving and set the name in the database
+        if providedPic['serve_type'] == 'upload':
             picfilename = 'restaurant' + str(restaurant_id)
-            picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], \
-                picfilename))
+            request.files['pictureFile'].save(os.path.\
+                join(app.config['UPLOAD_FOLDER'], picfilename))
             RestaurantManager.editPicture(picture_id=picture_id,
                                           newText=picfilename)
 
@@ -816,30 +751,16 @@ def addRestaurant():
         return redirect(url_for('restaurants'))
     else:
 
-        cuisines = RestaurantManager.getCuisines()
         return render_template('AddRestaurant.html', 
                                 cuisines=cuisines,
                                 hiddenToken=login_session['state'],
-                                intLoginStatus=intLoginStatus,
-                                displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                                loginStatusMessage=loginStatusMessage,
-                                user_id=user_id)
+                                client_login_session=client_login_session)
 
 @app.route('/restaurants/<int:restaurant_id>/')
 def restaurant(restaurant_id):
-    # set login HTML
-    user_id = -99
-    intLoginStatus = 0
-    displayNoneIfLoggedIn = ""
-    loginStatusMessage = "Not logged in"
-
-    if isLoggedIn():
-
-        user_id = login_session['user_id']
-        displayNoneIfLoggedIn = "none"
-        loginStatusMessage = "Logged in as " + login_session['username']
-        # passed to javascript function
-        intLoginStatus = 1
+    '''Serve info about a restaurant
+    '''
+    client_login_session = getClientLoginSession()
 
     restaurant = RestaurantManager.getRestaurant(restaurant_id)
     owner = RestaurantManager.getUser(restaurant.user_id)
@@ -856,54 +777,43 @@ def restaurant(restaurant_id):
         for item in restaurantMenuItems:
             if item.price > mostExpensiveItem.price:
                 mostExpensiveItem = item
-                mostExpensiveItem.price = Decimal(mostExpensiveItem.price).quantize(Decimal('0.01'))
-        mostExpensiveItem.price = Decimal(mostExpensiveItem.price).quantize(Decimal('0.01'))
+                mostExpensiveItem.price =\
+                    Decimal(mostExpensiveItem.price).\
+                    quantize(Decimal('0.01'))
+        mostExpensiveItem.price =\
+            Decimal(mostExpensiveItem.price).\
+            quantize(Decimal('0.01'))
     else:
         mostExpensiveItem = RestaurantManager.\
                             getBaseMenuItem(baseMenuItem_id=-1)
         mostExpensiveItem.name = 'N/A'
         mostExpensiveItem.price = 'N/A'
 
-    return render_template('Restaurant.html', 
-                           restaurant=restaurant, 
+    return render_template('Restaurant.html', restaurant=restaurant, 
                            numMenuItems=numMenuItems,
                            mostExpensiveItem=mostExpensiveItem,
-                           cuisine=cuisine,
-                           picture=picture,
-                           intLoginStatus=intLoginStatus,
-                           loginStatusMessage=loginStatusMessage,
-                           displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                           user_id=user_id,
-                           owner=owner)
+                           cuisine=cuisine, picture=picture, owner=owner,
+                           client_login_session=client_login_session)
 
 @app.route('/restaurants/<int:restaurant_id>/edit/',
            methods=['GET','POST'])
 def editRestaurant(restaurant_id):
+    '''Serve form to add a restaurant menu item to a restaurant's menu
+    '''
     restaurant = RestaurantManager.getRestaurant(restaurant_id)
-
-    # set login HTML and check permissions
-    user_id = -99
-    intLoginStatus = 0
-    displayNoneIfLoggedIn = ""
-    loginStatusMessage = "Not logged in"
-
-    if isLoggedIn():
-
-        displayNoneIfLoggedIn = "none"
-        loginStatusMessage = "Logged in as " + login_session['username']
-        # passed to javascript function
-        intLoginStatus = 1
-        user_id = login_session['user_id']
-        
-        if restaurant.user_id != login_session['user_id']:
-
-            flash("You do not have permission to edit this restaurant")
-            return redirect(url_for('restaurant',
-                restaurant_id=restaurant.id))
-    else:
+    
+    if not isLoggedIn():
 
         flash("You must log in to edit a restaurant")
         return redirect(url_for('restaurantManagerIndex'))
+
+    if restaurant.user_id != login_session['user_id']:
+
+        flash("You do not have permission to edit this restaurant")
+        return redirect(url_for('restaurant',
+            restaurant_id=restaurant.id))
+
+    client_login_session = getClientLoginSession()
 
     restaurant = RestaurantManager.getRestaurant(restaurant_id)
     cuisines = RestaurantManager.getCuisines()
@@ -911,88 +821,62 @@ def editRestaurant(restaurant_id):
     
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
-
-            return redirect(url_for('restaurantManagerIndex'))
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
         oldName = restaurant.name
         oldCuisine = RestaurantManager.\
                      getCuisine(cuisine_id=restaurant.cuisine_id)
-        newName = None
-        newCuisine = None
-        newCuisineID = None
+        oldPicture = RestaurantManager.getPicture(restaurant.picture_id)
         
-        if request.form['name']:
-            newName = bleach.clean(request.form['name'])
+        newName = validateUserInput(request.form['name'], 'name',
+            'edit', 'restaurant', maxlength=100)
 
-            if len(newName) > 100:
-                newName = None
-                flash("Did not change name; it was too long")
-            
-        if request.form['cuisineID'] != "-1":
-            newCuisineID = request.form['cuisineID']
-            newCuisine = RestaurantManager.\
-                         getCuisine(cuisine_id=newCuisineID)
+        validCuisineIDs = {}
+        for cuisine in cuisines:
+            validCuisineIDs[str(cuisine.id)] = True
 
-        if request.form['pictureLink'] or request.files['pictureFile']:
-            newText = None
-            newServe_Type = None
+        # for 'do not change'
+        validCuisineIDs['-2'] = True
 
-            if request.files['pictureFile']: 
-                # user uploaded a file
-                picFile = request.files['pictureFile']
+        newCuisine_id = validateUserInput(request.form['cuisineID'],
+                'cuisine_id', 'edit', 'restaurant',
+                columnNameForMsg='cuisine', required=True, 
+                oldInput=str(oldCuisine.id), validInputs=validCuisineIDs)  
 
-                if allowed_pic(picFile.filename):
-                    # overwrites pic for restaurant if already there
-                    newText = 'restaurant' + str(restaurant.id)
-                    picFile.save(os.path.join(app.\
-                        config['UPLOAD_FOLDER'], newText))
-                else:
+        if newCuisine_id == '-2':
+            newCuisine_id = None
 
-                    flash("Did not edit pic; uploaded pic was not "+\
-                        ".png, .jpeg, or .jpg.  Did not change picture.")
+        providedPic = validateUserPicture('edit', 'base menu item',
+            file=request.files['pictureFile'],
+            link=request.form['pictureLink'], maxlength=300)
 
-                if picture.serve_type == 'link':
-
-                    newServe_Type = 'upload'
-            else:
-                # user gave a link
-                newText = bleach.clean(request.form['pictureLink'])
-
-                if len(newText) > 300:
-
-                    newText = None
-                    flash("Did not edit pic; link too long")
-                elif (len(pictureLink) < 7 or 
-                      (len(pictureLink) == 8 and 
-                       pictureLink[:7] != 'http://') or
-                      (len(pictureLink) == 9 and 
-                       pictureLink[:8] != 'https://') or
-                      (pictureLink[:7] != 'http://' and
-                       pictureLink[:8] != 'https://')):
-
-                    newText = None
-                    flash("Did not edit pic; the link was not a url")
-                elif picture.serve_type == 'upload':
-                    # change serve type and delete old, uploaded pic
-                    newServe_Type = 'link'
-                    relPath = 'pics/'+picture.text
-                    os.remove(relPath)
-            
+        if providedPic is not None:
+            # edit the pic
             RestaurantManager.editPicture(restaurant.picture_id,
-                                          newText=newText,
-                                          newServe_Type=newServe_Type)
+                newText=providedPic['text'], 
+                newServe_Type=providedPic['serve_type'])
 
-            if (newText is not None or newServe_Type is not None):
-                flash("updated " + restaurant.name + "'s picture!")
+            # delete the old pic if it was an upload and new is a link
+            # or save the new pic if it was an upload
+            if (providedPic['serve_type'] == 'link' and
+                oldPicture.serve_type == 'upload'):
+
+                relPath = 'pics/'+oldPicture.text
+                os.remove(relPath)
+                flash("deleted old uploaded pic")
+            elif providedPic['serve_type'] == 'upload':
+                picfilename = 'restaurant' + str(restaurant_id)
+                request.files['pictureFile'].save(os.path.\
+                    join(app.config['UPLOAD_FOLDER'], picfilename))
+                RestaurantManager.editPicture(picture_id=oldPicture.id,
+                                              newText=picfilename)
+
+            flash("updated base menu item picture")
 
         # we edited the pic directly, no need to include here
         RestaurantManager.editRestaurant(restaurant.id,
-            newName=newName, newCuisine_id=newCuisineID)
+            newName=newName, newCuisine_id=newCuisine_id)
 
         restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
@@ -1001,10 +885,9 @@ def editRestaurant(restaurant_id):
                 str(restaurant.id) + ") name from '" + oldName + \
                 "' to '" + newName + "'")
 
-        if newCuisine is not None:
+        if newCuisine_id is not None:
             flash("changed " + restaurant.name + "'s (ID " + \
-                str(restaurant.id) + ") cuisine from '"+ \
-                oldCuisine.name + "' to '" + newCuisine.name + "'")
+                str(restaurant.id) + ") cuisine")
         
         return redirect(url_for('restaurant',
                                 restaurant_id=restaurant_id))
@@ -1015,49 +898,31 @@ def editRestaurant(restaurant_id):
                                cuisines=cuisines,
                                hiddenToken=login_session['state'],
                                picture=picture,
-                               intLoginStatus=intLoginStatus,
-                               displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                               loginStatusMessage=loginStatusMessage,
-                               user_id=user_id)
+                               client_login_session=client_login_session)
 
 @app.route('/restaurants/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
+    '''Serve form to delete a restaurant
+    '''
     restaurant = RestaurantManager.getRestaurant(restaurant_id)
+    
+    if not isLoggedIn():
 
-    # set login HTML
-    intLoginStatus = 0
-    displayNoneIfLoggedIn = ""
-    loginStatusMessage = "Not logged in"
-    user_id = -99
-
-    if isLoggedIn():
-
-        displayNoneIfLoggedIn = "none"
-        loginStatusMessage = "Logged in as " + login_session['username']
-        # passed to javascript function
-        intLoginStatus = 1
-        user_id = login_session['user_id']
-
-        if restaurant.user_id != login_session['user_id']:
-
-            flash("You do not have permission to delete this restaurant")
-            return redirect(url_for('restaurants',
-                restaurant_id=restaurant.id))
-
-    else:
-        
         flash("You must log in to delete a restaurant")
         return redirect(url_for('restaurantManagerIndex'))
 
+    if restaurant.user_id != login_session['user_id']:
+
+        flash("You do not have permission to delete this restaurant")
+        return redirect(url_for('restaurant',
+            restaurant_id=restaurant.id))
+
+    client_login_session = getClientLoginSession()
+
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
-
-            return redirect(url_for('restaurantManagerIndex'))
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
         restaurantMenuItems = RestaurantManager.\
                               getRestaurantMenuItems(restaurant_id=restaurant_id)
@@ -1076,10 +941,7 @@ def deleteRestaurant(restaurant_id):
         return render_template('DeleteRestaurant.html',
                                restaurant=restaurant,
                                hiddenToken=login_session['state'],
-                               intLoginStatus=intLoginStatus,
-                               loginStatusMessage=loginStatusMessage,
-                               displayNoneIfLoggedIn=displayNoneIfLoggedIn,
-                               user_id=user_id)
+                               client_login_session=client_login_session)
 
 @app.route('/cuisines/<int:cuisine_id>/add/', methods=['GET','POST'])
 def addBaseMenuItem(cuisine_id):
@@ -1122,11 +984,19 @@ def addBaseMenuItem(cuisine_id):
         if price is None:
             return redirect(url_for('cuisine', cuisine_id=cuisine.id))
 
-        # need to validate 'select' input?
-        # seems like it can't be None or malicious
-        menuSection_id = request.form['menuSection']
+        validMenuSectionIDs = {}
+        for menuSection in menuSections:
+            validMenuSectionIDs[str(menuSection.id)] = True
 
-        providedPic = validateUserPicture('create',
+        menuSection_id = validate(request.form['menuSection'],
+                'menuSection_id', 'create', 'base menu item',
+                columnNameForMsg='menu section', required=True, 
+                validInputs=validMenuSectionIDs)
+
+        if menuSection_id is None:
+            return redirect(url_for('cuisine', cuisine_id=cuisine.id))
+
+        providedPic = validateUserPicture('create', 'base menu item',
             file=request.files['pictureFile'],
             link=request.form['pictureLink'],
             maxlength=300, required=True)
@@ -1142,7 +1012,7 @@ def addBaseMenuItem(cuisine_id):
             price=price, menuSection_id=menuSection_id, 
             picture_id=picture_id)
 
-        # if pic was uploaded, now that item was created, 
+        # if pic was uploaded, now that we know item id, 
         # save actual file for serving and set the name in the database
         if providedPic['serve_type'] == 'upload':
             picfilename = 'baseMenuItem' + str(baseMenuItem_id)
@@ -1197,7 +1067,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
     '''
     if not isLoggedIn():
 
-        flash("You must log in to add a base menu item")
+        flash("You must log in to edit a base menu item")
         return redirect(url_for('restaurantManagerIndex'))
     
     client_login_session = getClientLoginSession()
@@ -1219,6 +1089,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         oldDescription = baseMenuItem.description
         oldPrice = baseMenuItem.price
         oldPicture = picture
+        oldMenuSection_id = baseMenuItem.menuSection_id
         
         newName = validateUserInput(request.form['name'], 'name', 
             'edit', 'base menu item', unique=True, oldInput=oldName)
@@ -1227,41 +1098,56 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
             'description', 'edit', 'base menu item', oldInput=oldDescription)
 
         newPrice = validateUserInput(request.form['price'], 'price',
-            'edit', 'base menu item', priceFormat=True, oldInput=oldPrice)
+            'edit', 'base menu item', priceFormat=True, oldInput=str(oldPrice))
 
-        providedPic = validateUserPicture('edit',
+        validMenuSectionIDs = {}
+        for menuSection in menuSections:
+            validMenuSectionIDs[str(menuSection.id)] = True
+
+        # for 'do not change'
+        validMenuSectionIDs['-1'] = True
+
+        newMenuSection_id = validate(request.form['menuSection'],
+                'menuSection_id', 'edit', 'base menu item',
+                columnNameForMsg='menu section', required=True, 
+                oldInput=str(oldMenuSection_id),
+                validInputs=validMenuSectionIDs)
+
+        if newMenuSection_id == '-1':
+            newMenuSection_id = None
+
+        providedPic = validateUserPicture('edit', 'base menu item',
             file=request.files['pictureFile'],
             link=request.form['pictureLink'], maxlength=300)
 
         if providedPic is not None:
-            #edit the pic
+            # edit the pic
             RestaurantManager.editPicture(baseMenuItem.picture_id,
                 newText=providedPic['text'], 
                 newServe_Type=providedPic['serve_type'])
 
-            flash("updated base menu item picture")
-
             # delete the old pic if it was an upload and new is a link
+            # or save the new pic if it was an upload
             if (providedPic['serve_type'] == 'link' and
                 oldPicture.serve_type == 'upload'):
             
                 relPath = 'pics/'+oldPicture.text
                 os.remove(relPath)
                 flash("deleted old uploaded pic")
+            elif providedPic['serve_type'] == 'upload':
+
+                picfilename = 'baseMenuItem' + str(baseMenuItem_id)
+                request.files['pictureFile'].save(os.path.\
+                    join(app.config['UPLOAD_FOLDER'], picfilename))
+                RestaurantManager.editPicture(picture_id=oldPicture.id,
+                                              newText=picfilename)
+
+            flash("updated base menu item picture")
 
         # we edited the pic directly, no need to include here
         RestaurantManager.editBaseMenuItem(baseMenuItem.id,
             newName=newName, newDescription=newDescription, 
-            newPrice=newPrice)
-
-        # if pic was uploaded, now that item was created, 
-        # save actual file for serving and set the name in the database
-        if providedPic['serve_type'] == 'upload':
-            picfilename = 'baseMenuItem' + str(baseMenuItem_id)
-            request.files['pictureFile'].save(os.path.\
-                join(app.config['UPLOAD_FOLDER'], picfilename))
-            RestaurantManager.editPicture(picture_id=oldPicture.id,
-                                          newText=picfilename)
+            newPrice=newPrice, newMenuSection_id=newMenuSection_id)
 
         if newName is not None:
             flash("changed name from '"+oldName+"' to '"+newName+"'")
@@ -1292,7 +1178,7 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
     '''
     if not isLoggedIn():
 
-        flash("You must log in to add a base menu item")
+        flash("You must log in to delete a base menu item")
         return redirect(url_for('restaurantManagerIndex'))
     
     client_login_session = getClientLoginSession()
@@ -1364,7 +1250,7 @@ def addRestaurantMenuItem(restaurant_id):
     
     if not isLoggedIn():
 
-        flash("You must log in to add a base menu item")
+        flash("You must log in to add a restaurant menu item")
         return redirect(url_for('restaurantManagerIndex'))
 
     if restaurant.user_id != login_session['user_id']:
@@ -2157,8 +2043,10 @@ def checkCSRFAttack(currentState, redirectURL):
         return redirect(redirectURL)
 
 def validateUserInput(userInput, columnName, CRUDtype, itemNameForMsg, 
-                      maxlength=None, required=False, unique=False, 
-                      oldInput=None, tableName=None, priceFormat=False):
+                      columnNameForMsg=None, maxlength=None, 
+                      required=False, unique=False, oldInput=None, 
+                      tableName=None, priceFormat=False, 
+                      validInputs=None):
     '''Validate (and strip HTML) from user input
 
     Returns the validated name, 
@@ -2167,22 +2055,30 @@ def validateUserInput(userInput, columnName, CRUDtype, itemNameForMsg,
     Args:
         userInput: the input to validate
         columnName: the name of the database column for this input
+        columnNameForMsg: the name of the columm for user message.
+            Pass None if same as columnName.
         CRUDtype: create, read, update, or delete
         itemNameForMsg: the name for this item in response text
             to the user
+        maxlength: the max allowable length of this input
         required: true if form submission requires this input
         unique: whether this input needs to be unique in the table
         oldInput: for an edit -- the value to replace
         tableName only needed if unique is True.
+        priceFormat: true if this input should be in standard price format
+        validInputs: dictionary with keys that are the only valid inputs
     '''
+    if not columnNameForMsg:
+        columnNameForMsg = columnName
+
     badResult = "Did not " + CRUDtype + " " + itemNameForMsg + ". "
-    neutralResult = "Did not edit " + columnName + ". "
+    neutralResult = "Did not edit " + columnNameForMsg + ". "
 
     if not userInput or len(userInput) < 1:
 
         if required:
 
-            flash(badResult + "Must provide a " + columnName + ".") 
+            flash(badResult + "Must provide a " + columnNameForMsg + ".")
         else:
 
             flash(neutralResult + "Nothing provided.")
@@ -2196,7 +2092,7 @@ def validateUserInput(userInput, columnName, CRUDtype, itemNameForMsg,
 
             if required:
 
-                flash(badResult + columnName + "was too long.")
+                flash(badResult + columnNameForMsg + "was too long.")
             else:
                 flash(neutralResult + "It was too long.")
 
@@ -2223,7 +2119,7 @@ def validateUserInput(userInput, columnName, CRUDtype, itemNameForMsg,
             
             if required:
 
-                flash(badResult + columnName + " was not unique.")
+                flash(badResult + columnNameForMsg + " was not unique.")
             else: 
 
                 flash(neutralResult + "It was not unique.")
@@ -2234,8 +2130,8 @@ def validateUserInput(userInput, columnName, CRUDtype, itemNameForMsg,
 
             if required:
 
-                flash(neutralResult + columnName +\
-                    "provided is same as before")
+                flash(badResult + columnNameForMsg +\
+                    " provided was same as before")
             else:
 
                 flash(neutralResult + \
@@ -2243,10 +2139,24 @@ def validateUserInput(userInput, columnName, CRUDtype, itemNameForMsg,
 
             return None
 
+    if userInput and validInputs:
+        if userInput not in validInputs:
+
+            if required:
+
+                flash(badResult + columnNameForMsg + \
+                    " was not a valid selection")
+            else:
+
+                flash(neutralResult + \
+                    "It was not a valid selection.")
+
+            return None
+
     return userInput
 
-def validateUserPicture(CRUDtype, file=None, link=None,
-                        maxlength=None, unique=False, required=False):
+def validateUserPicture(CRUDtype, itemNameForMsg, file=None, link=None,
+                        maxlength=None, required=False):
     '''Validate (and strip HTML from) a picture file or link 
     provided by a user.
 
@@ -2254,8 +2164,18 @@ def validateUserPicture(CRUDtype, file=None, link=None,
     or None if a test fails.
 
     Does NOT fail if, for an edit, provided pic is same as the old pic
+    Does not provide a "unique" argument.
+
+    Args:
+        CRUDtype: create, read, update, or delete
+        itemNameForMsg: the name for this item in response text
+            to the user
+        file: the file provided by the user
+        link: the link provided by the user
+        maxlength: the maximum allowable length for the pic's text
+        required: true if form submission requires this input
     '''
-    badResult = "Did not " + CRUDtype + " picture. "
+    badResult = "Did not " + CRUDtype + itemNameForMsg + ". "
     neutralResult = "Did not edit picture. "   
 
     pictureDict = {}

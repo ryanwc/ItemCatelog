@@ -123,6 +123,14 @@
 		<p>Change Item Price to (must containly only digits and a decimal point):</p>
 		<input id='price' type='text' optional pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price' placeholder='{{baseMenuItem.price}}'>
 
+		<p>Change Item Menu Section:</p>
+		<select required id='menuSection' name="menuSection">
+			<option id="noChangeSection" value="-1">Do not change menu section</option> 
+			{% for menuSection in menuSections %}
+				<option id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
+			{% endfor %}
+		</select>
+
 		<p>
 			Current Picture:
 		</p>
