@@ -181,7 +181,7 @@
 </script>
 <script>
 displayBasedOnLogin("{{client_login_session['message']}}");
-displayBasedOnOwner({{user_id}}, {{restaurant.user_id}});
+displayBasedOnOwner({{client_login_session['user_id']}}, {{restaurant.user_id}});
 // if appropriate, changes src of #photo from link to served file
 (function() {
 	if ('{{picture.serve_type}}' === 'upload') {

@@ -841,8 +841,8 @@ def editRestaurant(restaurant_id):
 
         newCuisine_id = validateUserInput(request.form['cuisineID'],
                 'cuisine_id', 'edit', 'restaurant',
-                columnNameForMsg='cuisine', required=True, 
-                oldInput=str(oldCuisine.id), validInputs=validCuisineIDs)  
+                columnNameForMsg='cuisine', oldInput=str(oldCuisine.id),
+                validInputs=validCuisineIDs)  
 
         if newCuisine_id == '-2':
             newCuisine_id = None
@@ -1092,13 +1092,16 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         oldMenuSection_id = baseMenuItem.menuSection_id
         
         newName = validateUserInput(request.form['name'], 'name', 
-            'edit', 'base menu item', unique=True, oldInput=oldName)
+            'edit', 'base menu item', maxlength=80, 
+            unique=True, oldInput=oldName)
             
         newDescription = validateUserInput(request.form['description'],
-            'description', 'edit', 'base menu item', oldInput=oldDescription)
+            'description', 'edit', 'base menu item', maxlength=250,
+            oldInput=oldDescription)
 
         newPrice = validateUserInput(request.form['price'], 'price',
-            'edit', 'base menu item', priceFormat=True, oldInput=str(oldPrice))
+            'edit', 'base menu item', maxlength=20,
+            priceFormat=True, oldInput=str(oldPrice))
 
         validMenuSectionIDs = {}
         for menuSection in menuSections:
@@ -1109,7 +1112,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 
         newMenuSection_id = validate(request.form['menuSection'],
                 'menuSection_id', 'edit', 'base menu item',
-                columnNameForMsg='menu section', required=True, 
+                columnNameForMsg='menu section',
                 oldInput=str(oldMenuSection_id),
                 validInputs=validMenuSectionIDs)
 
@@ -1159,6 +1162,9 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         if newPrice is not None:
             flash("changed price from '" + str(oldPrice) + "' to '" + \
                 str(newPrice) + "'")
+
+        if menuSection_id is not Non:
+            flash("changed menu section")
 
         return redirect(url_for('baseMenuItem',
                                 cuisine_id=cuisine_id,
@@ -1277,113 +1283,112 @@ def addRestaurantMenuItem(restaurant_id):
 
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
-            return redirect(url_for('restaurantManagerIndex'))
+        validBaseMenuItemIDs = {}
+        for item in baseMenuItems:
+            validBaseMenuItemIDs[str(item.id)] = True
 
-        name = None
-        description = None
-        price = None
-        picture_id = None
+        baseMenuItem_id = validateUserInput(request.form['baseMenuItemID'],
+            'baseMenuItem_id', 'create', 'restaurant menu item',
+            columnNameForMsg='base menu item',
+            validInputs=validBaseMenuItemIDs, required=True)
 
+        if baseMenuItem_id is None:
+            return redirect(url_for('restaurantMenu', 
+                restaurant_id=restaurant_id))
+
+        baseMenuItem = RestaurantManager.\
+            getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
+
+        # if a field is provided, use it, else use the base menu item's attr
         if request.form['name']:
-            name = bleach.clean(request.form['name'])
 
-            if len(name) > 80:
+            name = validateUserInput(request.form['name'], 'name', 'create',
+                'restaurant menu item', maxlength=80, required=True)
+            
+            if name is None:
+                return redirect(url_for('restaurantMenu', 
+                    restaurant_id=restaurant_id))   
+        else:
 
-                flash("Did not add item; name too long")
-                return redirect(url_for('restaurantMenu',
-                    restaurant_id=restaurant_id))
+            name = baseMenuItem.name
 
         if request.form['description']:
-            description = bleach.clean(request.form['description'])
+        
+            description = validateUserInput(request.form['description'],
+                'description', 'create', 'restaurant menu item',
+                maxlength=250, required=True)
 
-            if len(description) > 250:
+            if description is None:
+                return redirect(url_for('restaurantMenu', 
+                    restaurant_id=restaurant_id))   
+        else:
 
-                flash("Did not add item; description too long")
-                return redirect(url_for('restaurantMenu',
-                    restaurant_id=restaurant_id))
+            description = baseMenuItem.description
 
         if request.form['price']:
-            price = bleach.clean(request.form['price'])
 
-            if len(price) > 20:
+            price = validateUserInput(request.form['price'], 'price', 
+                'create', 'restaurant menu item', maxlength=20, 
+                required=True, priceFormat=True)
 
-                flash('Did not add item; price was too long.')
-                return redirect(url_for('restaurantMenu',
-                    restaurant_id=restaurant.id))
-
-            match = re.search(r'[0-9]*(.[0-9][0-9])?', price)
-
-            if match.group(0) != price:
-
-                flash("Did not add item; price was in an invalid "+\
-                    "format.  Use only numerals optionally followed "+\
-                    "by a decimal and two more numerals.")
+            if price is None:
                 return redirect(url_for('restaurantMenu', 
-                    restaurant_id=restaurant_id))        
+                    restaurant_id=restaurant_id))  
+        else:
 
-        if request.files['pictureFile']:
-            picFile = request.files['pictureFile']
+            price = baseMenuItem.price 
 
-            if allowed_pic(picFile.filename):
-                # this name will be overwritten.
-                # can't provide proper name now because 
-                # don't have restaurant_id
-                picFile.filename = secure_filename(picFile.filename)
+        if request.files['pictureFile'] or request.form['pictureLink']:
+        
+            providedPic = validateUserPicture('create', 'restaurant menu item',
+                file=request.files['pictureFile'],
+                link=request.form['pictureLink'],
+                maxlength=300, required=True)
+
+            if providedPic is None:
+                return redirect(url_for('restaurantMenu', 
+                    restaurant_id=restaurant_id))  
+            else:           
+
                 picture_id = RestaurantManager.\
-                    addPicture(text=picFile.filename,
-                        serve_type='upload')
-            else:
+                    addPicture(text=providedPic['text'], 
+                        serve_type=providedPic['serve_type'])
+        else:
 
-                flash("Did not add restaurant menu item; uploaded pic "+\
-                    "was not .png, .jpeg, or .jpg.")
-                return redirect(url_for('restaurantMenu'),
-                                        restaurant_id=restaurant.id)
-        elif request.form['pictureLink']:
+            picture_id = baseMenuItem.picture_id
 
-            pictureLink = bleach.clean(request.form['pictureLink'])
+        validMenuSectionIDs = {}
+        for menuSection in menuSections:
+            validMenuSectionIDs[str(menuSection.id)] = True
 
-            if (len(pictureLink) < 7 or 
-                (len(pictureLink) == 8 and 
-                 pictureLink[:7] != 'http://') or
-                (len(pictureLink) == 9 and 
-                 pictureLink[:8] != 'https://') or
-                (pictureLink[:7] != 'http://' and
-                 pictureLink[:8] != 'https://')):
+        # if this is somehow None, 
+        # the add function defaults to base item's attr
+        menuSection_id = validateUserInput(request.form['menuSectionID'],
+            'menuSection_id', 'create', 'restaurant menu item',
+            columnNameForMsg='menu section',
+            validInputs=validMenuSectionIDs, required=True)
 
-                flash("Did not add item; the link was not a url")
-                return redirect(url_for('restaurants'))
+        restaurantMenuItem_id = RestaurantManager.\
+            addRestaurantMenuItem(name=name, restaurant_id=restaurant_id,
+            description=description, price=price,
+            baseMenuItem_id=baseMenuItem_id, picture_id=picture_id,
+            menuSection_id=menuSection_id)
 
-            picture_id = RestaurantManager.addPicture(text=pictureLink, 
-                                                      serve_type='link')
+        # if pic was uploaded, now that we know item id, 
+        # save actual file for serving and set the name in the database
+        if (request.files['pictureFile'] and
+            providedPic['serve_type'] == 'upload'):
 
-        # everything defaults to base attribute if none
-        RestaurantManager.addRestaurantMenuItem(
-            name=name,
-            restaurant_id=restaurant_id,
-            description=description,
-            price=price,
-            baseMenuItem_id=request.form['baseMenuItemID'],
-            picture_id=picture_id
-        )
-
-        # if pic was uploaded, save actual file for serving
-        # set the appropriate name in the database
-        if request.files['pictureFile']:
-            picfilename = 'restaurantMenuItem' + str(restaurant_id)
-            picFile.save(os.path.join(app.config['UPLOAD_FOLDER'], picfilename))
+            picfilename = 'restaurantMenuItem' + str(restaurantMenuItem_id)
+            request.files['pictureFile'].save(os.path.\
+                join(app.config['UPLOAD_FOLDER'], picfilename))
             RestaurantManager.editPicture(picture_id=picture_id,
                                           newText=picfilename)
 
-        if name is not None:
-            flash("menu item '" + name + "' added to the menu!")
-        else:
-            flash("added an item to the menu!")
+        flash("menu item '" + name + "' added to the menu!")
 
         return redirect(url_for('restaurantMenu',
                                 restaurant_id=restaurant_id))
@@ -1480,111 +1485,79 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
     
     picture = RestaurantManager.getPicture(restaurantMenuItem.picture_id)
 
+    menuSections = RestaurantManager.getMenuSections()
+
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
-
-            return redirect(url_for('restaurantManagerIndex'))
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
         oldName = restaurantMenuItem.name
         oldDescription = restaurantMenuItem.description
         oldPrice = restaurantMenuItem.price
-        newName = None
-        newDescription = None
-        newPrice = None
-        newPicture = None
+        oldMenuSection_id = restaurantMenuItem.menuSection_id
+        oldPicture = picture
 
-        if request.form['name']:
-            newName = bleach.clean(request.form['name'])
-
-            if len(newName) > 80:
-
-                newName = None
-                flash("Did not change name; it was too long")
+        newName = validateUserInput(request.form['name'], 'name',
+            'edit', 'restaurant menu item', maxlength=80, oldInput=oldName)
+        
+        newDescription = validateUserInput(request.form['description'],
+            'description', 'edit', 'restaurant menu item', maxlength=250,
+            oldInput=oldDescription)
             
-        if request.form['description']:
-            newDescription = bleach.clean(request.form['description'])
-
-            if len(newDesription) > 250:
-
-                newDesription = None
-                flash("Did not change description; it was too long")
+        newPrice = validateUserInput(request.form['price'], 'price',
+            'edit', 'restaurant menu item', maxlength=20, 
+            oldInput=oldPrice, priceFormat=True)
             
-        if request.form['price']:
-            newPrice = bleach.clean(request.form['price'])
-            match = re.search(r'[0-9]*(.[0-9][0-9])?', newPrice)
+        validMenuSectionIDs = {}
+        for menuSection in menuSections:
+            validMenuSectionIDs[str(menuSection.id)] = True
 
-            if len(newPrice) > 20:
+        # for 'do not change'
+        validMenuSectionIDs['-1'] = True
 
-                newPrice = None
-                flash("Did not change price; it's too long.")
-            elif match.group(0) != newPrice:
+        newMenuSection_id = validateUserInput(request.form['menuSection'],
+                'menuSection_id', 'edit', 'restaurant menu item',
+                columnNameForMsg='menu section',
+                oldInput=str(oldMenuSection_id),
+                validInputs=validMenuSectionIDs)
 
-                newPrice = None
-                flash("Did not change price; it was in an invalid "+\
-                    "format.  Use only numerals optionally followed "+\
-                    "by a decimal and two more numerals.")
+        if newMenuSection_id == '-1':
+            newMenuSection_id = None
 
-        if request.form['pictureLink'] or request.files['pictureFile']:
-            newText = None
-            newServe_Type = None
+        providedPic = validateUserPicture('edit', 'restaurant menu item',
+            file=request.form['pictureLink'], 
+            link=request.files['pictureFile'], maxlength=300)
 
-            if request.files['pictureFile']: 
-                # user uploaded a file
-                picFile = request.files['pictureFile']
-
-                if allowed_pic(picFile.filename):
-                    # overwrites pic for restaurant menu item if already there
-                    newText = 'restaurantMenuItem' +\
-                        str(restaurantMenuItem.id)
-                    picFile.save(os.path.join(app.\
-                        config['UPLOAD_FOLDER'], newText))
-
-                    if picture.serve_type == 'link':
-
-                        newServe_Type = 'upload'
-                else:
-
-                    flash("Sorry, the uploaded pic was not .png, "+\
-                        ".jpeg, or .jpg.  Did not change picture.")
-            else:
-                # user gave a link
-                newText = bleach.clean(request.form['pictureLink'])
-
-                if len(newText) > 300:
-                    newText = None
-                    flash("Did not change pic; link too long")
-                elif (len(pictureLink) < 7 or 
-                      (len(pictureLink) == 8 and 
-                       pictureLink[:7] != 'http://') or
-                      (len(pictureLink) == 9 and 
-                       pictureLink[:8] != 'https://') or
-                      (pictureLink[:7] != 'http://' and
-                       pictureLink[:8] != 'https://')):
-
-                    newText = None
-                    flash("Did not change pic; the link was not a url")  
-                elif picture.serve_type == 'upload':
-                    # change serve type and delete old, uploaded pic
-                    newServe_Type = 'link'
-                    relPath = 'pics/'+picture.text
-                    os.remove(relPath)
-            
+        if providedPic is not None:
+            # edit the pic
             RestaurantManager.editPicture(restaurantMenuItem.picture_id,
-                                          newText=newText,
-                                          newServe_Type=newServe_Type)
+                newText=providedPic['text'], 
+                newServe_Type=providedPic['serve_type'])
 
-            if (newText is not None or newServe_Type is not None):
-                flash("updated " + restaurantMenuItem.name + "'s picture!")
+            # delete the old pic if it was an upload and new is a link
+            # or save the new pic if it was an upload
+            if (providedPic['serve_type'] == 'link' and
+                oldPicture.serve_type == 'upload'):
+            
+                relPath = 'pics/'+oldPicture.text
+                os.remove(relPath)
+                flash("deleted old uploaded pic")
+            elif providedPic['serve_type'] == 'upload':
+
+                picfilename = 'restaurantMenuItem' + \
+                    str(restaurantMenuItem_id)
+                request.files['pictureFile'].save(os.path.\
+                    join(app.config['UPLOAD_FOLDER'], picfilename))
+                RestaurantManager.editPicture(picture_id=oldPicture.id,
+                                              newText=picfilename)
+
+            flash("updated restaurant menu item picture")
 
         # we edited the pic directly, no need to include here
         RestaurantManager.editRestaurantMenuItem(restaurantMenuItem.id,
             newName=newName, newDescription=newDescription, 
-            newPrice=newPrice)
+            newPrice=newPrice, newMenuSection_id=newMenuSection_id)
 
         if newName is not None:
             flash("changed restaurant menu item " + \
@@ -1603,6 +1576,9 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
                 "'s price from '" + str(oldPrice) + "' to '" + \
                 str(newPrice) + "'")
 
+        if newMenuSection_id is not None:
+            flash("changed the restaurant menu item's menu section")
+
         return redirect(url_for('restaurantMenu',
                                 restaurant_id=restaurant_id))
     else:
@@ -1610,6 +1586,7 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
         return render_template('EditRestaurantMenuItem.html',
                                restaurant=restaurant,
                                restaurantMenuItem=restaurantMenuItem,
+                               menuSections=menuSections,
                                hiddenToken=login_session['state'],
                                picture=picture,
                                client_login_session=client_login_session)
@@ -1639,18 +1616,14 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
     if request.method == 'POST':
 
-        if request.form['hiddenToken'] != login_session['state']:
-            # not same entity that first came to login page
-            # possible CSRF attack
-            flash("An unknown error occurred.  Try signing out"+\
-                ", signing back in, and repeating the operation.")
-
-            return redirect(url_for('restaurantManagerIndex'))
+        checkCSRFAttack(request.form['hiddenToken'],
+                        "url_for('restaurantManagerIndex')")
 
         restaurantMenuItemName = restaurantMenuItem.name
 
         RestaurantManager.\
-            deleteRestaurantMenuItem(restaurantMenuItem_id=restaurantMenuItem_id)
+            deleteRestaurantMenuItem(restaurantMenuItem_id=\
+                restaurantMenuItem_id)
 
         flash("removed item " + str(restaurantMenuItem_id) + " (" + \
               restaurantMenuItemName + ") from the menu and database")

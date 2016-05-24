@@ -277,8 +277,6 @@ function checkForm(form) {
     }
     else if (form.id == 'editRestaurantForm') {
 
-        console.log("here");
-/*
         var name = document.getElementById("name").value;
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
@@ -335,7 +333,7 @@ function checkForm(form) {
                 window.alert("Pic link is too long")
                 return false;
             }
-        }*/
+        }
         
         return true;
     }

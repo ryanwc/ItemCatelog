@@ -856,6 +856,7 @@ def deleteBaseMenuItem(baseMenuItem_id=None):
             if baseMenuItem.picture_id == restaurantMenuItem.picture_id:
                 sharePicture = True
 
+        picture = None
         if not sharePicture:
             picture = getPicture(baseMenuItem.picture_id)
 
@@ -865,7 +866,7 @@ def deleteBaseMenuItem(baseMenuItem_id=None):
 
         session.commit()
 
-        if picture:
+        if picture is not None:
             deletePicture(picture.id)
 
     session.close()

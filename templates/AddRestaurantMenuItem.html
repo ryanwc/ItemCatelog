@@ -133,7 +133,7 @@
 		<input id='price' type='text' maxlength='20' optional pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price'>
 
 		<p>Item Menu Section:</p>
-		<select required id='menuSection' name="menuSection">
+		<select required id='menuSection' name="menuSectionID">
 			{% for menuSection in menuSections %}
 				<option id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
 			{% endfor %}
