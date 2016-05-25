@@ -37,21 +37,46 @@ function displayBasedOnOwner(loggedInUserID, thingOwnerID) {
 };
 
 // ajax call to disconnect from oauth and signout from the app
-function signOut() {
+function signOut(forUserDeletion=0) {
 
+	console.log("signing out");
 	var xhttp = new XMLHttpRequest();
 
 	xhttp.onreadystatechange = function() {
     	if (xhttp.readyState == 4 && xhttp.status == 200) {
 
      		window.alert(xhttp.responseText);
-     		location.reload();
+
+    		if (forUserDeletion == 1) {
+    			// returns to delete form onsubmit so lets deletion proceed
+    			return true;
+     		}
+     		else {
+
+     			location.reload();
+     		}
+    	}
+    	else if (forUserDeletion == 1) {
+
+    		return false;
     	}
     }
 
     xhttp.open("POST", "/disconnect", true);
 	xhttp.send();
 };
+
+// for signing out but not reloading when user click's "delete user"
+// result returns to the onsubmit value of the delete form
+function deleteAndSignOut() {
+
+	var doSignOut = function(wasSignedOut) {
+
+		return wasSignedOut;
+	}
+
+	signOut(1);
+}
 
 // get access token from Facebook
 // called when Facebook login button clicked

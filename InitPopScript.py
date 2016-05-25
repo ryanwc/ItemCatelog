@@ -18,7 +18,6 @@ dropAllRecords()
 addUser(name="Robo Barista", email="tinnyTim@udacity.com", 
   picture_id=addPicture('https://pbs.twimg.com/profile_images/2671170543/18debd694829ed78203a5a36dd364160_400x400.png', 'link')
   )
-print str(user.id)
 addUser(name="Der Koch", email="ichbinkoch@example.com", 
   picture_id=addPicture('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Mendel_I_142_r.jpg/173px-Mendel_I_142_r.jpg', 'link')
   )
@@ -395,15 +394,14 @@ restaurantPicIDs = [addPicture('https://upload.wikimedia.org/wikipedia/commons/a
                     addPicture('https://s-media-cache-ak0.pinimg.com/736x/77/72/a6/7772a69c4e416b3ccbb2f7852eab9ccd.jpg', 'link')]
 
 ### add 50 restaurants to the database (names not unique)
-numUsers = len(getUsers())
-numRestaurantPics = len(restaurantPicIDs)
 for restaurant in range(0,50):
     poss = possivesAndAdverbs[int(round(random.uniform(0,len(possivesAndAdverbs)-1)))]
     adj = adjectives[int(round(random.uniform(0,len(adjectives)-1)))]
     thisCuisine = cuisines[int(round(random.uniform(0,len(cuisines)-1)))]
 
-    user_id = int(round(random.uniform(0,numUsers-1)))
-    picture_id = restaurantPicIDs[int(round(random.uniform(0,numRestaurantPics-1)))]
+    user_id = int(round(random.uniform(1,len(getUsers()))))
+
+    picture_id = restaurantPicIDs[int(round(random.uniform(0,len(restaurantPicIDs)-1)))]
 
     thisCuisineObj = getCuisine(name=thisCuisine)
 

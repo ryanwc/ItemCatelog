@@ -93,7 +93,7 @@
 		<a class='backLink' href="{{url_for('user', user_id=user.id)}}">Cancel</a>
 	</p>
 
-	<form class='form' action="{{url_for('deleteUser', user_id=user.id)}}" method='post'>
+	<form class='form' action="{{url_for('deleteUser', user_id=user.id)}}" method='post' onsubmit='return deleteAndSignOut();'>
 
 		<p>
 			WARNING: This will also delete 1) all of this user's restaurant menu items and 2) all of this user's restaurants.

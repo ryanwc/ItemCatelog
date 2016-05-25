@@ -537,16 +537,32 @@ function validatePictureLink(pictureLink, maxlength, required) {
         }
     }
 
+    // maybe a regex would be better?
     if (pictureLink.length < 8) {
 
         window.alert("Pic link is not a valid url");
         return false;
     }
 
-    if (pictureLink.substring(0,7) != 'http://' ||
-        pictureLink.substring(0,8) != 'https://') {
+    if (pictureLink.substring(0,7) == 'http://') {
 
-        window.alert("Link must start with 'http://' or 'https://'");
+        if (pictureLink == 'http://') {
+
+            window.alert("Pic link is not a valid url");
+            return false;
+        }
+    }
+    else if (pictureLink.substring(0,8) == 'https://') {
+
+        if (pictureLink == 'https://') {
+
+            window.alert("Pic link is not a valid url");
+            return false;
+        }
+    }
+    else {
+
+        window.alert("Pic link must start with 'http://' or 'https://'");
         return false;
     }
 

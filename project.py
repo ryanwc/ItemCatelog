@@ -194,6 +194,12 @@ def fbconnect():
 
     setProfile()
 
+    ####
+    # user will need to edit profile pic because for some reason, Facebook is 
+    # now sending 403 forbidden to access profile picture from the user 
+    # page even though the SAME link works fine for the pic in the login message
+    ####
+
     return getSignInAlert()
 
 @app.route('/disconnect', methods=['POST'])
@@ -201,13 +207,12 @@ def disconnect():
     '''Logout a user that is currently logged in
     '''
     # only disconnects if valid credentials exist
-    if 'credentials' not in login_session:
-        if 'access_token' not in login_session['credentials']:
+    if not isLoggedIn():
 
-            response = make_response(json.dumps('No user logged in'), 401)
-            response.headers['Content-Type'] = 'application/json'
+        response = make_response(json.dumps('No user logged in'), 401)
+        response.headers['Content-Type'] = 'application/json'
 
-            return response
+        return response
 
     disconnectResult = None
 
@@ -242,6 +247,7 @@ def disconnect():
     del login_session['email']
 
     print 'deleted login session'
+    print login_session
     logoutMessage += "Logged " + username + \
                      " out of Restaurant Manager"
 
@@ -568,7 +574,7 @@ def editCuisine(cuisine_id):
 
         newName = validateUserInput(request.form['name'],
             'name', 'edit', 'cuisine', maxlength=80, unique=True, 
-            oldName=oldName, tableName='Cuisine')
+            oldInput=oldName, tableName='Cuisine')
 
         RestaurantManager.editCuisine(cuisine_id, newName=newName)
         
@@ -855,7 +861,7 @@ def editRestaurant(restaurant_id):
         if newCuisine_id == '-2':
             newCuisine_id = None
 
-        providedPic = validateUserPicture('edit', 'base menu item',
+        providedPic = validateUserPicture('edit', 'restaurant',
             file=request.files['pictureFile'],
             link=request.form['pictureLink'], maxlength=300)
 
@@ -1879,8 +1885,6 @@ def deleteUser(user_id):
 
         RestaurantManager.deleteUser(user.id)
 
-        disconnect()
-
         flash("deleted " + user.name + " from " +\
             "the database")
 
@@ -1914,6 +1918,7 @@ def setProfile():
     '''
     user = RestaurantManager.getUser(email=login_session['email'])
 
+    print login_session['picture']
     # create the user if the user doesn't exist
     if user is None:
         picture_id = RestaurantManager.addPicture(text=login_session['picture'],
@@ -1925,6 +1930,7 @@ def setProfile():
 
     # set this user's saved settings for our app
     picture = RestaurantManager.getPicture(user.picture_id)
+
     login_session['user_id'] = user.id
     login_session['username'] = user.name
     login_session['picture'] = picture.text
@@ -1961,6 +1967,7 @@ def getClientLoginSession():
         client_login_session['message'] = "Logged in as " + \
             login_session['username']
 
+    print client_login_session
     return client_login_session
 
 ###

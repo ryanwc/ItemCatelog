@@ -28,6 +28,11 @@ function setPhotoSRC(photoSRC, photoElementID, serve_type) {
     }
     else if (serve_type == 'link') {
 
-        document.getElementById(photoElementID).setAttribute("src", photoSRC);
+        // would need a full suite of these decodings to cover all cases
+        // but the Facebook profile pic uses '&', which is '&amp' at this point
+        // after passing through python-->jijna-->javascript,
+        // so need to decode for HTML
+        var decodedSRC = photoSRC.replace(/&amp;/g, '&');
+        document.getElementById(photoElementID).setAttribute("src", decodedSRC);
     }
 }

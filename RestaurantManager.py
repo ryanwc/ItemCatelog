@@ -724,6 +724,8 @@ def deleteRestaurantMenuItem(restaurantMenuItem_id=None):
         baseMenuItem = getBaseMenuItem(baseMenuItem_id=
             restaurantMenuItem.baseMenuItem_id)
 
+        picture = None
+
         if restaurantMenuItem.picture_id != baseMenuItem.picture_id:
             picture = getPicture(restaurantMenuItem.picture_id)
 
@@ -866,7 +868,7 @@ def deleteBaseMenuItem(baseMenuItem_id=None):
 
         session.commit()
 
-        if picture is not None:
+        if picture:
             deletePicture(picture.id)
 
     session.close()
