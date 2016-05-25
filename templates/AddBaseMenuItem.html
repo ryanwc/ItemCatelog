@@ -113,7 +113,7 @@
 		<p>Item Menu Section:</p>
 		<select required id='menuSection' name="menuSection">
 			{% for menuSection in menuSections %}
-				<option class='menuSectionID' id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
+				<option class='validMenuSectionID' id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
 			{% endfor %}
 		</select>
 
@@ -131,11 +131,11 @@
 
 	</form>
 </div>
-<script src="{{url_for('static', filename='login.js')}}">
-</script>
-<script src="{{url_for('static', filename='forms.js')}}">
-</script>
-<script>displayBasedOnLogin("{{client_login_session['message']}}");
+<script src="{{url_for('static', filename='login.js')}}"></script>
+<script src="{{url_for('static', filename='forms.js')}}"></script>
+<script src="{{url_for('static', filename='jsonAjax.js')}}"></script>
+<script>
+	displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 </body>
 </html>

@@ -109,8 +109,8 @@
 	</form>
 </div>
 </body>
-<script src="{{url_for('static', filename='login.js')}}">
-</script>
-<script>displayBasedOnLogin("{{client_login_session['message']}}");
+<script src="{{url_for('static', filename='login.js')}}"></script>
+<script>
+	displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 </html>

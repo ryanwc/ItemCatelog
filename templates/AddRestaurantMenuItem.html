@@ -117,9 +117,9 @@
 
 		<p>Base Menu Item:</p>
 		<select required id='baseMenuItemID' name="baseMenuItemID" oninput='
-			placeholdWithBaseMenuItem(this.value);'>
+			placeholdWithBaseMenuItem(this.value, "photo");'>
   		{% for baseMenuItem in baseMenuItems %}
-  			<option class='baseMenuItemID' id="baseMenuItem{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
+  			<option class='validBaseMenuItemID' id="baseMenuItem{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
   		{% endfor %}
 		</select>
 
@@ -135,7 +135,7 @@
 		<p>Item Menu Section:</p>
 		<select class='menuSectionID' required id='menuSection' name="menuSectionID">
 			{% for menuSection in menuSections %}
-				<option class='menuSectionID' id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
+				<option class='validMenuSectionID' id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
 			{% endfor %}
 		</select>
 
@@ -143,9 +143,9 @@
 			Base Menu Item Picture:
 		</p>
 		<div class='photo'>
-			<img id='photo' src="{{url_for('uploaded_picture', filename="")}}" alt='[picture of base menu item]' max-width=100%>
+			<img id='photo' src="" alt='[picture of base menu item]' max-width=100%>
 		</div>
-		<span id='picUploadPath'>{{url_for('uploaded_picture', filename="")}}</span>
+		<span class='hiddenClass' id='picUploadPath'>{{url_for('uploaded_picture', filename="")}}</span>
 
 		<p>Item Picture (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input id='pictureFile' type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
@@ -161,11 +161,12 @@
 
 	</form>
 </div>
-<script src="{{url_for('static', filename='login.js')}}">
-</script>
-<script>displayBasedOnLogin("{{client_login_session['message']}}");
-</script>
-<script src="{{url_for('static', filename='forms.js')}}">
+<script src="{{url_for('static', filename='login.js')}}"></script>
+<script src="{{url_for('static', filename='forms.js')}}"></script>
+<script src="{{url_for('static', filename='photos.js')}}"></script>
+<script src="{{url_for('static', filename='jsonAjax.js')}}"></script>
+<script>
+	displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 </body>
 </html>

@@ -19,6 +19,8 @@ li				{margin: 0 0 3px 0;}
 .signOut		{border: 2px solid; border-radius: 5px; padding: 5px; 
 				 margin: 5px; border-color: #262626;
 				 background-color: #ffffff; width: 70px;}
+
+/* could consolidate the hidden classes */
 .hiddenClass	{display: none;}
 .hideLoggedIn	{}
 .hideLoggedOut	{}

@@ -1,3 +1,4 @@
+// hide or show elements based on login status
 function displayBasedOnLogin(message) {
 
 	if (message == 'Not logged in') { 
@@ -17,6 +18,7 @@ function displayBasedOnLogin(message) {
 	return message;
 };
 
+// hide or show elements based on element ownership and viewier
 function displayBasedOnOwner(loggedInUserID, thingOwnerID) {
 
 	if (loggedInUserID == thingOwnerID) {
@@ -34,12 +36,14 @@ function displayBasedOnOwner(loggedInUserID, thingOwnerID) {
 	}
 };
 
+// ajax call to disconnect from oauth and signout from the app
 function signOut() {
 
 	var xhttp = new XMLHttpRequest();
 
 	xhttp.onreadystatechange = function() {
     	if (xhttp.readyState == 4 && xhttp.status == 200) {
+
      		window.alert(xhttp.responseText);
      		location.reload();
     	}
@@ -49,7 +53,8 @@ function signOut() {
 	xhttp.send();
 };
 
-// called when facebook login button clicked
+// get access token from Facebook
+// called when Facebook login button clicked
 function sendTokenToServer() {
 
     FB.api('/me', function(response) {
@@ -66,6 +71,7 @@ function sendTokenToServer() {
 	});
 }
 
+// get access token from Google
 // called when Google calls back after sending the user the access code
 function signInCallback(authResult) {
 
@@ -84,7 +90,7 @@ function signInCallback(authResult) {
 	}
 }
 
-// make ajax call to server and handle result
+// make ajax call to server to connect with oauth and handle result
 function connect(urlWithState, data, loginClass) {
 
 	$.ajax({
@@ -100,31 +106,22 @@ function connect(urlWithState, data, loginClass) {
 	});
 }
 
-// handle rest of sign in after a ajax call
+// set HTML of page based on result of connect/signin ajax call to server
 function handleSignInResult(loginClass, result) {
 
 	if (result) {
 
 		resultObj = JSON.parse(result);
+		
 		$('#result').addClass(loginClass);
 		$('#result').removeClass('hiddenClass');
 		$('#resultMessage').html('Login Sucessful!');
 
 		$('#welcome').html(resultObj['loginMessage']);
 
-		if (resultObj['picture_serve_type'] == 'upload') {
-
-			// tricky to get jinja and javascript to work
-			// together to serve uploaded pictures
-			var currSRC = $('#signInPhoto').attr("src");
-			var path = currSRC.substring(0,currSRC.length-1);
-			var newSRC = path.concat(resultObj['picture']);
-    	    $('#signInPhoto').attr("src", newSRC);
-		}
-		else if (resultObj['picture_serve_type'] == 'link') {
-
-    	    $('#signInPhoto').attr("src", resultObj['picture']);
-		}
+		var src = resultObj['picture'];
+		var serve_type = resultObj['picture_serve_type'];
+		setPhotoSRC(src, 'signInPhoto', serve_type);
 
 		$('#redirectMessage').html('Redirecting...');
 

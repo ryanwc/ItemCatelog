@@ -103,7 +103,8 @@
 	<div class='stats'>
 
 		<div class='photo'>
-			<img id='photo' src="{{picture.text}}" alt='[picture of {{user.name}}]' max-width=100%>
+			<img id='photo' src="" alt='[picture of {{user.name}}]' max-width=100%>
+			<span class='hiddenClass' id='picUploadPath'>{{url_for('uploaded_picture', filename="")}}</span>
 		</div>
 
 		<p>Stats for user '{{user.name}}':</p>
@@ -192,21 +193,12 @@
 		</div>
 	</div>
 </div>
-<script src="{{url_for('static', filename='login.js')}}">
-</script>
-<script src="{{url_for('static', filename='lists.js')}}">
-</script>
-<script>displayBasedOnLogin("{{client_login_session['message']}}");
-</script>
+<script src="{{url_for('static', filename='lists.js')}}"></script>
+<script src="{{url_for('static', filename='login.js')}}"></script>
+<script src="{{url_for('static', filename='photos.js')}}"></script>
 <script>
-// if appropriate, changes src of #photo from link to served file
-(function() {
-	if ('{{picture.serve_type}}' === 'upload') {
-
-	console.log("is upload");
-		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
-	}
-})();
+	displayBasedOnLogin("{{client_login_session['message']}}");
+	setPhotoSRC("{{picture.text}}", 'photo', "{{picture.serve_type}}");
 </script>
 </body>
 </html>

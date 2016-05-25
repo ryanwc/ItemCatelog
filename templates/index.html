@@ -103,13 +103,16 @@
     <div class='hiddenClass' id='result'>
     	<p id='resultMessage'></p>
     	<h1 id='welcome'></h1>
-    	<img id='signInPhoto' src="{{url_for('uploaded_picture',filename='')}}" alt='[your pic]'/>
+    	<img id='signInPhoto' src="" alt='[your pic]'/>
     	<div id='redirectMessage'></div>
     </div>
-<div class='hiddenClass' id='state'>{{state}}</div>
-<script src="{{url_for('static', filename='login.js')}}">
-</script>
-<script>displayBasedOnLogin("{{client_login_session['message']}}");
+		<span class='hiddenClass' id='picUploadPath'>{{url_for('uploaded_picture', filename="")}}</span>
+	<div class='hiddenClass' id='state'>{{state}}</div>
+	
+<script src="{{url_for('static', filename='login.js')}}"></script>
+<script src="{{url_for('static', filename='photos.js')}}"></script>
+<script>
+	displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 </body>
 </html>

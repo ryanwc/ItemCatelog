@@ -1,5 +1,7 @@
 // placehold form fields with the selected base menu item's attributes
-function placeholdWithBaseMenuItem(baseMenuItemID) {
+// this could be made more flexible (e.g., pass elements
+    // to placehold as a class named 'elementsToPlacehold')
+function placeholdWithBaseMenuItem(baseMenuItemID, photoElementId) {
 
     var baseMenuItemJSONpath = '/baseMenuItems/' + baseMenuItemID + '/JSON/';
     // [ajax call to get the info];
@@ -14,45 +16,17 @@ function placeholdWithBaseMenuItem(baseMenuItemID) {
         document.getElementById("menuSection").value = itemDict['menuSection_id'];  
 
         var picJSONpath = '/pics/' + itemDict['picture_id'] + "/JSON/";
-        setPicturePlaceHolder(picJSONpath);
+        getAndSetPhoto(picJSONpath, photoElementId);
     }
     
     getRowJSON(baseMenuItemJSONpath, setPlaceholders);
 };
-
-// tricky to get jinja and javascript to work
-// together to serve uploaded pictures
-function setPicturePlaceHolder(picJSONpath) {
-
-    var setPlacehold = function(picJSONformat) {
-
-        var picDict = picJSONformat['Picture'];
-
-        if (picDict['serve_type'] == 'upload') {
-
-            var uploadPath = document.getElementById('picUploadPath').innerHTML;
-            var newSRC = uploadPath.substring(0,uploadPath.length-1);
-            newSRC = newSRC.concat(picDict['text']);
-            document.getElementById('photo').setAttribute("src", newSRC);
-        }
-        else if (picDict['serve_type'] == 'link') {
-
-            document.getElementById('photo').setAttribute("src", picDict['text']);
-        }
-
-        document.getElementById('pictureLink').setAttribute("placeholder", picDict['text']);
-    }
-
-    getRowJSON(picJSONpath, setPlacehold);
-}
 
 // get data with ajax call, check uniqueness, and set HTML form as appropriate
 // input node must be jQuery object b/c eventually uses addClass()/removeClass() method
 // is there an easy way to do addClass() / removeClass() in plain JS?
 function realTimeUniqueCheck(columnValue, tableName, columnName, inputNode) {
 
-    console.log("doing it");
-    console.log(inputNode);
     // define callback to execute upon successful ajax table retrieval
     var sendTableToCheckUniqueAndSetHTML = function(JSONTable) {
 
@@ -109,71 +83,6 @@ function checkUnique(columnValue, JSONTableObj, column) {
     return true;
 };
 
-// get a JSON object representing a table in the database
-// and base the JSON to the callback
-// would first var 'tableJSONpath' be better insead of the if statements?
-// see, for example, function getRowJSON
-function getTableJSON(tableName, callBackFunction) {
-
-    var xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function() {
-
-        if (xhttp.readyState == 4 && xhttp.status == 200) {
-
-            response = JSON.parse(xhttp.responseText)
-
-            if (typeof callBackFunction === 'function') {
-
-                callBackFunction(response);
-            }
-            else {
-
-                console.log("Callback was not a function");
-            }
-        }
-    }
-
-    // add tables as needed
-    if (tableName == 'Cuisine') {
-
-        path = "/cuisines/JSON";
-    }
-    else if (tableName == "BaseMenuItem") {
-
-        path = "/baseMenuItems/JSON"
-    }
-
-    xhttp.open("GET", path, true);
-    xhttp.send();
-}
-
-// get a JSON object representing a row in the database
-function getRowJSON(rowJSONpath, callBackFunction) {
-
-    var xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function() {
-
-        if (xhttp.readyState == 4 && xhttp.status == 200) {
-
-            response = JSON.parse(xhttp.responseText)
-
-            if (typeof callBackFunction === 'function') {
-
-                callBackFunction(response);
-            }
-            else {
-
-                console.log("Callback was not a function");
-            }
-        }
-    }
-
-    xhttp.open("GET", rowJSONpath, true);
-    xhttp.send();
-}
-
 // could refactor this more to be more concise like the server side code
 // but not sure it is worth it
 function checkForm(form) {
@@ -216,14 +125,14 @@ function checkForm(form) {
         var picLink = document.getElementById("pictureLink").value;
         var price = document.getElementById("price").value;
         var menuSectionID = document.getElementById("menuSection").value;
-        var menuSectionIDs = document.getElementsByClassName("menuSectionID");
+        var menuSectionIDs = document.getElementsByClassName("validMenuSectionID");
 
         if (!validateName(name, 80, false, false)) {
 
             return false;
         }
 
-        if (!validateSelection(menuSectionID, menuSectionIDs, true)) {
+        if (!validateSelection(menuSectionID, validMenuSectionIDs, true)) {
 
             return false;
         }
@@ -256,7 +165,7 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var cuisineID = document.getElementById("cuisine").value;
-        var cuisineIDs = document.getElementsByClassName("cuisineID");
+        var cuisineIDs = document.getElementsByClassName("validCuisineID");
 
         if (!validateName(name, 100, false, false)) {
 
@@ -299,7 +208,7 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var menuSectionID = document.getElementById("menuSection").value;
-        var menuSectionIDs = document.getElementsByClassName("menuSectionID");
+        var menuSectionIDs = document.getElementsByClassName("validMenuSectionID");
 
         if (!validateName(name, 80, false, true)) {
 
@@ -350,7 +259,7 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var cuisineID = document.getElementById("cuisine").value;
-        var cuisineIDs = document.getElementsByClassName("cuisineID");
+        var cuisineIDs = document.getElementsByClassName("validCuisineID");
 
         if (!validateName(name, 100, true, false)) {
 
@@ -382,7 +291,7 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var menuSectionID = document.getElementById("menuSection").value;
-        var menuSectionIDs = document.getElementsByClassName("menuSectionID");
+        var menuSectionIDs = document.getElementsByClassName("validMenuSectionID");
 
         if (!validateName(name, 80, true, true)) {
 
@@ -422,9 +331,9 @@ function checkForm(form) {
         var picLink = document.getElementById("pictureLink").value;
         var price = document.getElementById("price").value;
         var menuSectionID = document.getElementById("menuSection").value;
-        var menuSectionIDs = document.getElementsByClassName("menuSectionID");
+        var menuSectionIDs = document.getElementsByClassName("validMenuSectionID");
         var baseMenuItemID = document.getElementById("baseMenuItemID").value;
-        var baseMenuItemIDs = document.getElementsByClassName("baseMenuItemIDs");
+        var baseMenuItemIDs = document.getElementsByClassName("validBaseMenuItemID");
 
         if (!validateSelection(baseMenuItemID, baseMenuItemIDs, true)) {
 

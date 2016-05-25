@@ -126,9 +126,9 @@
 
 		<p>Change Item Menu Section to:</p>
 		<select required id='menuSection' name="menuSection">
-		  	<option class='menuSectionID' value="-1">Do not change menu section</option>
+		  	<option class='validMenuSectionID' value="-1">Do not change menu section</option>
 			{% for menuSection in menuSections %}
-				<option class='menuSectionID' id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
+				<option class='validMenuSectionID' id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
 			{% endfor %}
 		</select>
 
@@ -136,8 +136,9 @@
 			Current Picture:
 		</p>
 		<div class='photo'>
-			<img id='photo' src="{{picture.text}}" alt='[picture of {{restaurant.name}}]' max-width=100%>
+			<img id='photo' src="" alt='[picture of {{restaurant.name}}]' max-width=100%>
 		</div>
+		<span class='hiddenClass' id='picUploadPath'>{{url_for('uploaded_picture', filename="")}}</span>
 
 		<p>Change Item Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input type='file' id='pictureFile' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
@@ -153,20 +154,12 @@
 
 	</form>
 </div>
-<script src="{{url_for('static', filename='login.js')}}">
-</script>
-<script src="{{url_for('static', filename='forms.js')}}">
-</script>
-<script>displayBasedOnLogin("{{client_login_session['message']}}");
-</script>
+<script src="{{url_for('static', filename='login.js')}}"></script>
+<script src="{{url_for('static', filename='forms.js')}}"></script>
+<script src="{{url_for('static', filename='photos.js')}}"></script>
 <script>
-// if appropriate, changes src of #photo from link to served file
-(function() {
-	if ('{{picture.serve_type}}' === 'upload') {
-
-		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
-	}
-})();
+	displayBasedOnLogin("{{client_login_session['message']}}");
+	setPhotoSRC("{{picture.text}}", 'photo', "{{picture.serve_type}}");
 </script>
 </body>
 </html>

@@ -104,8 +104,9 @@
 	<div class='stats'>
 
 		<div class='photo'>
-			<img id='photo' src="{{picture.text}}" alt='[picture of {{baseMenuItem.name}}]' max-width=100%>
+			<img id='photo' src="" alt='[picture of {{baseMenuItem.name}}]' max-width=100%>
 		</div>
+		<span class='hiddenClass' id='picUploadPath'>{{url_for('uploaded_picture', filename="")}}</span>
 
 		<p>Stats for base menu item '{{baseMenuItem.name}}':</p>
 		<ul>
@@ -148,19 +149,11 @@
 		</li>
 	</ul>
 	</div>
-<script src="{{url_for('static', filename='login.js')}}">
-</script>
-<script>displayBasedOnLogin("{{client_login_session['message']}}");
-</script>
+<script src="{{url_for('static', filename='login.js')}}"></script>
+<script src="{{url_for('static', filename='photos.js')}}"></script>
 <script>
-	// (could not get this to work properly in external .js file --
-	//  the setAttribute would take this page's url and append the "url for" part)
-  	// if appropriate, changes src of #photo from link to served file
-    if ('{{picture.serve_type}}' === 'upload') {
-
-    	console.log("is upload");
-		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
-    }
+	displayBasedOnLogin("{{client_login_session['message']}}");
+	setPhotoSRC("{{picture.text}}", 'photo', "{{picture.serve_type}}");
 </script>
 </body>
 </html>

@@ -118,8 +118,9 @@
 			Current Picture:
 		</p>
 		<div class='photo'>
-			<img id='photo' src="{{picture.text}}" alt='[picture of {{user.name}}]' max-width=100%>
+			<img id='photo' src="" alt='[picture of {{user.name}}]' max-width=100%>
 		</div>
+		<span class='hiddenClass' id='picUploadPath'>{{url_for('uploaded_picture', filename="")}}</span>
 
 		<p>Change Your Picture to (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input type='file' id='pictureFile' optional maxlength='300' name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
@@ -135,18 +136,12 @@
 
 	</form>
 </div>
-<script src="{{url_for('static', filename='login.js')}}">
-</script>
-<script src="{{url_for('static', filename='forms.js')}}">
-</script>
-<script>displayBasedOnLogin({{intBooleanLoggedIn}});
-</script>
+<script src="{{url_for('static', filename='login.js')}}"></script>
+<script src="{{url_for('static', filename='forms.js')}}"></script>
+<script src="{{url_for('static', filename='photos.js')}}"></script>
 <script>
-	// (could not get this to work properly in external .js file -- the setAttribute would append the "url for" to the page's url and insert that in the src instead of just the url_for. if appropriate, changes src of #photo from link to served file
-    if ('{{picture.serve_type}}' === 'upload') {
-
-		document.getElementById("photo").setAttribute("src", "{{url_for('uploaded_picture', filename=picture.text)}}");
-    }
+	displayBasedOnLogin("{{client_login_session['message']}}");
+	setPhotoSRC("{{picture.text}}", 'photo', "{{picture.serve_type}}");
 </script>
 </body>
 </html>

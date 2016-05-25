@@ -34,6 +34,8 @@ li				{margin: 0 0 3px 0;}
 				 font-style: italic; cursor: pointer;}
 .homeLinks a    {font-family: 'Georgia', serif; color: #ffffff; font-size: .75em;}
 
+/* could consolidate the hidden classes */
+.hiddenClass	{display: none;}
 .hideLoggedIn	{}
 .hideLoggedOut	{}
 .hideIfOwner 	{}
