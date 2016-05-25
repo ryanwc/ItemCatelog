@@ -113,68 +113,31 @@ function getTableJSON(tableName, callBackFunction) {
     xhttp.send();
 }
 
+// could refactor this more to be more concise like the server side code
+// but not sure it is worth it
 function checkForm(form) {
 
-    // would it be better to have a separate function for each form?
-    // or do careful refactoring for re-used code?
     if (form.id == 'editUserForm') {
 
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var name = document.getElementById("name").value;
 
-        if (name.length > 0) {
+        // does not check for illegal chars 
+        // (but this is done on server side)
+        if (!validateName(name, 30, false, false)) {
 
-            if (name.length > 30) {
-
-                window.alert("Name is too long");
-                return false;
-            }
+            return false;
         }
-        
-        if (picFile.length > 0) {
 
-            if (picFile.length < 5) {
+        if (!validatePictureFile(picFile, 300, false)) {
 
-                window.alert("Uploaded pic was in invalid format");
-                return false;    
-            }
-            else if (picFile.length == 5) {
-
-                if (picFile.substring(1, 5).toLowerCase() != '.png') {
-
-                    window.alert("Uploaded pic was in invalid format");
-                    return false;          
-                }
-            }
-            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
-
-                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
-                return false;
-            }
+            return false;
         }
-        else if (picLink.length > 0) {
             
-            if (picLink.length < 8) {
+        if (!validatePictureLink(picLink, 300, false)) {
 
-                window.alert("Pic link is not a valid url");
-                return false;
-            }
-
-            if (picLink.substring(0,7) != 'http://' ||
-                picLink.substring(0,8) != 'https://') {
-
-                window.alert("Link must start with 'http://' or 'https://'");
-                return false;
-            }
-
-            if (picLink.length > 300) {
-
-                window.alert("Pic link is too long")
-                return false;
-            }
+            return false;
         }
 
         if (name == 'Ryan Connor') {
@@ -192,106 +155,36 @@ function checkForm(form) {
         var picLink = document.getElementById("pictureLink").value;
         var price = document.getElementById("price").value;
         var menuSectionID = document.getElementById("menuSection").value;
+        var menuSectionIDs = document.getElementsByClass("menuSectionID");
 
-        if (name.length > 0) {
+        if (!validateName(name, 80, false, false) {
 
-            if (name.length > 80) {
-
-                window.alert("Name is too long");
-                return false;
-            }
+            return false;
         }
 
-        if (menuSectionID.length > 0) {
+        if (!validateSelection(menuSectionID, menuSectionIDs, true)) {
 
-            var isValidMenuSectionID = false;
-            var menuSectionIDs = document.getElementsByClass("menuSectionID");
-
-            for (i = 0; i < menuSectionIDs.length; i++) {
-
-                if (menuSectionID == menuSectionIDs[i].value) {
-
-                    isValidMenuSectionID = true;
-                    break;
-                }
-            }
-
-            if (!isValidMenuSectionID) {
-
-                return false;
-            }
+            return false;
         }
-        
-        if (description.length > 0) {
+    
+        if (!validateDescription(description, maxlength, false)) {
 
-            if (description.length > 250) {
-
-                window.alert("Description is too long");
                 return false;
-            }
-        }
-        
-        if (price.length > 0) {
-
-            var priceMatch = price.match(/[0-9]*(?:.[0-9][0-9])?/);
-
-            if (priceMatch[0] != price) {
-
-                window.alert("Price is in invalid format");
-                return false;
-            }
-
-            if (price.length > 20) {
-
-                window.alert("Price is too long");
-                return false;
-            }
         }
 
-        if (picFile.length > 0) {
+        if (!validatePrice(price, 20, false)) {
 
-            if (picFile.length < 5) {
-
-                window.alert("Uploaded pic was in invalid format");
-                return false;    
-            }
-            else if (picFile.length == 5) {
-
-                if (picFile.substring(1, 5).toLowerCase() != '.png') {
-
-                    window.alert("Uploaded pic was in invalid format");
-                    return false;          
-                }
-            }
-            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
-
-                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
-                return false;
-            }
+            return false;
         }
-        else if (picLink.length > 0) {
+
+        if (!validatePictureFile(picFile, 300, false)) {
+
+            return false;
+        }
                  
+        if (!validatePictureLink(picLink, 300. false)) {
 
-            if (picLink.length < 8) {
-
-                window.alert("Pic link is not a valid url");
-                return false;
-            }
-
-            if (picLink.substring(0,7) != 'http://' ||
-                picLink.substring(0,8) != 'https://') {
-
-                window.alert("Link must start with 'http://' or 'https://'");
-                return false;
-            }
-
-            if (picLink.length > 300) {
-
-                window.alert("Pic link is too long")
-                return false;
-            }
+            return false;
         }
 
         return true;
@@ -302,78 +195,26 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var cuisineID = document.getElementById("cuisine").value;
+        var cuisineIDs = document.getElementsByClass("cuisineID");
 
-        if (name.length > 0) {
+        if (!validateName(name, 100, false, false)) {
 
-            if (name.length > 100) {
-
-                window.alert("Name is too long");
-                return false;               
-            }
+            return false;               
         }
 
-        if (cuisineID.length > 0) {
+        if (!validateSelection(cuisineID, cuisineIDs, true)) {
 
-            var isValidCuisineID = false;
-            var cuisineIDs = document.getElementsByClass("cuisineID");
-
-            for (i = 0; i < cuisineIDs.length; i++) {
-
-                if (cuisineID == cuisineIDs[i].value) {
-
-                isValidCuisineID = true;
-                break;
-            }
-
-            if (!isValidCuisineID) {
-
-                return false;
-            }
+            return false;
         }
-        
-        if (picFile.length > 0) {
 
-            if (picFile.length < 5) {
+        if (!validatePictureFile(picFile, 300, false)) {
 
-                window.alert("Uploaded pic was in invalid format");
-                return false;    
-            }
-            else if (picFile.length == 5) {
-
-                if (picFile.substring(1, 5).toLowerCase() != '.png') {
-
-                    window.alert("Uploaded pic was in invalid format");
-                    return false;          
-                }
-            }
-            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
-
-                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
-                return false;
-            }
+            return false;
         }
-        else if (picLink.length > 0) {
                  
-            if (picLink.length < 8) {
+        if (!validatePictureLink(picLink, 300, false)) {
 
-                window.alert("Pic link is not a valid url");
-                return false;
-            }
-
-            if (picLink.substring(0,7) != 'http://' ||
-                picLink.substring(0,8) != 'https://') {
-
-                window.alert("Link must start with 'http://' or 'https://'");
-                return false;
-            }
-
-            if (picLink.length > 300) {
-
-                window.alert("Pic link is too long")
-                return false;
-            }
+            return false;
         }
         
         return true;
@@ -381,27 +222,10 @@ function checkForm(form) {
     else if (form.id == 'editCuisineForm') {
 
         var name = document.getElementById("name").value;
-        var uniqueAlert = document.getElementById("nameUniqueAlert").innerHTML;
-        var nameIsUnique = false;
-        
-        if (uniqueAlert == 'OK: Not in use yet') {
 
-            nameIsUnique = true;
-        }
-        
-        if (name.length > 0){
+        if (!validateName(name, 80, false, true)) {
 
-            if (name > 80) {
-
-                window.alert("Name is too long");
-                return false;
-            }
-            
-            if (!nameIsUnique) {
-
-                window.alert("Name is not unique");
-                return false;
-            }
+            return false;
         }
 
         return true;
@@ -409,120 +233,41 @@ function checkForm(form) {
     else if (form.id == 'editBaseMenuItemForm') {
 
         var name = document.getElementById("name").value;
-        var uniqueAlert = document.getElementById("nameUniqueAlert").innerHTML;
-
         var description = document.getElementById("description").value;
-
         var price = document.getElementById("price").value;
-
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
-
         var menuSectionID = document.getElementById("menuSection").value;
+        var menuSectionIDs = document.getElementsByClass("menuSectionID");
 
-        if (name.length > 0) {
+        if (!validateName(name, 80, false, true)) {
 
-            if (name.length > 80) {
-
-                window.alert("Name is too long");
-                return false;
-            }
-            
-            if (uniqueAlert != 'OK: Not in use yet') {
-
-                window.alert("Name is not unique");
-                return false;
-            }
+            return false;
         }
 
-        if (menuSectionID.length > 0) {
+        if (!validateSelection(menuSectionID, menuSectionIDs, true)) {
 
-            var isValidMenuSectionID = false;
-            var menuSectionIDs = document.getElementsByClass("menuSectionID");
-
-            for (i = 0; i < menuSectionIDs.length; i++) {
-
-                if (menuSectionID == menuSectionIDs[i].value) {
-
-                isValidMenuSectionID = true;
-                break;
-            }
-
-            if (!isValidMenuSectionID) {
-
-                return false;
-            }
+            return false;
         }
         
-        if (description.length > 0) {
+        if (!validateDescription(description, 250, false)) {
 
-            if (description.length > 250) {
-
-                return false;
-            }
+            return false;
         }
         
-        if (price.length > 0) {
-            
-            var priceMatch = price.match(/[0-9]*(?:.[0-9][0-9])?/);
-            
-            if (priceMatch[0] != price) {
+        if (!validatePrice(price, 20, false)) {
 
-                window.alert("Price is in invalid format");
-                return false;
-            }
-
-            if (price.length > 20) {
-
-                window.alert("Price is too long");
-                return false;
-            }
+            return false;
         }
-            
-        if (picFile.length > 0) {
 
-            if (picFile.length < 5) {
+        if (!validatePictureFile(picFile, 300, false)) {
 
-                window.alert("Uploaded pic was in invalid format");
-                return false;    
-            }
-            else if (picFile.length == 5) {
-
-                if (picFile.substring(1, 5).toLowerCase() != '.png') {
-
-                    window.alert("Uploaded pic was in invalid format");
-                    return false;          
-                }
-            }
-            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
-
-                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
-                return false;
-            }
+            return false;
         }
-        else if (picLink.length > 0) {
-                 
+   
+        if (!validatePictureLink(picLink, 300, false)) {
 
-            if (picLink.length < 8) {
-
-                window.alert("Pic link is not a valid url");
-                return false;
-            }
-
-            if (picLink.substring(0,7) != 'http://' ||
-                picLink.substring(0,8) != 'https://') {
-
-                window.alert("Link must start with 'http://' or 'https://'");
-                return false;
-            }
-
-            if (picLink.length > 300) {
-
-                window.alert("Pic link is too long")
-                return false;
-            }
+            return false;
         }
         
         return true;
@@ -531,31 +276,11 @@ function checkForm(form) {
 
         var name = document.getElementById("name").value;
         
-        if (name.length < 1) {
+        if (!validateName(name, 80, true, true)) {
 
-            window.alert("Please enter a name");
             return false;
         }
 
-        var uniqueAlert = document.getElementById("nameUniqueAlert").innerHTML;
-        var nameIsUnique = false;
-
-        if (uniqueAlert == 'OK: Not in use yet') {
-
-            nameIsUnique = true;
-        }
-
-        if (name > 80) {
-
-            window.alert("Name is too long");
-            return false;
-        }
-            
-        if (!nameIsUnique) {
-
-            window.alert("Name is not unique");
-            return false;
-        }
         return true;
     }
     else if (form.id == 'addRestaurantForm') {
@@ -564,89 +289,24 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var cuisineID = document.getElementById("cuisine").value;
-        var isValidCuisineID = false;
         var cuisineIDs = document.getElementsByClass("cuisineID");
 
-        if (name.length < 1) {
-
-            window.alert("Please provide a name");
-            return false;
-        }
-
-        if (cuisineID.length < 1) {
-
-            window.alert("Please provide a cuisine");
-            return false;
-        }
-
-        if (picFile.length < 1 && picLink.length < 1) {
-
-            window.alert("Please provide a picutre");
-            return false;
-        }
-
-
-        if (name.length > 100) {
-
-            window.alert("Name is too long");
-            return false;               
-        }
-
-        for (i = 0; i < cuisineIDs.length; i++) {
-
-            if (cuisineID == cuisineIDs[i].value) {
-
-                isValidCuisineID = true;
-                break;
-            }
-        }
-
-        if (!isValidCuisineID) {
+        if (!validateName(name, 100, true, false)) {
 
             return false;
         }
-        
-        if (picFile.length > 0) {
 
-            if (picFile.length < 5) {
+        if (!validateSelection(cuisineID, cuisineIDs, true)) {
 
-                window.alert("Uploaded pic was in invalid format");
-                return false;    
-            }
-            else if (picFile.length == 5) {
-
-                if (picFile.substring(1, 5).toLowerCase() != '.png') {
-
-                    window.alert("Uploaded pic was in invalid format");
-                    return false;          
-                }
-            }
-            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
-
-                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
-                return false;
-            }
+            return false;
         }
-        else {
-                 
-            if (picLink.length < 8) {
 
-                window.alert("Pic link is not a valid url");
-                return false;
-            }
+        // one of these is required
+        // so pass inner one required=true
+        if (!validatePictureFile(picFile, 300, false) {
 
-            if (picLink.substring(0,7) != 'http://' ||
-                picLink.substring(0,8) != 'https://') {
+            if (!validatePictureLink(picLink, 300, true)) {
 
-                window.alert("Link must start with 'http://' or 'https://'");
-                return false;
-            }
-
-            if (picLink.length > 300) {
-
-                window.alert("Pic link is too long")
                 return false;
             }
         }
@@ -656,135 +316,37 @@ function checkForm(form) {
     else if (form.id == 'addBaseMenuItemForm') {
 
         var name = document.getElementById("name").value;
-        var uniqueAlert = document.getElementById("nameUniqueAlert").innerHTML;
-
         var description = document.getElementById("description").value;
-
         var price = document.getElementById("price").value;
-
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
-
         var menuSectionID = document.getElementById("menuSection").value;
-        var isValidMenuSectionID = false;
         var menuSectionIDs = document.getElementsByClass("menuSectionID");
 
-        if (name.length < 1) {
-
-            window.alert("Please provide name");
-            return false;           
-        }
-
-        if (description.length < 1) {
-
-            window.alert("Please provide description");
-            return false; 
-        }
-
-        if (price.length < 1) {
-
-            window.alert("Please provide price");
-            return false; 
-        }
-
-        if (menuSection.length < 1) {
-
-            window.alert("Please provide a menu section");
-            return false; 
-        }
-
-        if (picFile.length < 1 && picLink < 1) {
-
-            window.alert("Please provide picture");
-            return false; 
-        }
-
-        if (name.length > 80) {
-
-            window.alert("Name is too long");
-            return false;
-        }
-            
-        if (uniqueAlert != 'OK: Not in use yet') {
-
-            window.alert("Name is not unique");
-            return false;
-        }
-
-        for (i = 0; i < menuSectionIDs.length; i++) {
-
-            if (menuSectionID == menuSectionIDs[i].value) {
-
-                isValidMenuSectionID = true;
-                break;
-            }
-        }
-
-        if (!isValidMenuSectionID) {
+        if (!validateName(name, 80, true, true)) {
 
             return false;
         }
 
-        if (description.length > 250) {
+        if (!validateDescription(description, 250, true)) {
 
             return false;
         }
-            
-        var priceMatch = price.match(/[0-9]*(?:.[0-9][0-9])?/);
-            
-        if (priceMatch[0] != price) {
 
-            window.alert("Price is in invalid format");
+        if (!validatePrice(price, 20, true)) {
+
             return false;
         }
 
-        if (price.length > 20) {
+        if (!validateSelection(menuSectionID, menuSectionIDs, true)) {
 
-            window.alert("Price is too long");
             return false;
         }
-            
-        if (picFile.length > 0) {
 
-            if (picFile.length < 5) {
+        if (!validatePictureFile(picFile, 300, false)) {
 
-                window.alert("Uploaded pic was in invalid format");
-                return false;    
-            }
-            else if (picFile.length == 5) {
+            if (!validatePictureLink(picLink, 300, true)) {
 
-                if (picFile.substring(1, 5).toLowerCase() != '.png') {
-
-                    window.alert("Uploaded pic was in invalid format");
-                    return false;          
-                }
-            }
-            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
-
-                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
-                return false;
-            }
-        }
-        else {     
-
-            if (picLink.length < 8) {
-
-                window.alert("Pic link is not a valid url");
-                return false;
-            }
-
-            if (picLink.substring(0,7) != 'http://' ||
-                picLink.substring(0,8) != 'https://') {
-
-                window.alert("Link must start with 'http://' or 'https://'");
-                return false;
-            }
-
-            if (picLink.length > 300) {
-
-                window.alert("Pic link is too long")
                 return false;
             }
         }
@@ -798,109 +360,43 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var price = document.getElementById("price").value;
-
         var menuSectionID = docuemnt.getElementById("menuSection").value;
+        var menuSectionIDs = document.getElementsByClass("menuSectionID");
+        var baseMenuItemID = document.getElementById("baseMenuItemID").value;
+        var baseMenuItemIDs = document.getElementsByClass("baseMenuItemIDs");
+
+        if (!validateSelection(baseMenuItemID, baseMenuItemIDs, true)) {
+
+            return false;
+        }
 
         // don't need to alert empty input
         // defaults to base item attribute
 
-        if (name.length > 0) {
+        if (!validateName(name, 80, false)) {
 
-            if (name.length > 80) {
-
-                window.alert("Name is too long");
-                return false;
-            }
+            return false;
         }
 
-        if (menuSectionID.length > 0) {
+        if (!validateSelection(menuSectionID, menuSectionIDs, true)) {
 
-            var isValidMenuSectionID = false;
-            var menuSectionIDs = document.getElementsByClass("menuSectionID");
-
-            for (i = 0; i < menuSectionIDs.length; i++) {
-
-                if (menuSectionID == menuSectionIDs[i].value) {
-
-                    isValidMenuSectionID = true;
-                    break;
-                }
-            }
-
-            if (!isValidMenuSectionID) {
-
-                return false;
-            }
+            return false;
         }
         
-        if (description.length > 0) {
+        if (!validateDescription(description, 250, false)) {
 
-            if (description.length > 250) {
-
-                window.alert("Description is too long");
-                return false;
-            }
+            return false;
         }
         
-        if (price.length > 0) {
+        if (!validatePrice(price, 20, false)) {
 
-            var priceMatch = price.match(/[0-9]*(?:.[0-9][0-9])?/);
-
-            if (priceMatch[0] != price) {
-
-                window.alert("Price is in invalid format");
-                return false;
-            }
-
-            if (price.length > 20) {
-
-                window.alert("Price is too long");
-                return false;
-            }
+            return false;
         }
 
-        if (picFile.length > 0) {
+        if (!validatePictureFile(picFile, 300, false)) {
 
-            if (picFile.length < 5) {
+            if (!validatePictureLink(picLink, 300, false)) {
 
-                window.alert("Uploaded pic was in invalid format");
-                return false;    
-            }
-            else if (picFile.length == 5) {
-
-                if (picFile.substring(1, 5).toLowerCase() != '.png') {
-
-                    window.alert("Uploaded pic was in invalid format");
-                    return false;          
-                }
-            }
-            else if (picFile.substring(picFile.length-5, picFile.length).toLowerCase() != '.jpeg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.jpg' &&
-                     picFile.substring(picFile.length-4, picFile.length).toLowerCase() != '.png') {
-
-                window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
-                return false;
-            }
-        }
-        else if (picLink.length > 0) {
-                 
-
-            if (picLink.length < 8) {
-
-                window.alert("Pic link is not a valid url");
-                return false;
-            }
-
-            if (picLink.substring(0,7) != 'http://' ||
-                picLink.substring(0,8) != 'https://') {
-
-                window.alert("Link must start with 'http://' or 'https://'");
-                return false;
-            }
-
-            if (picLink.length > 300) {
-
-                window.alert("Pic link is too long")
                 return false;
             }
         }
@@ -912,4 +408,210 @@ function checkForm(form) {
         window.alert("Sorry, this form is not supported yet.")
         return false;
     }
+}
+
+function validateName(name, maxlength, required, unique) {
+
+    if (name.length < 1) {
+
+        if (required) {
+
+            window.alert("You must provide a name");
+            return false;
+        }
+        else {
+
+            return true;
+        }
+    }
+
+    if (unique) {
+
+        var uniqueAlert = document.getElementById('nameUniqueAlert').innerHTML;
+
+        if (uniqueAlert != 'OK: Not in use yet') {
+
+            window.alert("Name is not unique");
+            return false;
+        }
+    }
+
+    if (name.length > 30) {
+
+        window.alert("Name is too long");
+        return false;
+    }
+
+    return true;
+}
+
+function validateDescription(description, maxlength, required) {
+
+    if (description.length < 1) {
+
+        if (required) {
+
+            window.alert("You must provide a description");
+            return false;
+        }
+        else {
+
+            return true;
+        }
+    }
+
+    if (description.length > maxlength) {
+
+        window.alert("Description is too long");
+        return false;
+    }
+
+    return true;
+}
+
+function validatePrice(price, maxlength, required) {
+
+    if (price.length < 1) {
+
+        if (required) {
+
+            window.alert("You must provide a price");
+            return false;
+        }
+        else {
+
+            return true;
+        }
+    }
+
+    var priceMatch = price.match(/[0-9]*(?:.[0-9][0-9])?/);
+
+    if (priceMatch[0] != price) {
+
+        window.alert("Price is in invalid format");
+        return false;
+    }
+
+    if (price.length > 20) {
+
+        window.alert("Price is too long");
+        return false;
+    }
+
+    return true;
+}
+
+// doesn't really capture the name.  Apprently, from the form,
+// the name is something like "FakeC://name..."
+// but maybe this could change from system to system?
+function validatePictureFile(pictureFileName, maxlength, required) {
+
+    if (pictureFileName.length < 1) {
+
+        if (required) {
+
+            window.alert("You must provide a picture file");
+            return false;
+        }
+        else {
+
+            return true;
+        }
+    }
+
+    if (pictureFileName.length < 5) {
+
+        window.alert("Uploaded pic was in invalid format");
+        return false;    
+    }
+
+    if (pictureFile.length > maxlength) {
+
+        window.alert("Picture file name is too long");
+        return false;
+    }
+    
+    if (pictureFileName.length == 5) {
+
+        if (pictureFileName.substring(1, 5).toLowerCase() != '.png') {
+
+            window.alert("Uploaded pic is in invalid format");
+            return false;          
+        }
+    }
+    
+    // make sure it's an allowed extension
+    if (pictureFileName.substring(pictureFileName.length-5, pictureFileName.length).toLowerCase() != '.jpeg' &&
+        pictureFileName.substring(pictureFileName.length-4, pictureFileName.length).toLowerCase() != '.jpg' &&
+        pictureFileName.substring(pictureFileName.length-4, pictureFileName.length).toLowerCase() != '.png') {
+
+        window.alert("Uploaded pic must be .png, .jpeg, or .jpg");
+        return false;
+    }
+
+    return true;
+}
+
+function validatePictureLink(pictureLink, maxlength, required) {
+
+    if (pictureLink.length < 1) {
+
+        if (required) {
+
+            window.alert("You must provide a picture");
+            return false;
+        }
+        else {
+
+            return true;
+        }
+    }
+
+    if (pictureLink.length < 8) {
+
+        window.alert("Pic link is not a valid url");
+        return false;
+    }
+
+    if (pictureLink.substring(0,7) != 'http://' ||
+        pictureLink.substring(0,8) != 'https://') {
+
+        window.alert("Link must start with 'http://' or 'https://'");
+        return false;
+    }
+
+    if (pictureLink.length > maxlength) {
+
+        window.alert("Pic link is too long")
+        return false;
+    }
+
+    return true;
+}
+
+function validateSelection(userSelectedValue, validSelectNodes, required) {
+
+    if (userSelectedValue.length < 1) {
+
+        if (required) {
+
+            window.alert("You didn't select an option from a dropdown menu");
+            return false;
+        }
+        else {
+
+            return true;
+        }
+    }
+
+    for (i = 0; i < validSelectNodes.length; i++) {
+
+        if (userSelectedValue == validSelectNodes[i].value) {
+
+            return true;
+        }
+    }
+
+    window.alert("You selected an invalid dropdown menu selection");
+    return false;
 }

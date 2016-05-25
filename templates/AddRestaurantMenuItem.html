@@ -119,7 +119,7 @@
 		<select required id='baseMenuItemID' name="baseMenuItemID" oninput='
 			placeholdWithBaseMenuItem(); loadPicture(this.value, document.getElementById(this.value + "picServe_Type").innerHTML);'>
   		{% for baseMenuItem in baseMenuItems %}
-  			<option id="baseMenuItem{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
+  			<option class='baseMenuItemID' id="baseMenuItem{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
   		{% endfor %}
 		</select>
 
