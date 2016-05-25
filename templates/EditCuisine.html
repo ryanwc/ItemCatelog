@@ -106,7 +106,7 @@
 		</p>
 
 		<p>Change Cuisine Name to:</p>
-		<input id='name' optional type='text' maxlength='80' size='50' name='name' placeholder='{{cuisine.name}}'>
+		<input id='name' optional type='text' maxlength='80' size='50' name='name' placeholder='{{cuisine.name}}' oninput="realTimeUniqueCheck($('#name').val(), 'Cuisine', 'name', $('#name'));">
 		<span id='nameUniqueAlert'>OK: Not in use yet</span>
 		</br>
 		</br>
@@ -120,12 +120,6 @@
 <script src="{{url_for('static', filename='forms.js')}}">
 </script>
 <script>displayBasedOnLogin("{{client_login_session['message']}}");
-</script>
-<script>
-$('#name').on('input', function() { 
-
-	realTimeUniqueCheck($(this).val(), 'Cuisine', 'name', $(this));
-});
 </script>
 </body>
 </html>

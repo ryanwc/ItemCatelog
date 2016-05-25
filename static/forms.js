@@ -47,16 +47,19 @@ function setPicturePlaceHolder(picJSONpath) {
 }
 
 // get data with ajax call, check uniqueness, and set HTML form as appropriate
-// input node must be jQuery object b/c eventually uses .addClass/.removeClass method
+// input node must be jQuery object b/c eventually uses addClass()/removeClass() method
+// is there an easy way to do addClass() / removeClass() in plain JS?
 function realTimeUniqueCheck(columnValue, tableName, columnName, inputNode) {
 
+    console.log("doing it");
+    console.log(inputNode);
     // define callback to execute upon successful ajax table retrieval
     var sendTableToCheckUniqueAndSetHTML = function(JSONTable) {
 
         checkUniqueAndSetHTML(columnValue, JSONTable, columnName, inputNode);
     };
 
-    // do the ajax table retrieval and return 
+    // do the ajax table retrieval 
     getTableJSON(tableName, sendTableToCheckUniqueAndSetHTML);
 }
 

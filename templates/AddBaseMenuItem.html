@@ -101,7 +101,7 @@
 		</h3>
 
 		<p>Item Name:</p>
-		<input class='unique' id='name' type='text' required maxlength='80' size='30' name='name'>
+		<input class='unique' id='name' type='text' required maxlength='80' size='30' name='name' oninput="realTimeUniqueCheck($('#name').val(), 'BaseMenuItem', 'name', $('#name'));">
 		<span id='nameUniqueAlert'>OK: Not in use yet</span>
 		
 		<p>Item Description:</p>
@@ -136,12 +136,6 @@
 <script src="{{url_for('static', filename='forms.js')}}">
 </script>
 <script>displayBasedOnLogin("{{client_login_session['message']}}");
-</script>
-<script>
-$('#name').on('input', function() { 
-
-	realTimeUniqueCheck($(this).val(), 'BaseMenuItem', 'name', $(this));
-});
 </script>
 </body>
 </html>
