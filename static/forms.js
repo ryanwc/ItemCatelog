@@ -191,12 +191,33 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var price = document.getElementById("price").value;
+        var menuSectionID = document.getElementById("menuSection").value;
 
         if (name.length > 0) {
 
             if (name.length > 80) {
 
                 window.alert("Name is too long");
+                return false;
+            }
+        }
+
+        if (menuSectionID.length > 0) {
+
+            var isValidMenuSectionID = false;
+            var menuSectionIDs = document.getElementsByClass("menuSectionID");
+
+            for (i = 0; i < menuSectionIDs.length; i++) {
+
+                if (menuSectionID == menuSectionIDs[i].value) {
+
+                    isValidMenuSectionID = true;
+                    break;
+                }
+            }
+
+            if (!isValidMenuSectionID) {
+
                 return false;
             }
         }
@@ -280,6 +301,7 @@ function checkForm(form) {
         var name = document.getElementById("name").value;
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
+        var cuisineID = document.getElementById("cuisine").value;
 
         if (name.length > 0) {
 
@@ -287,6 +309,25 @@ function checkForm(form) {
 
                 window.alert("Name is too long");
                 return false;               
+            }
+        }
+
+        if (cuisineID.length > 0) {
+
+            var isValidCuisineID = false;
+            var cuisineIDs = document.getElementsByClass("cuisineID");
+
+            for (i = 0; i < cuisineIDs.length; i++) {
+
+                if (cuisineID == cuisineIDs[i].value) {
+
+                isValidCuisineID = true;
+                break;
+            }
+
+            if (!isValidCuisineID) {
+
+                return false;
             }
         }
         
@@ -377,6 +418,8 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
 
+        var menuSectionID = document.getElementById("menuSection").value;
+
         if (name.length > 0) {
 
             if (name.length > 80) {
@@ -388,6 +431,25 @@ function checkForm(form) {
             if (uniqueAlert != 'OK: Not in use yet') {
 
                 window.alert("Name is not unique");
+                return false;
+            }
+        }
+
+        if (menuSectionID.length > 0) {
+
+            var isValidMenuSectionID = false;
+            var menuSectionIDs = document.getElementsByClass("menuSectionID");
+
+            for (i = 0; i < menuSectionIDs.length; i++) {
+
+                if (menuSectionID == menuSectionIDs[i].value) {
+
+                isValidMenuSectionID = true;
+                break;
+            }
+
+            if (!isValidMenuSectionID) {
+
                 return false;
             }
         }
@@ -501,10 +563,19 @@ function checkForm(form) {
         var name = document.getElementById("name").value;
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
+        var cuisineID = document.getElementById("cuisine").value;
+        var isValidCuisineID = false;
+        var cuisineIDs = document.getElementsByClass("cuisineID");
 
         if (name.length < 1) {
 
             window.alert("Please provide a name");
+            return false;
+        }
+
+        if (cuisineID.length < 1) {
+
+            window.alert("Please provide a cuisine");
             return false;
         }
 
@@ -519,6 +590,20 @@ function checkForm(form) {
 
             window.alert("Name is too long");
             return false;               
+        }
+
+        for (i = 0; i < cuisineIDs.length; i++) {
+
+            if (cuisineID == cuisineIDs[i].value) {
+
+                isValidCuisineID = true;
+                break;
+            }
+        }
+
+        if (!isValidCuisineID) {
+
+            return false;
         }
         
         if (picFile.length > 0) {
@@ -580,6 +665,10 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
 
+        var menuSectionID = document.getElementById("menuSection").value;
+        var isValidMenuSectionID = false;
+        var menuSectionIDs = document.getElementsByClass("menuSectionID");
+
         if (name.length < 1) {
 
             window.alert("Please provide name");
@@ -598,6 +687,12 @@ function checkForm(form) {
             return false; 
         }
 
+        if (menuSection.length < 1) {
+
+            window.alert("Please provide a menu section");
+            return false; 
+        }
+
         if (picFile.length < 1 && picLink < 1) {
 
             window.alert("Please provide picture");
@@ -613,6 +708,20 @@ function checkForm(form) {
         if (uniqueAlert != 'OK: Not in use yet') {
 
             window.alert("Name is not unique");
+            return false;
+        }
+
+        for (i = 0; i < menuSectionIDs.length; i++) {
+
+            if (menuSectionID == menuSectionIDs[i].value) {
+
+                isValidMenuSectionID = true;
+                break;
+            }
+        }
+
+        if (!isValidMenuSectionID) {
+
             return false;
         }
 
@@ -690,6 +799,8 @@ function checkForm(form) {
         var picLink = document.getElementById("pictureLink").value;
         var price = document.getElementById("price").value;
 
+        var menuSectionID = docuemnt.getElementById("menuSection").value;
+
         // don't need to alert empty input
         // defaults to base item attribute
 
@@ -698,6 +809,26 @@ function checkForm(form) {
             if (name.length > 80) {
 
                 window.alert("Name is too long");
+                return false;
+            }
+        }
+
+        if (menuSectionID.length > 0) {
+
+            var isValidMenuSectionID = false;
+            var menuSectionIDs = document.getElementsByClass("menuSectionID");
+
+            for (i = 0; i < menuSectionIDs.length; i++) {
+
+                if (menuSectionID == menuSectionIDs[i].value) {
+
+                    isValidMenuSectionID = true;
+                    break;
+                }
+            }
+
+            if (!isValidMenuSectionID) {
+
                 return false;
             }
         }

@@ -113,7 +113,7 @@
 		<p>Item Menu Section:</p>
 		<select required id='menuSection' name="menuSection">
 			{% for menuSection in menuSections %}
-				<option id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
+				<option class='menuSectionID' id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
 			{% endfor %}
 		</select>
 

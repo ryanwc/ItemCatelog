@@ -125,9 +125,9 @@
 
 		<p>Change Item Menu Section:</p>
 		<select required id='menuSection' name="menuSection">
-			<option id="noChangeSection" value="-1">Do not change menu section</option> 
+			<option class='menuSectionID' id="noChangeSection" value="-1">Do not change menu section</option> 
 			{% for menuSection in menuSections %}
-				<option id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
+				<option class='menuSectionID' id='{{menuSection.name}}' value='{{menuSection.id}}'>{{menuSection.name}}</option>
 			{% endfor %}
 		</select>
 
