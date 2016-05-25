@@ -315,8 +315,8 @@ def cuisineJSON(cuisine_id):
                    Restaurants=[i.serialize for i in restaurants],
                    RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
 
-@app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/JSON/')
-def baseMenuItemJSON(cuisine_id, baseMenuItem_id):
+@app.route('/baseMenuItems/<int:baseMenuItem_id>/JSON/')
+def baseMenuItemJSON(baseMenuItem_id):
     baseMenuItem = RestaurantManager.\
         getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
     restaurantMenuItems = RestaurantManager.\
@@ -355,6 +355,11 @@ def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
 
     return jsonify(RestaurantMenuItem=restaurantMenuItem.serialize)
 
+@app.route('/pics/<int:picture_id>/JSON/')
+def restaurantMenuItemJSON(picture_id):
+    picture = RestaurantManager.getPicture(picture_id)
+
+    return jsonify(Picture=picture.serialize)
 
 ###
 ### Other endpoints
@@ -362,7 +367,7 @@ def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
 
 @app.route(app.config['UPLOAD_FOLDER']+'/<filename>/')
 def uploaded_picture(filename):
-    '''Serving an uploaded picture
+    '''Serve an uploaded picture
     '''
     return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 
 
@@ -733,7 +738,7 @@ def addRestaurant():
 
         restaurant_id = RestaurantManager.addRestaurant(
                             name=name,
-                            cuisine_id=cuisine.id,
+                            cuisine_id=cuisine_id,
                             user_id=login_session['user_id'],
                             picture_id=picture_id
                         )
@@ -990,7 +995,7 @@ def addBaseMenuItem(cuisine_id):
         for menuSection in menuSections:
             validMenuSectionIDs[str(menuSection.id)] = True
 
-        menuSection_id = validate(request.form['menuSection'],
+        menuSection_id = validateUserInput(request.form['menuSection'],
                 'menuSection_id', 'create', 'base menu item',
                 columnNameForMsg='menu section', required=True, 
                 validInputs=validMenuSectionIDs)
@@ -1082,6 +1087,8 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
 
     picture = RestaurantManager.getPicture(baseMenuItem.picture_id)
 
+    menuSections = RestaurantManager.getMenuSections()
+
     if request.method == 'POST':
 
         checkCSRFAttack(request.form['hiddenToken'],
@@ -1112,7 +1119,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
         # for 'do not change'
         validMenuSectionIDs['-1'] = True
 
-        newMenuSection_id = validate(request.form['menuSection'],
+        newMenuSection_id = validateUserInput(request.form['menuSection'],
                 'menuSection_id', 'edit', 'base menu item',
                 columnNameForMsg='menu section',
                 oldInput=str(oldMenuSection_id),
@@ -1164,7 +1171,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
             flash("changed price from '" + str(oldPrice) + "' to '" + \
                 str(newPrice) + "'")
 
-        if menuSection_id is not Non:
+        if newMenuSection_id is not None:
             flash("changed menu section")
 
         return redirect(url_for('baseMenuItem',
@@ -1176,6 +1183,7 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                                cuisine=cuisine,
                                hiddenToken=login_session['state'],
                                picture=picture,
+                               menuSections=menuSections,
                                client_login_session=client_login_session)
 
 @app.route('/cuisines/<int:cuisine_id>/<int:baseMenuItem_id>/delete/',
@@ -2126,8 +2134,6 @@ def validateUserPicture(CRUDtype, itemNameForMsg, file=None, link=None,
 
     if file:
 
-        print file.filename
-        print "tehre was a file"
         file.filename = bleach.clean(file.filename)
 
         if allowed_pic(file.filename):
@@ -2151,8 +2157,6 @@ def validateUserPicture(CRUDtype, itemNameForMsg, file=None, link=None,
 
         link = bleach.clean(link)
 
-        print "was link"
-        print link
         if maxlength:
             if len(link) > maxlength:
 

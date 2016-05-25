@@ -117,7 +117,7 @@
 
 		<p>Base Menu Item:</p>
 		<select required id='baseMenuItemID' name="baseMenuItemID" oninput='
-			placeholdWithBaseMenuItem(); loadPicture(this.value, document.getElementById(this.value + "picServe_Type").innerHTML);'>
+			placeholdWithBaseMenuItem(this.value);'>
   		{% for baseMenuItem in baseMenuItems %}
   			<option class='baseMenuItemID' id="baseMenuItem{{baseMenuItem.id}}" value="{{baseMenuItem.id}}">{{baseMenuItem.name}}</option>
   		{% endfor %}
@@ -130,7 +130,7 @@
 		<input optional id='description' type='text' maxlength='250' size='80' name='description' placeholder='Description'>
 
 		<p>Item Price (must containly only digits and a decimal point):</p>
-		<input id='price' type='text' maxlength='20' optional pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price'>
+		<input id='price' type='text' maxlength='20' optional pattern='[0-9]*(.[0-9][0-9])?' size='10' name='price' placeholder='Price'>
 
 		<p>Item Menu Section:</p>
 		<select class='menuSectionID' required id='menuSection' name="menuSectionID">
@@ -143,12 +143,13 @@
 			Base Menu Item Picture:
 		</p>
 		<div class='photo'>
-			<img id='photo' src="" alt='[picture of base menu item]' max-width=100%>
+			<img id='photo' src="{{url_for('uploaded_picture', filename="")}}" alt='[picture of base menu item]' max-width=100%>
 		</div>
+		<span id='picUploadPath'>{{url_for('uploaded_picture', filename="")}}</span>
 
 		<p>Item Picture (uploaded pics must be .jpg, .jpeg, or .png):</p>
 		<input id='pictureFile' type='file' optional name='pictureFile' accept='image/.jpg image/.jpeg image/.png'>
-		<div id='orText'>or provide link (must start with 'http://' or 'https://'):</div>
+		<div class='orText'>or provide link (must start with 'http://' or 'https://'):</div>
 		<input id='pictureLink' type='url' optional maxlength='300' size='80' pattern="https?://.+" name='pictureLink' placeholder='Link to item picture'>
 
 		<input type='hidden' name='hiddenToken' value='{{hiddenToken}}'>
@@ -159,59 +160,12 @@
 		<input type='submit' value='Create Restaurant Menu Item'>
 
 	</form>
-
-	<!--
-    # this could use improvement.
-    # needed because the select input element above would always pass a String value 
-    # to the 'oninput' JavaScript function, even if the input was actually a python
-    # list, dictionary, object serialized to JSON, or SQLAlchemy query object.
-    # Further, JSON.parse(str) runs into trouble with unicode, which the 
-    # serialize(self) function in python spits out for Strings. Plus, even after
-    # I've removed unicode and ensured the str for JSON.parse(str) is well-formed
-    # JSON, JSON.parse(str) returns a String instead of an Object, and therefore I 
-    # could not access any attribute/value pairs after parsing.
-    #
-    # Edit after learning more: should use ajax and JS/jQuery.
-	-->
-	<div id='baseMenuItemInfo' style='display: none;'>
-		{% for baseMenuItem in baseMenuItems %}
-		  	<div id="{{baseMenuItem.id}}name">{{baseMenuItem.name}}</div>
-		  	<div id="{{baseMenuItem.id}}description">{{baseMenuItem.description}}</div>
-  			<div id="{{baseMenuItem.id}}price">{{baseMenuItem.price}}</div>
-  			<div id="{{baseMenuItem.id}}menuSection">{{baseMenuItem.menuSection_id}}</div>
-  			<div id="{{baseMenuItem.id}}picText">{{baseMenuItem.picText}}</div>
-   			<div id="{{baseMenuItem.id}}picServe_Type">{{baseMenuItem.picServeType}}</div>
-  		{% endfor %}
-	</div>
 </div>
 <script src="{{url_for('static', filename='login.js')}}">
 </script>
 <script>displayBasedOnLogin("{{client_login_session['message']}}");
 </script>
 <script src="{{url_for('static', filename='forms.js')}}">
-</script>
-<script>
-	// (could not get this to work properly in external .js file --
-	//  the setAttribute would take this page's url and append the "url for" part)
-  	// if appropriate, changes src of #photo from link to served file
-function loadPicture(baseMenuItemID, serve_type) {
-
-	id = baseMenuItemID+"picText";
-
-    picText = document.getElementById(id).innerHTML;
-
-    if (serve_type === 'upload') {
-
-    	var partPath = "{{url_for('uploaded_picture',filename='')}}";
-    	partPath = partPath.substring(0, partPath.length-1);
-		var path = partPath.concat(picText);
-		document.getElementById("photo").setAttribute("src", path);
-    }
-    else {
-
-		document.getElementById("photo").setAttribute("src", picText);
-    }
-}
 </script>
 </body>
 </html>

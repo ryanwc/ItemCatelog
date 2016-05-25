@@ -1,20 +1,50 @@
-function placeholdWithBaseMenuItem() {
+// placehold form fields with the selected base menu item's attributes
+function placeholdWithBaseMenuItem(baseMenuItemID) {
 
-    // get the selected item
-    var baseMenuItemID = document.getElementById("baseMenuItemID").value;
+    var baseMenuItemJSONpath = '/baseMenuItems/' + baseMenuItemID + '/JSON/';
+    // [ajax call to get the info];
+    var setPlaceholders = function(itemJSONformat) {
 
-    // get the info
-    var placeholderName = document.getElementById(baseMenuItemID + "name").innerHTML;
-    var placeholderDescription = document.getElementById(baseMenuItemID + "description").innerHTML;
-    var placeholderPrice = document.getElementById(baseMenuItemID + "price").innerHTML;
-    var placeholderMenuSection = document.getElementById(baseMenuItemID + "menuSection").innerHTML;
+        itemDict = itemJSONformat['BaseMenuItem'];
 
-    // set the placeholders
-    document.getElementById("name").setAttribute("placeholder", placeholderName);
-    document.getElementById("description").setAttribute("placeholder", placeholderDescription);
-    document.getElementById("price").setAttribute("placeholder", placeholderPrice);
-    document.getElementById("menuSection").value = placeholderMenuSection;  
+        // set the non-picture placeholders
+        document.getElementById("name").setAttribute("placeholder", itemDict['name']);
+        document.getElementById("description").setAttribute("placeholder", itemDict['description']);
+        document.getElementById("price").setAttribute("placeholder", itemDict['price']);
+        document.getElementById("menuSection").value = itemDict['menuSection_id'];  
+
+        var picJSONpath = '/pics/' + itemDict['picture_id'] + "/JSON/";
+        setPicturePlaceHolder(picJSONpath);
+    }
+    
+    getRowJSON(baseMenuItemJSONpath, setPlaceholders);
 };
+
+// tricky to get jinja and javascript to work
+// together to serve uploaded pictures
+function setPicturePlaceHolder(picJSONpath) {
+
+    var setPlacehold = function(picJSONformat) {
+
+        var picDict = picJSONformat['Picture'];
+
+        if (picDict['serve_type'] == 'upload') {
+
+            var uploadPath = document.getElementById('picUploadPath').innerHTML;
+            var newSRC = uploadPath.substring(0,uploadPath.length-1);
+            newSRC = newSRC.concat(picDict['text']);
+            document.getElementById('photo').setAttribute("src", newSRC);
+        }
+        else if (picDict['serve_type'] == 'link') {
+
+            document.getElementById('photo').setAttribute("src", picDict['text']);
+        }
+
+        document.getElementById('pictureLink').setAttribute("placeholder", picDict['text']);
+    }
+
+    getRowJSON(picJSONpath, setPlacehold);
+}
 
 // get data with ajax call, check uniqueness, and set HTML form as appropriate
 // input node must be jQuery object b/c eventually uses .addClass/.removeClass method
@@ -78,6 +108,8 @@ function checkUnique(columnValue, JSONTableObj, column) {
 
 // get a JSON object representing a table in the database
 // and base the JSON to the callback
+// would first var 'tableJSONpath' be better insead of the if statements?
+// see, for example, function getRowJSON
 function getTableJSON(tableName, callBackFunction) {
 
     var xhttp = new XMLHttpRequest();
@@ -110,6 +142,32 @@ function getTableJSON(tableName, callBackFunction) {
     }
 
     xhttp.open("GET", path, true);
+    xhttp.send();
+}
+
+// get a JSON object representing a row in the database
+function getRowJSON(rowJSONpath, callBackFunction) {
+
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() {
+
+        if (xhttp.readyState == 4 && xhttp.status == 200) {
+
+            response = JSON.parse(xhttp.responseText)
+
+            if (typeof callBackFunction === 'function') {
+
+                callBackFunction(response);
+            }
+            else {
+
+                console.log("Callback was not a function");
+            }
+        }
+    }
+
+    xhttp.open("GET", rowJSONpath, true);
     xhttp.send();
 }
 
@@ -155,9 +213,9 @@ function checkForm(form) {
         var picLink = document.getElementById("pictureLink").value;
         var price = document.getElementById("price").value;
         var menuSectionID = document.getElementById("menuSection").value;
-        var menuSectionIDs = document.getElementsByClass("menuSectionID");
+        var menuSectionIDs = document.getElementsByClassName("menuSectionID");
 
-        if (!validateName(name, 80, false, false) {
+        if (!validateName(name, 80, false, false)) {
 
             return false;
         }
@@ -182,7 +240,7 @@ function checkForm(form) {
             return false;
         }
                  
-        if (!validatePictureLink(picLink, 300. false)) {
+        if (!validatePictureLink(picLink, 300, false)) {
 
             return false;
         }
@@ -195,7 +253,7 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var cuisineID = document.getElementById("cuisine").value;
-        var cuisineIDs = document.getElementsByClass("cuisineID");
+        var cuisineIDs = document.getElementsByClassName("cuisineID");
 
         if (!validateName(name, 100, false, false)) {
 
@@ -238,7 +296,7 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var menuSectionID = document.getElementById("menuSection").value;
-        var menuSectionIDs = document.getElementsByClass("menuSectionID");
+        var menuSectionIDs = document.getElementsByClassName("menuSectionID");
 
         if (!validateName(name, 80, false, true)) {
 
@@ -289,7 +347,7 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var cuisineID = document.getElementById("cuisine").value;
-        var cuisineIDs = document.getElementsByClass("cuisineID");
+        var cuisineIDs = document.getElementsByClassName("cuisineID");
 
         if (!validateName(name, 100, true, false)) {
 
@@ -303,7 +361,7 @@ function checkForm(form) {
 
         // one of these is required
         // so pass inner one required=true
-        if (!validatePictureFile(picFile, 300, false) {
+        if (!validatePictureFile(picFile, 300, false)) {
 
             if (!validatePictureLink(picLink, 300, true)) {
 
@@ -321,7 +379,7 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var menuSectionID = document.getElementById("menuSection").value;
-        var menuSectionIDs = document.getElementsByClass("menuSectionID");
+        var menuSectionIDs = document.getElementsByClassName("menuSectionID");
 
         if (!validateName(name, 80, true, true)) {
 
@@ -360,10 +418,10 @@ function checkForm(form) {
         var picFile = document.getElementById("pictureFile").value;
         var picLink = document.getElementById("pictureLink").value;
         var price = document.getElementById("price").value;
-        var menuSectionID = docuemnt.getElementById("menuSection").value;
-        var menuSectionIDs = document.getElementsByClass("menuSectionID");
+        var menuSectionID = document.getElementById("menuSection").value;
+        var menuSectionIDs = document.getElementsByClassName("menuSectionID");
         var baseMenuItemID = document.getElementById("baseMenuItemID").value;
-        var baseMenuItemIDs = document.getElementsByClass("baseMenuItemIDs");
+        var baseMenuItemIDs = document.getElementsByClassName("baseMenuItemIDs");
 
         if (!validateSelection(baseMenuItemID, baseMenuItemIDs, true)) {
 

@@ -114,8 +114,10 @@ function handleSignInResult(loginClass, result) {
 
 		if (resultObj['picture_serve_type'] == 'upload') {
 
+			// tricky to get jinja and javascript to work
+			// together to serve uploaded pictures
 			var currSRC = $('#signInPhoto').attr("src");
-			var path = currSRC.substring(0,currSRC.length-3);
+			var path = currSRC.substring(0,currSRC.length-1);
 			var newSRC = path.concat(resultObj['picture']);
     	    $('#signInPhoto').attr("src", newSRC);
 		}

@@ -28,7 +28,7 @@ class Picture(Base):
 				return {
 						'id': self.id,
 						'text': self.text,
-						'serve_type': self.type,
+						'serve_type': self.serve_type,
 				}
 
 class User(Base):

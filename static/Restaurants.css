@@ -65,6 +65,7 @@ li				{margin: 0 0 3px 0;}
 				 font-size: 180%; padding-top: 6px; visibility: hidden;
 				 font-weight: bold; padding-bottom: 36px;
 				 margin-left: 13%; margin-right: 13%}
+#picUploadpath	{display: none;}
 
 /* background for all input boxes */
 form input[type="text"] {
