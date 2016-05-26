@@ -47,7 +47,7 @@ class User(Base):
                         'name': self.name,
                         'id': self.id,
                         'email': self.email,
-                        'picture_id': self.picture,
+                        'picture_id': self.picture_id,
                 }
 
 class Cuisine(Base):

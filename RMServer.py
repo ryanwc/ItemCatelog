@@ -194,12 +194,6 @@ def fbconnect():
 
     setProfile()
 
-    ####
-    # user will need to edit profile pic because for some reason, Facebook is 
-    # now sending 403 forbidden to access profile picture from the user 
-    # page even though the SAME link works fine for the pic in the login message
-    ####
-
     return getSignInAlert()
 
 @app.route('/disconnect', methods=['POST'])
@@ -303,14 +297,45 @@ def fbdisconnect():
 ### JSON endpoints
 ###
 
+@app.route('/menuSections/JSON/')
+def menuSectionsJSON():
+    '''JSON endpoint for menu sections
+    '''
+    menuSections = RestaurantManager.getMenuSections()
+
+    return jsonify(MenuSection=[i.serialize for i in menuSections])
+
+@app.route('/users/JSON/')
+def usersJSON():
+    '''JSON endpoint for all users
+    '''
+    users = RestaurantManager.getUsers()
+
+    return jsonify(Users=[i.serialize for i in users])
+
+@app.route('/users/<int:user_id>/JSON/')
+def userJSON(user_id):
+    '''JSON endpoint for a single user
+    '''
+    user = RestaurantManager.getUser(user_id)
+
+    return jsonify(User=user.serialize)
+
 @app.route('/cuisines/JSON/')
 def cuisinesJSON():
+    '''JSON endpoint for all cuisines
+    '''
     cuisines = RestaurantManager.getCuisines()
 
     return jsonify(Cuisines=[i.serialize for i in cuisines])
 
 @app.route('/cuisines/<int:cuisine_id>/JSON/')
 def cuisineJSON(cuisine_id):
+    '''JSON endpoint for a single cuisine
+
+    Includes all restaurants with that cuisine, all base menu items
+    for that cuisine, and all restaurant menu items based on that cuisine
+    '''
     cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
     baseMenuItems = RestaurantManager.\
                     getBaseMenuItems(cuisine_id=cuisine_id)
@@ -321,50 +346,73 @@ def cuisineJSON(cuisine_id):
     return jsonify(Cuisine=cuisine.serialize,
                    BaseMenuItems=[i.serialize for i in baseMenuItems],
                    Restaurants=[i.serialize for i in restaurants],
-                   RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
+                   RestaurantMenuItems=\
+                    [i.serialize for i in restaurantMenuItems])
 
 @app.route('/baseMenuItems/<int:baseMenuItem_id>/JSON/')
 def baseMenuItemJSON(baseMenuItem_id):
+    '''JSON endpoint for a single base menu item
+    '''
     baseMenuItem = RestaurantManager.\
         getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
     restaurantMenuItems = RestaurantManager.\
-                          getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
+        getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
 
     return jsonify(BaseMenuItem=baseMenuItem.serialize,
-                   RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
+        RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
 
 @app.route('/baseMenuItems/JSON/')
 def baseMenuItemsJSON():
-
+    '''JSON endpoint for all base menu items
+    '''
     baseMenuItems = RestaurantManager.getBaseMenuItems()
 
     return jsonify(BaseMenuItems=[i.serialize for i in baseMenuItems])
 
 @app.route('/restaurants/JSON/')
 def restaurantsJSON():
+    '''JSON endpoint for all restaurants
+    '''
     restaurants = RestaurantManager.getRestaurants()
 
     return jsonify(Restaurants=[i.serialize for i in restaurants])
 
 @app.route('/restaurants/<int:restaurant_id>/JSON/')
 def restaurantJSON(restaurant_id):
+    '''JSON endpoint for a single restaurant
+
+    Includes all of the restaurant's menu items
+    '''
     restaurant = RestaurantManager.getRestaurant(restaurant_id)
 
     restaurantMenuItems = RestaurantManager.\
         getRestaurantMenuItems(restaurant_id=restaurant_id)
 
     return jsonify(Restaurant=restaurant.serialize,
-                   RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
+        RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/JSON/')
 def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
+    '''JSON endpoint for a single restaurant menu item
+    '''
     restaurantMenuItem = RestaurantManager.\
         getRestaurantMenuItem(restaurantMenuItem_id)
 
     return jsonify(RestaurantMenuItem=restaurantMenuItem.serialize)
 
+@app.route('/restaurantMenuItems/JSON/')
+def restaurantMenuItemsJSON():
+    '''JSON endpoint for all restaurant menu items
+    '''
+    restaurantMenuItems = RestaurantManager.getRestaurantMenuItems()
+
+    return jsonify(RestaurantMenuItems=\
+        [i.serialize for i in restaurantMenuItems])
+
 @app.route('/pics/<int:picture_id>/JSON/')
 def restaurantMenuItemJSON(picture_id):
+    '''JSON endpoint for pictures
+    '''
     picture = RestaurantManager.getPicture(picture_id)
 
     return jsonify(Picture=picture.serialize)
@@ -940,7 +988,7 @@ def deleteRestaurant(restaurant_id):
                         "url_for('restaurantManagerIndex')")
 
         restaurantMenuItems = RestaurantManager.\
-                              getRestaurantMenuItems(restaurant_id=restaurant_id)
+                    getRestaurantMenuItems(restaurant_id=restaurant_id)
 
         RestaurantManager.deleteRestaurant(restaurant_id)
 
@@ -1498,7 +1546,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
     restaurantMenuItem = RestaurantManager.\
         getRestaurantMenuItem(restaurantMenuItem_id)
 
-    restaurantMenuItem.price = Decimal(restaurantMenuItem.price).quantize(Decimal('0.01'))
+    restaurantMenuItem.price = Decimal(restaurantMenuItem.price).\
+        quantize(Decimal('0.01'))
     
     picture = RestaurantManager.getPicture(restaurantMenuItem.picture_id)
 
@@ -1937,8 +1986,8 @@ def setProfile():
 
     # create the user if the user doesn't exist
     if user is None:
-        picture_id = RestaurantManager.addPicture(text=login_session['picture'],
-                                                  serve_type='link')
+        picture_id = RestaurantManager.\
+            addPicture(text=login_session['picture'], serve_type='link')
         RestaurantManager.addUser(name=login_session['username'],
                                   email=login_session['email'],
                                   picture_id=picture_id)
