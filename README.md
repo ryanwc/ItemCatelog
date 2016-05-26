@@ -4,9 +4,9 @@ Restaurant Manager is a social website that helps restaurant staff and owners ma
 
 # What it Does
 
-Restaurant Manager is an interactive website that lets you sign in with Google or Facebook and manage cuisines, cuisine 'base menu items', restaurants, and restaurant menu items.
+Restaurant Manager is an interactive website that lets you sign in with Google or Facebook and manage cuisines, cuisine "base menu items", restaurants, and restaurant menu items.
 
-User profiles, restaurants, cuisines, base menu items, and restaurant menu items display pictures and various other attributes (like 'price'), and can be created, edited, and deleted if you are logged in and have the appropriate authority.
+User profiles, restaurants, cuisines, base menu items, and restaurant menu items display pictures and various other attributes (like "price"), and can be created, edited, and deleted if you are logged in and have the appropriate authority.
 
 The forms, where appropriate, provide real-time visual and textual cues about valid/invalid input, and on form submission, the browser will alert you of any invalid input so you can correct it before the form is processed.  The results of form processing are then displayed to you.
 
@@ -17,7 +17,7 @@ You can do the following:
 - Edit your profile picture and username
 - Interact with other users by sending emails
 
-Currently, the only social interaction is through looking up other user's email addresses.  A messaging system between users is planned.
+Currently, the only social interaction is through looking up user email addresses.  A messaging system between users is planned.
 
 # Neat Tips
 
@@ -27,7 +27,7 @@ When creating a restaurant menu item, you must select a base menu item to base i
 
 Various pages have stats about their subject matter, and the stats change based on your sign-in status.  For example, if you are signed in, you will be visually alerted to which restaurants are yours and will see extra stats in your profile page.
 
-Most of the information displayed for most pages is available in JSON format.  To access a page's JSON formatted information, simply add '/JSON' to the end of the url.
+Most of the information displayed for most pages is available in JSON format.  To access a page's JSON formatted information, simply add "/JSON" to the end of the url.
 
 # How to Get and Use this Code
 
@@ -37,13 +37,13 @@ Most of the information displayed for most pages is available in JSON format.  T
 4. From the command line, navigate to the directory into which you downloaded all the files.
 5. Optional (but recommended for testing): To pre-populate the database with sample restaurants, cuisines, base menu items, restaurant menu items, and users, run the command-line command `python InitPopScript.py`.  This may take 10-20 seconds to complete.
 6. From the command line, run the command `python RMServer.py`.
-7. In your browser, navigate to 'localhost:5000/', 'localhost:5000/index', or 'localhost:5000/login'.  You can now sign-in with Google or Facebook to create a profile, or you can navigate the site without signing in.
+7. In your browser, navigate to "localhost:5000/", "localhost:5000/index", or "localhost:5000/login".  You can now sign-in with Google or Facebook to create a profile, or you can navigate the site without signing in.
 
 # Technologies Used
 
-Database:			SQLite
-Server Scripting: 	Python
-Web Framework: 		Flask
-Browser:			HTML
-Styling:			CSS
-Interactivity:		JavaScript (with some jQuery)
+- Database:			SQLite
+- Server Scripting: Python
+- Web Framework: 	Flask
+- Browser:			HTML
+- Styling:			CSS
+- Interactivity:	JavaScript (with some jQuery)
