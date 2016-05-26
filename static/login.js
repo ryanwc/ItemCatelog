@@ -39,7 +39,6 @@ function displayBasedOnOwner(loggedInUserID, thingOwnerID) {
 // ajax call to disconnect from oauth and signout from the app
 function signOut(forUserDeletion=0) {
 
-	console.log("signing out");
 	var xhttp = new XMLHttpRequest();
 
 	xhttp.onreadystatechange = function() {
@@ -75,7 +74,7 @@ function deleteAndSignOut() {
 		return wasSignedOut;
 	}
 
-	signOut(1);
+	return signOut(1);
 }
 
 // get access token from Facebook

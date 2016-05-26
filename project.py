@@ -245,9 +245,11 @@ def disconnect():
     del login_session['username']
     del login_session['picture']
     del login_session['email']
+    del login_session['picture_serve_type']
+
 
     print 'deleted login session'
-    print login_session
+
     logoutMessage += "Logged " + username + \
                      " out of Restaurant Manager"
 
@@ -1888,6 +1890,21 @@ def deleteUser(user_id):
         flash("deleted " + user.name + " from " +\
             "the database")
 
+        # this is messy but needed because even though disconnect() -- which
+        # deletes all of this information (confirmed with print statements) -- 
+        # has already run on "onsubmit" with submission of this form,
+        # the login_session mysteriously still has all of this information
+        del login_session['credentials']
+        del login_session['user_id']
+        del login_session['username']
+        del login_session['picture']
+        del login_session['email']
+        del login_session['picture_serve_type']
+        if 'gplus_id' in login_session:
+            del login_session['gplus_id']
+        elif 'facebook_id' in login_session:
+            del login_session['facebook_id']
+
         return redirect(url_for('users'))
 
     return render_template('DeleteUser.html',
@@ -1918,7 +1935,6 @@ def setProfile():
     '''
     user = RestaurantManager.getUser(email=login_session['email'])
 
-    print login_session['picture']
     # create the user if the user doesn't exist
     if user is None:
         picture_id = RestaurantManager.addPicture(text=login_session['picture'],
@@ -1967,7 +1983,6 @@ def getClientLoginSession():
         client_login_session['message'] = "Logged in as " + \
             login_session['username']
 
-    print client_login_session
     return client_login_session
 
 ###
