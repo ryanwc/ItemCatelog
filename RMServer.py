@@ -295,7 +295,7 @@ def menuSectionsJSON():
     '''
     menuSections = RestaurantManager.getMenuSections()
 
-    return jsonify(MenuSection=[i.serialize for i in menuSections])
+    return jsonify(MenuSections=[i.serialize for i in menuSections])
 
 @app.route('/users/JSON/')
 def usersJSON():
@@ -401,9 +401,17 @@ def allRestaurantMenuItemsJSON():
     return jsonify(RestaurantMenuItems=\
         [i.serialize for i in restaurantMenuItems])
 
+@app.route('/pics/JSON/')
+def picturesJSON():
+    '''JSON endpoint for all pictures
+    '''
+    pictures = RestaurantManager.getPictures()
+
+    return jsonify(Pictures=[i.serialize for i in pictures])
+
 @app.route('/pics/<int:picture_id>/JSON/')
-def restaurantMenuItemJSON(picture_id):
-    '''JSON endpoint for pictures
+def pictureJSON(picture_id):
+    '''JSON endpoint for a single picture
     '''
     picture = RestaurantManager.getPicture(picture_id)
 
@@ -437,6 +445,9 @@ def restaurantManagerIndex():
     login_session['state'] = state
 
     client_login_session = getClientLoginSession()
+
+    # for writing all existing db ata to .json
+    #writeTablesToJSON('initial_data/')
 
     return render_template("index.html", state=state, 
                            client_login_session=client_login_session)
@@ -1957,6 +1968,28 @@ def deleteUser(user_id):
 ###############################################################################
 # Helper Functions
 ###############################################################################
+
+def writeTablesToJSON(path):
+    '''Write all of the tables in the database to .json files
+    in the specified directory.
+    '''
+    tableJSONendpoints = [{'func':usersJSON, 'name':'User'},
+                          {'func':picturesJSON, 'name':'Picture'},
+                          {'func':cuisinesJSON, 'name':'Cuisine'},
+                          {'func':baseMenuItemsJSON, 'name':'BaseMenuItem'},
+                          {'func':restaurantsJSON, 'name':'Restaurant'}, 
+                          {'func':allRestaurantMenuItemsJSON, 'name':'RestaurantMenuItem'},
+                          {'func':menuSectionsJSON, 'name':'MenuSection'}]
+
+    for table in tableJSONendpoints:
+        func = table['func']
+        response = func()
+        data = response.data
+        name = func.__name__
+        name = name[:-4]
+        file = open(path+table['name']+'.json', 'w')
+        file.write(data)
+        file.close()
 
 def allowed_pic(filename):
     '''Return true if the file name is a valid pic filename

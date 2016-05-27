@@ -231,6 +231,16 @@ def getPicture(picture_id):
     session.close()
     return picture
 
+def getPictures():
+    """Return all the pictures in the database ordered by id
+    """
+    session = getRestaurantDBSession()
+
+    pictures = session.query(Picture).order_by(Picture.id).all()
+
+    session.close()
+    return pictures
+
 def getUser(user_id=None, email=None):
     """Return the user with the given ID or email
 
