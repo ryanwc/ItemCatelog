@@ -1,8 +1,7 @@
 import sys
 
-# import functionality from sqlalchemy
-# these let you do SQL stuff in Python
-from sqlalchemy import Table, Column, ForeignKey, Integer, Float, LargeBinary, String, CheckConstraint
+from sqlalchemy import (Table, Column, ForeignKey, Integer, Float, 
+	String, CheckConstraint)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine

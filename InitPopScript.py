@@ -1,47 +1,34 @@
 ### WARNING: Running this script clears and repopulates
 ### the database 'sqlite:///restaurants.db'
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from RestaurantManager import (addMenuSection, addUser, addCuisine, 
-  addBaseMenuItem, addPicture, populateMenuWithBaseItems, addRestaurant, 
-  getCuisine, dropAllRecords, getMenuSection, getRestaurantDBSession, 
-  getUsers, getRestaurants, getRestaurant)
+from RestaurantManager import dropAllRecords, addRowsFromJSON
 
-from database_setup import (Base, Cuisine, Restaurant, BaseMenuItem, 
+from database_setup import (Cuisine, Restaurant, BaseMenuItem, 
   RestaurantMenuItem, User, MenuSection, Picture)
 
-import random
 import json
-
 
 ### delete everything
 dropAllRecords()
 
+### populate db from stored data
+tableConstructors = [Picture, User, Cuisine, MenuSection, 
+                     BaseMenuItem, Restaurant, RestaurantMenuItem]
 
-session = getRestaurantDBSession()
+for tableConstructor in tableConstructors:
+    dataObj = json.loads(open('initial_data/'+\
+        tableConstructor.__name__+'.json', 'r').read())
+    key = tableConstructor.__name__ + 's'
+    data = dataObj[key]
 
-# from initial .json data...
-tableFuncs = [Picture, User, Cuisine, MenuSection, 
-              BaseMenuItem, Restaurant, RestaurantMenuItem]
-
-for tableFunc in tableFuncs:
-    tableData = json.loads(open('initial_data/'+\
-      tableFunc.__name__+'.json', 'r').read())
-    key = tableFunc.__name__ + 's'
-    for jsonRow in tableData[key]:
-        print jsonRow
-        dbRow = tableFunc(**jsonRow)
-        print dbRow
-        session.add(dbRow)
-        session.commit()
-
-session.close()
+    addRowsFromJSON(data, tableConstructor)
 
 '''
 ### add more random restaurants to the database if desired
 ### would need to modify to accomdate the .json structure above
+### and import correct modules and methods
 for restaurant in range(0,10):
     poss = possivesAndAdverbs[int(round(random.uniform(0,len(possivesAndAdverbs)-1)))]
     adj = adjectives[int(round(random.uniform(0,len(adjectives)-1)))]

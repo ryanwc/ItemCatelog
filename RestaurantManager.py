@@ -912,6 +912,26 @@ def deleteCuisine(cuisine_id=None):
 
     session.close()
 
+def addRowsFromJSON(jsonRows, tableConstructor):
+    '''Populate the database with json-formatted rows.
+    Allows assigning specific values to auto-incremented columns, unlike the
+    other add methods in this DAO.
+
+    Args:
+        jsonRows: the rows to add in json format
+        tableFunc: the Python constructor for the table 
+            we want to add the rows to
+    '''
+
+    session = getRestaurantDBSession()
+    
+    for jsonRow in jsonRows:
+        dbRow = tableConstructor(**jsonRow)
+        session.add(dbRow)
+        session.commit()
+
+    session.close()
+
 def dropAllRecords():
     """Drop all records from the database
     """
