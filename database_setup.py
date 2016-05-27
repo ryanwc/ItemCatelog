@@ -140,6 +140,11 @@ class RestaurantMenuItem(Base):
 	baseMenuItem_id = Column(Integer, ForeignKey('base_menu_item.id'))
 	menuSection_id = Column(Integer, ForeignKey('menu_section.id'))
 
+	# could refactor to cascade
+	# with putting an ON DELETE cascade here for the relationship with
+	# the parent restaurant or putting a delete or delete-orphan relationship
+	# in the restaurant definition above. 
+	# currently, the cascading happens in the DAO, which is not ideal
 	restaurant = relationship(Restaurant)
 	baseMenuItem = relationship(BaseMenuItem)
 	menuSection = relationship(MenuSection)

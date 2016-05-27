@@ -4,11 +4,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from RestaurantManager import *
-from database_setup import Base, Cuisine, Restaurant, BaseMenuItem, RestaurantMenuItem, User, MenuSection, Picture
+from RestaurantManager import (addMenuSection, addUser, addCuisine, 
+  addBaseMenuItem, addPicture, populateMenuWithBaseItems, addRestaurant, 
+  getCuisine, dropAllRecords, getMenuSection, getRestaurantDBSession, 
+  getUsers, getRestaurants)
+
+from database_setup import (Base, Cuisine, Restaurant, BaseMenuItem, 
+  RestaurantMenuItem, User, MenuSection, Picture)
 
 import random
-from decimal import *
+from decimal import Decimal
 
 
 ### delete everything

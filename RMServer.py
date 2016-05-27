@@ -1,35 +1,27 @@
-from flask import Flask, render_template, request, redirect
-from flask import url_for, flash, jsonify, send_from_directory
-from flask import session as login_session
-from flask import make_response
+from flask import (Flask, render_template, request, redirect, url_for, flash, 
+    jsonify, send_from_directory, session as login_session, make_response)
+
 from werkzeug import secure_filename
-import requests
-
-import os
-
-import re
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
+
+import os
+import re, string, random, json
+import httplib2
+import requests
+import bleach
 import traceback
 
-import httplib2
+from decimal import Decimal
 
-import json
-
-from database_setup import Base, Restaurant, BaseMenuItem, Cuisine
-from database_setup import RestaurantMenuItem, User, Picture
+from database_setup import (Base, Restaurant, BaseMenuItem, Cuisine,
+    RestaurantMenuItem, User, Picture)
 
 import RestaurantManager
-
-from decimal import *
-
-import bleach
-
-import random, string, decimal
 
 
 ###
@@ -297,7 +289,7 @@ def fbdisconnect():
 ### JSON endpoints
 ###
 
-@app.route('/menuSections/JSON/')
+@app.route('/menu_sections/JSON/')
 def menuSectionsJSON():
     '''JSON endpoint for menu sections
     '''
@@ -349,7 +341,7 @@ def cuisineJSON(cuisine_id):
                    RestaurantMenuItems=\
                     [i.serialize for i in restaurantMenuItems])
 
-@app.route('/baseMenuItems/<int:baseMenuItem_id>/JSON/')
+@app.route('/base_menu_items/<int:baseMenuItem_id>/JSON/')
 def baseMenuItemJSON(baseMenuItem_id):
     '''JSON endpoint for a single base menu item
     '''
@@ -361,7 +353,7 @@ def baseMenuItemJSON(baseMenuItem_id):
     return jsonify(BaseMenuItem=baseMenuItem.serialize,
         RestaurantMenuItems=[i.serialize for i in restaurantMenuItems])
 
-@app.route('/baseMenuItems/JSON/')
+@app.route('/base_menu_items/JSON/')
 def baseMenuItemsJSON():
     '''JSON endpoint for all base menu items
     '''
@@ -400,8 +392,8 @@ def restaurantMenuItemJSON(restaurant_id, restaurantMenuItem_id):
 
     return jsonify(RestaurantMenuItem=restaurantMenuItem.serialize)
 
-@app.route('/restaurantMenuItems/JSON/')
-def restaurantMenuItemsJSON():
+@app.route('/restaurant_menu_items/JSON/')
+def allRestaurantMenuItemsJSON():
     '''JSON endpoint for all restaurant menu items
     '''
     restaurantMenuItems = RestaurantManager.getRestaurantMenuItems()

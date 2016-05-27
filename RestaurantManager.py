@@ -2,15 +2,12 @@ from sqlalchemy import create_engine, select, func
 from sqlalchemy.orm import sessionmaker
 
 import traceback
-from decimal import *
-
 import requests
-
 import os
+from decimal import Decimal
 
-from database_setup import Base, Restaurant, BaseMenuItem
-from database_setup import RestaurantMenuItem, Cuisine, User
-from database_setup import MenuSection, Picture
+from database_setup import (Base, Restaurant, BaseMenuItem, RestaurantMenuItem, 
+    Cuisine, User, MenuSection, Picture)
 
 
 def populateMenuWithBaseItems(restaurant_id):

@@ -30,7 +30,7 @@ function getTableJSON(tableName, callBackFunction) {
     }
     else if (tableName == "BaseMenuItem") {
 
-        path = "/baseMenuItems/JSON"
+        path = "/base_menu_items/JSON"
     }
 
     xhttp.open("GET", path, true);
