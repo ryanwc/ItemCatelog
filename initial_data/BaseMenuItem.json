@@ -1,3 +1,481 @@
 {
-  "BaseMenuItems": []
+  "BaseMenuItems": [
+    {
+      "picture_id": 10,
+      "name": "Base Item with no Specific Cuisine",
+      "price": 0.0,
+      "menuSection_id": 6,
+      "cuisine_id": -1,
+      "id": -1,
+      "description": "This item has no specific cuisine"
+    },
+    {
+      "picture_id": 11,
+      "name": "Hamburger",
+      "price": 5.25,
+      "menuSection_id": 2,
+      "cuisine_id": 0,
+      "id": 0,
+      "description": "A quarter-pound beef patty on a bun"
+    },
+    {
+      "picture_id": 12,
+      "name": "Cheeseburger",
+      "price": 6.0,
+      "menuSection_id": 2,
+      "cuisine_id": 0,
+      "id": 1,
+      "description": "A quarter-pound beef patty on a bun with your choice of cheese"
+    },
+    {
+      "picture_id": 13,
+      "name": "French fries",
+      "price": 1.5,
+      "menuSection_id": 5,
+      "cuisine_id": 0,
+      "id": 2,
+      "description": "Potatoes sliced very thin, deep fried, and sprinkled with salt"
+    },
+    {
+      "picture_id": 14,
+      "name": "Milkshake",
+      "price": 2.0,
+      "menuSection_id": 3,
+      "cuisine_id": 0,
+      "id": 3,
+      "description": "Strawberry, chocolate, or vanilla milkshake"
+    },
+    {
+      "picture_id": 15,
+      "name": "Fried Mozzarella",
+      "price": 4.1,
+      "menuSection_id": 1,
+      "cuisine_id": 0,
+      "id": 4,
+      "description": "Six fried mozzarella stick served with marinara sauce"
+    },
+    {
+      "picture_id": 16,
+      "name": "Soda",
+      "price": 1.5,
+      "menuSection_id": 4,
+      "cuisine_id": 0,
+      "id": 5,
+      "description": "A sugary, carbonated beverage"
+    },
+    {
+      "picture_id": 17,
+      "name": "Two Drumsticks",
+      "price": 4.0,
+      "menuSection_id": 2,
+      "cuisine_id": 1,
+      "id": 6,
+      "description": "Two chicken drumsticks deep fried with our house breadcrumb blend"
+    },
+    {
+      "picture_id": 18,
+      "name": "One Breast",
+      "price": 4.25,
+      "menuSection_id": 2,
+      "cuisine_id": 1,
+      "id": 7,
+      "description": "One chicken breast deep fried with our house breadcrumb blend"
+    },
+    {
+      "picture_id": 19,
+      "name": "Mashed Potatoes",
+      "price": 2.75,
+      "menuSection_id": 5,
+      "cuisine_id": 1,
+      "id": 8,
+      "description": "Gooey mashed potatoes flavored with garlic and paprica"
+    },
+    {
+      "picture_id": 20,
+      "name": "Sweet Tea",
+      "price": 3.1,
+      "menuSection_id": 4,
+      "cuisine_id": 1,
+      "id": 9,
+      "description": "A tall, cool glass of southern sweet tea"
+    },
+    {
+      "picture_id": 21,
+      "name": "Corn",
+      "price": 2.2,
+      "menuSection_id": 5,
+      "cuisine_id": 1,
+      "id": 10,
+      "description": "Buttered sweetcorn served off-the-cobb"
+    },
+    {
+      "picture_id": 22,
+      "name": "Cobb Salad",
+      "price": 6.5,
+      "menuSection_id": 2,
+      "cuisine_id": 2,
+      "id": 11,
+      "description": "Iceberg lettuce with grilled chicken, hardboiled egg, bacon, bleu cheese, and ranch dressing"
+    },
+    {
+      "picture_id": 23,
+      "name": "Ceasar Salad",
+      "price": 6.0,
+      "menuSection_id": 2,
+      "cuisine_id": 2,
+      "id": 12,
+      "description": "Romain lettuce, croutons, parmesan cheese, and our house dressing"
+    },
+    {
+      "picture_id": 24,
+      "name": "Fruit Salad",
+      "price": 4.0,
+      "menuSection_id": 1,
+      "cuisine_id": 2,
+      "id": 13,
+      "description": "A mix of strawberries, pineapple, kiwi, cantaloupe, and blueberries"
+    },
+    {
+      "picture_id": 25,
+      "name": "Green Tea",
+      "price": 1.4,
+      "menuSection_id": 4,
+      "cuisine_id": 2,
+      "id": 14,
+      "description": "A simple blend of green tea leaves"
+    },
+    {
+      "picture_id": 26,
+      "name": "Vegan Cookies",
+      "price": 3.1,
+      "menuSection_id": 3,
+      "cuisine_id": 2,
+      "id": 15,
+      "description": "100% vegan chocolate chip cookies"
+    },
+    {
+      "picture_id": 27,
+      "name": "Tom Yum Koong",
+      "price": 7.0,
+      "menuSection_id": 2,
+      "cuisine_id": 3,
+      "id": 16,
+      "description": "Spicy soup with prawns"
+    },
+    {
+      "picture_id": 28,
+      "name": "Pad Thai",
+      "price": 6.0,
+      "menuSection_id": 2,
+      "cuisine_id": 3,
+      "id": 17,
+      "description": "Fried noodles with chicken, tofu, peanuts, and beansprouts"
+    },
+    {
+      "picture_id": 29,
+      "name": "Som Tam",
+      "price": 4.0,
+      "menuSection_id": 1,
+      "cuisine_id": 3,
+      "id": 18,
+      "description": "Spicy papaya salad"
+    },
+    {
+      "picture_id": 30,
+      "name": "Khao Soi",
+      "price": 5.5,
+      "menuSection_id": 2,
+      "cuisine_id": 3,
+      "id": 19,
+      "description": "Yellow curry soup with coconut milk, chicken, and boiled and fried egg noodles"
+    },
+    {
+      "picture_id": 31,
+      "name": "Fruit Smoothie",
+      "price": 3.25,
+      "menuSection_id": 4,
+      "cuisine_id": 3,
+      "id": 20,
+      "description": "Banana, mango, dragonfruit, or coconut smoothie"
+    },
+    {
+      "picture_id": 32,
+      "name": "Mango with Sticky Rice",
+      "price": 3.75,
+      "menuSection_id": 3,
+      "cuisine_id": 3,
+      "id": 21,
+      "description": "The classic Thai dessert"
+    },
+    {
+      "picture_id": 33,
+      "name": "Sticky Rice",
+      "price": 1.1,
+      "menuSection_id": 5,
+      "cuisine_id": 3,
+      "id": 22,
+      "description": "Glutinous rice"
+    },
+    {
+      "picture_id": 34,
+      "name": "Belgian Waffle",
+      "price": 6.3,
+      "menuSection_id": 2,
+      "cuisine_id": 4,
+      "id": 23,
+      "description": "Large, fluffy Belgian waffle with strawberries"
+    },
+    {
+      "picture_id": 35,
+      "name": "Breakfast Sausage",
+      "price": 2.5,
+      "menuSection_id": 5,
+      "cuisine_id": 4,
+      "id": 24,
+      "description": "Seven small, all-beef sausage patties"
+    },
+    {
+      "picture_id": 36,
+      "name": "Hash Browns",
+      "price": 1.9,
+      "menuSection_id": 5,
+      "cuisine_id": 4,
+      "id": 25,
+      "description": "Shredded potatoes fried in butter with garlic and onions"
+    },
+    {
+      "picture_id": 37,
+      "name": "Coffee",
+      "price": 1.5,
+      "menuSection_id": 4,
+      "cuisine_id": 4,
+      "id": 26,
+      "description": "100% Arabica coffee"
+    },
+    {
+      "picture_id": 38,
+      "name": "Bacon",
+      "price": 2.5,
+      "menuSection_id": 5,
+      "cuisine_id": 4,
+      "id": 27,
+      "description": "Four slices of crispy bacon"
+    },
+    {
+      "picture_id": 39,
+      "name": "One Egg",
+      "price": 1.0,
+      "menuSection_id": 5,
+      "cuisine_id": 4,
+      "id": 28,
+      "description": "One egg, cooked any style"
+    },
+    {
+      "picture_id": 40,
+      "name": "Omelette",
+      "price": 6.3,
+      "menuSection_id": 2,
+      "cuisine_id": 4,
+      "id": 29,
+      "description": "Three eggs with ham, onions, peppers, tomatoes, and cheese"
+    },
+    {
+      "picture_id": 41,
+      "name": "Pancakes",
+      "price": 5.0,
+      "menuSection_id": 2,
+      "cuisine_id": 4,
+      "id": 30,
+      "description": "A stack of three golden-brown pancakes"
+    },
+    {
+      "picture_id": 42,
+      "name": "Pumpernickel Bagel",
+      "price": 3.0,
+      "menuSection_id": 1,
+      "cuisine_id": 5,
+      "id": 31,
+      "description": "Fresh pumpernickel bagel; cream cheese optional"
+    },
+    {
+      "picture_id": 43,
+      "name": "Corned Beef",
+      "price": 6.25,
+      "menuSection_id": 2,
+      "cuisine_id": 5,
+      "id": 32,
+      "description": "Rye bread piled high with corned beef and topped with spicy mustard"
+    },
+    {
+      "picture_id": 44,
+      "name": "Italian",
+      "price": 5.5,
+      "menuSection_id": 2,
+      "cuisine_id": 5,
+      "id": 33,
+      "description": "Salami, ham, banana peppers, lettuce, and more topped with a vinaigrette"
+    },
+    {
+      "picture_id": 45,
+      "name": "Pickle",
+      "price": 1.0,
+      "menuSection_id": 5,
+      "cuisine_id": 5,
+      "id": 34,
+      "description": "One whole kosher dill pickle"
+    },
+    {
+      "picture_id": 46,
+      "name": "Meat Sampler",
+      "price": 5.9,
+      "menuSection_id": 1,
+      "cuisine_id": 5,
+      "id": 35,
+      "description": "Corned beef, two types of salami, and two type of ham"
+    },
+    {
+      "picture_id": 47,
+      "name": "Potato Chips",
+      "price": 1.5,
+      "menuSection_id": 5,
+      "cuisine_id": 5,
+      "id": 36,
+      "description": "Homemade, crispy potato chips seasoned with salt and pepper"
+    },
+    {
+      "picture_id": 48,
+      "name": "Beer",
+      "price": 4.0,
+      "menuSection_id": 4,
+      "cuisine_id": 5,
+      "id": 37,
+      "description": "A pint of delicious, slightly hoppy, local brew"
+    },
+    {
+      "picture_id": 49,
+      "name": "One Scoop",
+      "price": 2.0,
+      "menuSection_id": 3,
+      "cuisine_id": 6,
+      "id": 38,
+      "description": "One scoop of your flavor choice"
+    },
+    {
+      "picture_id": 50,
+      "name": "Two Scoops",
+      "price": 3.75,
+      "menuSection_id": 3,
+      "cuisine_id": 6,
+      "id": 39,
+      "description": "Two scoops of your flavor choices"
+    },
+    {
+      "picture_id": 51,
+      "name": "Waffle Cone",
+      "price": 1.5,
+      "menuSection_id": 6,
+      "cuisine_id": 6,
+      "id": 40,
+      "description": "A waffle cone... scoops sold separately!"
+    },
+    {
+      "picture_id": 52,
+      "name": "Sundae",
+      "price": 6.5,
+      "menuSection_id": 3,
+      "cuisine_id": 6,
+      "id": 41,
+      "description": "Three scoops topped with your choice of fruit and sauce"
+    },
+    {
+      "picture_id": 53,
+      "name": "Chicken Parmesean",
+      "price": 10.5,
+      "menuSection_id": 2,
+      "cuisine_id": 7,
+      "id": 42,
+      "description": "Chicken breast baked with tomato sauce and lots of mozarella"
+    },
+    {
+      "picture_id": 54,
+      "name": "Personal Pizza",
+      "price": 9.0,
+      "menuSection_id": 2,
+      "cuisine_id": 7,
+      "id": 43,
+      "description": "10 inch personal pizza with your choice of up to two toppings"
+    },
+    {
+      "picture_id": 55,
+      "name": "Canoli",
+      "price": 3.5,
+      "menuSection_id": 3,
+      "cuisine_id": 7,
+      "id": 44,
+      "description": "Homeade, cream filled pastry"
+    },
+    {
+      "picture_id": 56,
+      "name": "Penne",
+      "price": 13.5,
+      "menuSection_id": 2,
+      "cuisine_id": 7,
+      "id": 45,
+      "description": "Penne with beef tomato sauce"
+    },
+    {
+      "picture_id": 57,
+      "name": "House White",
+      "price": 6.5,
+      "menuSection_id": 4,
+      "cuisine_id": 7,
+      "id": 46,
+      "description": "A glass of the house white wine"
+    },
+    {
+      "picture_id": 58,
+      "name": "House Red",
+      "price": 7.0,
+      "menuSection_id": 4,
+      "cuisine_id": 7,
+      "id": 47,
+      "description": "A glass of the house red wine"
+    },
+    {
+      "picture_id": 59,
+      "name": "Olive Plate",
+      "price": 3.8,
+      "menuSection_id": 5,
+      "cuisine_id": 7,
+      "id": 48,
+      "description": "Black, green, and castelvetrano olives"
+    },
+    {
+      "picture_id": 60,
+      "name": "Minestrone Soup",
+      "price": 3.75,
+      "menuSection_id": 1,
+      "cuisine_id": 7,
+      "id": 49,
+      "description": "A hearty cup of minestrone featuring zucchini and summer squash"
+    },
+    {
+      "picture_id": 61,
+      "name": "Garlic Bread",
+      "price": 2.0,
+      "menuSection_id": 5,
+      "cuisine_id": 7,
+      "id": 50,
+      "description": "Freshly baked, crusty garlic bread"
+    },
+    {
+      "picture_id": 62,
+      "name": "Tiramisu",
+      "price": 5.5,
+      "menuSection_id": 3,
+      "cuisine_id": 7,
+      "id": 51,
+      "description": "The popular coffee-flavored dessert"
+    }
+  ]
 }

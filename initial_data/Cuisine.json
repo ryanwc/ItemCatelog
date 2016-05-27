@@ -1,3 +1,40 @@
 {
-  "Cuisines": []
+  "Cuisines": [
+    {
+      "name": "No Specific Cuisine",
+      "id": -1
+    },
+    {
+      "name": "Burgers",
+      "id": 0
+    },
+    {
+      "name": "Fried Chicken",
+      "id": 1
+    },
+    {
+      "name": "Salad",
+      "id": 2
+    },
+    {
+      "name": "Thai",
+      "id": 3
+    },
+    {
+      "name": "Waffles",
+      "id": 4
+    },
+    {
+      "name": "Delicatessen",
+      "id": 5
+    },
+    {
+      "name": "Ice Cream",
+      "id": 6
+    },
+    {
+      "name": "Italian",
+      "id": 7
+    }
+  ]
 }

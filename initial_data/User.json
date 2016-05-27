@@ -1,3 +1,58 @@
 {
-  "Users": []
+  "Users": [
+    {
+      "email": "tinnyTim@udacity.com",
+      "picture_id": 1,
+      "name": "Robo Barista",
+      "id": 1
+    },
+    {
+      "email": "ichbinkoch@example.com",
+      "picture_id": 2,
+      "name": "Der Koch",
+      "id": 2
+    },
+    {
+      "email": "sushichef@example.com",
+      "picture_id": 3,
+      "name": "Masayoshi Kazato",
+      "id": 3
+    },
+    {
+      "email": "master@example.com",
+      "picture_id": 4,
+      "name": "Master Chef",
+      "id": 4
+    },
+    {
+      "email": "tandor@example.com",
+      "picture_id": 5,
+      "name": "Tandor",
+      "id": 5
+    },
+    {
+      "email": "peking@example.com",
+      "picture_id": 6,
+      "name": "Peking Chef",
+      "id": 6
+    },
+    {
+      "email": "romantic@example.com",
+      "picture_id": 7,
+      "name": "Romantic Chef",
+      "id": 7
+    },
+    {
+      "email": "kramer@example.com",
+      "picture_id": 8,
+      "name": "Kramer",
+      "id": 8
+    },
+    {
+      "email": "george@example.com",
+      "picture_id": 9,
+      "name": "George",
+      "id": 9
+    }
+  ]
 }

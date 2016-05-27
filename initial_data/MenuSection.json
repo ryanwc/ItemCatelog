@@ -1,3 +1,28 @@
 {
-  "MenuSections": []
+  "MenuSections": [
+    {
+      "name": "Appetizer",
+      "id": 1
+    },
+    {
+      "name": "Main Course",
+      "id": 2
+    },
+    {
+      "name": "Dessert",
+      "id": 3
+    },
+    {
+      "name": "Drink",
+      "id": 4
+    },
+    {
+      "name": "Side Dish",
+      "id": 5
+    },
+    {
+      "name": "Other",
+      "id": 6
+    }
+  ]
 }

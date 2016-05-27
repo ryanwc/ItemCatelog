@@ -1,3 +1,354 @@
 {
-  "Restaurants": []
+  "Restaurants": [
+    {
+      "picture_id": 66,
+      "user_id": 5,
+      "cuisine_id": 5,
+      "name": "Franklin's Happy Delicatessen",
+      "id": 1
+    },
+    {
+      "picture_id": 68,
+      "user_id": 6,
+      "cuisine_id": 4,
+      "name": "Branson's Lip-Smacking Waffles",
+      "id": 2
+    },
+    {
+      "picture_id": 64,
+      "user_id": 3,
+      "cuisine_id": 7,
+      "name": "Branson's Lip-Smacking Italian",
+      "id": 3
+    },
+    {
+      "picture_id": 67,
+      "user_id": 9,
+      "cuisine_id": 1,
+      "name": "Heroically Authentic Fried Chicken",
+      "id": 4
+    },
+    {
+      "picture_id": 70,
+      "user_id": 2,
+      "cuisine_id": 5,
+      "name": "My Blazin' Delicatessen",
+      "id": 5
+    },
+    {
+      "picture_id": 71,
+      "user_id": 9,
+      "cuisine_id": 2,
+      "name": "Hilde's Blazin' Salad",
+      "id": 6
+    },
+    {
+      "picture_id": 65,
+      "user_id": 5,
+      "cuisine_id": 4,
+      "name": "Canada's Big Waffles",
+      "id": 7
+    },
+    {
+      "picture_id": 67,
+      "user_id": 9,
+      "cuisine_id": 4,
+      "name": "Jim's Blazin' Waffles",
+      "id": 8
+    },
+    {
+      "picture_id": 67,
+      "user_id": 1,
+      "cuisine_id": 2,
+      "name": "Your Happy Salad",
+      "id": 9
+    },
+    {
+      "picture_id": 70,
+      "user_id": 8,
+      "cuisine_id": 3,
+      "name": "Your Lip-Smacking Thai",
+      "id": 10
+    },
+    {
+      "picture_id": 65,
+      "user_id": 8,
+      "cuisine_id": 6,
+      "name": "Morroco's Yummy Ice Cream",
+      "id": 11
+    },
+    {
+      "picture_id": 65,
+      "user_id": 8,
+      "cuisine_id": 0,
+      "name": "Positively Happy Burgers",
+      "id": 12
+    },
+    {
+      "picture_id": 68,
+      "user_id": 1,
+      "cuisine_id": 3,
+      "name": "Franklin's Authentic Thai",
+      "id": 13
+    },
+    {
+      "picture_id": 69,
+      "user_id": 6,
+      "cuisine_id": 7,
+      "name": "Predictably Authentic Italian",
+      "id": 14
+    },
+    {
+      "picture_id": 69,
+      "user_id": 8,
+      "cuisine_id": 0,
+      "name": "Definitively Elegant Burgers",
+      "id": 15
+    },
+    {
+      "picture_id": 65,
+      "user_id": 4,
+      "cuisine_id": 7,
+      "name": "Definitively Yummy Italian",
+      "id": 16
+    },
+    {
+      "picture_id": 69,
+      "user_id": 1,
+      "cuisine_id": 0,
+      "name": "Our Big Burgers",
+      "id": 17
+    },
+    {
+      "picture_id": 69,
+      "user_id": 5,
+      "cuisine_id": 7,
+      "name": "Our Yummy Italian",
+      "id": 18
+    },
+    {
+      "picture_id": 64,
+      "user_id": 8,
+      "cuisine_id": 7,
+      "name": "Branson's Great Italian",
+      "id": 19
+    },
+    {
+      "picture_id": 66,
+      "user_id": 6,
+      "cuisine_id": 2,
+      "name": "Effortlessly Authentic Salad",
+      "id": 20
+    },
+    {
+      "picture_id": 72,
+      "user_id": 4,
+      "cuisine_id": 5,
+      "name": "Ryan's Elegant Delicatessen",
+      "id": 21
+    },
+    {
+      "picture_id": 69,
+      "user_id": 6,
+      "cuisine_id": 4,
+      "name": "Branson's Yummy Waffles",
+      "id": 22
+    },
+    {
+      "picture_id": 70,
+      "user_id": 5,
+      "cuisine_id": 0,
+      "name": "Our Happy Burgers",
+      "id": 23
+    },
+    {
+      "picture_id": 66,
+      "user_id": 3,
+      "cuisine_id": 6,
+      "name": "Our Happy Ice Cream",
+      "id": 24
+    },
+    {
+      "picture_id": 65,
+      "user_id": 6,
+      "cuisine_id": 5,
+      "name": "Hilde's Big Delicatessen",
+      "id": 25
+    },
+    {
+      "picture_id": 65,
+      "user_id": 2,
+      "cuisine_id": 5,
+      "name": "Canada's Elegant Delicatessen",
+      "id": 26
+    },
+    {
+      "picture_id": 65,
+      "user_id": 7,
+      "cuisine_id": 0,
+      "name": "Heroically Big Burgers",
+      "id": 27
+    },
+    {
+      "picture_id": 67,
+      "user_id": 4,
+      "cuisine_id": 5,
+      "name": "Our Big Delicatessen",
+      "id": 28
+    },
+    {
+      "picture_id": 68,
+      "user_id": 2,
+      "cuisine_id": 4,
+      "name": "Heroically Authentic Waffles",
+      "id": 29
+    },
+    {
+      "picture_id": 65,
+      "user_id": 6,
+      "cuisine_id": 5,
+      "name": "Morroco's Happy Delicatessen",
+      "id": 30
+    },
+    {
+      "picture_id": 66,
+      "user_id": 8,
+      "cuisine_id": 4,
+      "name": "Definitively Delicious Waffles",
+      "id": 31
+    },
+    {
+      "picture_id": 70,
+      "user_id": 5,
+      "cuisine_id": 1,
+      "name": "Our Big Fried Chicken",
+      "id": 32
+    },
+    {
+      "picture_id": 70,
+      "user_id": 4,
+      "cuisine_id": 1,
+      "name": "Positively Delicious Fried Chicken",
+      "id": 33
+    },
+    {
+      "picture_id": 65,
+      "user_id": 3,
+      "cuisine_id": 5,
+      "name": "Definitively Elegant Delicatessen",
+      "id": 34
+    },
+    {
+      "picture_id": 66,
+      "user_id": 7,
+      "cuisine_id": 3,
+      "name": "Jim's Blazin' Thai",
+      "id": 35
+    },
+    {
+      "picture_id": 68,
+      "user_id": 9,
+      "cuisine_id": 0,
+      "name": "Definitively Big Burgers",
+      "id": 36
+    },
+    {
+      "picture_id": 66,
+      "user_id": 6,
+      "cuisine_id": 7,
+      "name": "Morroco's Great Italian",
+      "id": 37
+    },
+    {
+      "picture_id": 65,
+      "user_id": 4,
+      "cuisine_id": 7,
+      "name": "Branson's Yummy Italian",
+      "id": 38
+    },
+    {
+      "picture_id": 67,
+      "user_id": 8,
+      "cuisine_id": 5,
+      "name": "Effortlessly Homestyle Delicatessen",
+      "id": 39
+    },
+    {
+      "picture_id": 69,
+      "user_id": 9,
+      "cuisine_id": 0,
+      "name": "Ryan's Blazin' Burgers",
+      "id": 40
+    },
+    {
+      "picture_id": 65,
+      "user_id": 3,
+      "cuisine_id": 7,
+      "name": "Jim's Homestyle Italian",
+      "id": 41
+    },
+    {
+      "picture_id": 66,
+      "user_id": 6,
+      "cuisine_id": 4,
+      "name": "Effortlessly Elegant Waffles",
+      "id": 42
+    },
+    {
+      "picture_id": 72,
+      "user_id": 1,
+      "cuisine_id": 1,
+      "name": "Canada's Elegant Fried Chicken",
+      "id": 43
+    },
+    {
+      "picture_id": 67,
+      "user_id": 6,
+      "cuisine_id": 7,
+      "name": "Jill's Homestyle Italian",
+      "id": 44
+    },
+    {
+      "picture_id": 65,
+      "user_id": 9,
+      "cuisine_id": 4,
+      "name": "Morroco's Elegant Waffles",
+      "id": 45
+    },
+    {
+      "picture_id": 68,
+      "user_id": 5,
+      "cuisine_id": 1,
+      "name": "Our Yummy Fried Chicken",
+      "id": 46
+    },
+    {
+      "picture_id": 68,
+      "user_id": 5,
+      "cuisine_id": 2,
+      "name": "Canada's Delicious Salad",
+      "id": 47
+    },
+    {
+      "picture_id": 72,
+      "user_id": 3,
+      "cuisine_id": 1,
+      "name": "Definitively Delicious Fried Chicken",
+      "id": 48
+    },
+    {
+      "picture_id": 65,
+      "user_id": 1,
+      "cuisine_id": 4,
+      "name": "Jill's Authentic Waffles",
+      "id": 49
+    },
+    {
+      "picture_id": 72,
+      "user_id": 1,
+      "cuisine_id": 2,
+      "name": "Jim's Lip-Smacking Salad",
+      "id": 50
+    }
+  ]
 }
