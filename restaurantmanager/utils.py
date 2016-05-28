@@ -1,16 +1,13 @@
 from flask import flash, session as login_session
-
-from restaurantmanager.api.api import (usersJSON, picturesJSON, cuisinesJSON, baseMenuItemsJSON,
-    restaurantsJSON, allRestaurantMenuItemsJSON, menuSectionsJSON)
-
 from werkzeug import secure_filename
 
-import bleach
+from restaurantmanager.api.api import (usersJSON, picturesJSON, cuisinesJSON, 
+    baseMenuItemsJSON,restaurantsJSON, allRestaurantMenuItemsJSON, 
+    menuSectionsJSON)
 
-import json
+from . import DataManager
 
-from database_setup import (Base, Restaurant, BaseMenuItem, Cuisine,
-    RestaurantMenuItem, User, Picture)
+import bleach, json
 
 
 def writeTablesToJSON(path):

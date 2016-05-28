@@ -9,14 +9,15 @@ from oauth2client.client import FlowExchangeError
 import json, httplib2, requests, traceback, random, string
 
 import restaurantmanager.DataManager
-from restaurantmanager.utils import getClientLoginSession
+from restaurantmanager.utils import (getClientLoginSession, setProfile, 
+    getSignInAlert, isLoggedIn)
 from restaurantmanager import app
 
 home_bp = Blueprint('home', __name__, 
     template_folder='templates', static_folder='static')
 
 ###
-### Homepage
+### Homepage view
 ###
 
 @app.route('/')
@@ -63,7 +64,7 @@ def gconnect():
         # i.e., give google the data (one time code) the entity to be 
         # authenticated supposedly got from google and have google 
         # return credentials if the data is correct
-        oauth_flow = config['G_OAUTH_FLOW']
+        oauth_flow = app.config['G_OAUTH_FLOW']
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except:
@@ -96,7 +97,7 @@ def gconnect():
         return response
     
     # verify that the access token is valid for this app
-    if result['issued_to'] != config['G_CLIENT_ID']:
+    if result['issued_to'] != app.config['G_CLIENT_ID']:
         response = make_response(json.dumps("Token's client ID doesn't match app's ID"), 401)
         response.headers['Content-Type'] = 'application/json'
 
@@ -145,8 +146,8 @@ def fbconnect():
     access_token = request.data
 
     # exchange short-lived client token for long-lived server-side token
-    app_id = config['FB_APP_ID']
-    app_secret = config['FB_APP_SECRET']
+    app_id = app.config['FB_APP_ID']
+    app_secret = app.config['FB_APP_SECRET']
     url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id,app_secret,access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]

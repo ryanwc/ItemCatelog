@@ -8,7 +8,7 @@ from decimal import Decimal
 from restaurantmanager.database_setup import (Base, Restaurant, BaseMenuItem, 
     Cuisine, RestaurantMenuItem, User, Picture)
 
-import restaurantmanager.DataManager
+import restaurantmanager.DataManager as DataManager
 from restaurantmanager.utils import getClientLoginSession
 from restaurantmanager import app
 
@@ -20,7 +20,7 @@ cuisine_bp = Blueprint('cuisine', __name__,
 def cuisines():
     ''' Display all cuisines
     '''
-    cuisines = RestaurantManager.getCuisines()
+    cuisines = DataManager.getCuisines()
 
     client_login_session = getClientLoginSession()
 
@@ -50,7 +50,7 @@ def addCuisine():
         if name is None:
             return redirect(url_for('cuisines'))
 
-        RestaurantManager.addCuisine(name)
+        DataManager.addCuisine(name)
 
         flash("Added cuisine '" + name + "' to the database!")
 
@@ -65,14 +65,14 @@ def addCuisine():
 def cuisine(cuisine_id):
     '''Serve cuisine info page
     '''
-    cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
-    restaurants = RestaurantManager.\
+    cuisine = DataManager.getCuisine(cuisine_id=cuisine_id)
+    restaurants = DataManager.\
                   getRestaurants(cuisine_id=cuisine_id)
-    baseMenuItems = RestaurantManager.\
+    baseMenuItems = DataManager.\
                     getBaseMenuItems(cuisine_id=cuisine_id)
-    restaurantMenuItems = RestaurantManager.\
+    restaurantMenuItems = DataManager.\
         getRestaurantMenuItems(cuisine_id=cuisine_id)
-    sectionedBaseMenuItems = RestaurantManager.\
+    sectionedBaseMenuItems = DataManager.\
                              getBaseMenuItems(cuisine_id=cuisine_id,
                                               byMenuSection=True)
 
@@ -96,10 +96,10 @@ def cuisine(cuisine_id):
     # in format that plays nice with jinja
     # and labels things user or non-user
     # and also calculate some data about the items
-    mostExpensiveBaseMenuItem = RestaurantManager.\
+    mostExpensiveBaseMenuItem = DataManager.\
     getBaseMenuItem(baseMenuItem_id=-1)
 
-    mostExpensiveRestaurantMenuItem = RestaurantManager.\
+    mostExpensiveRestaurantMenuItem = DataManager.\
         getBaseMenuItem(baseMenuItem_id=-1)
 
     sectionedBaseItemsWithChildren = {}
@@ -115,7 +115,7 @@ def cuisine(cuisine_id):
             if baseItem.price > mostExpensiveBaseMenuItem.price:
                 mostExpensiveBaseMenuItem = baseItem
 
-            childrenItems = RestaurantManager.\
+            childrenItems = DataManager.\
                 getRestaurantMenuItems(baseMenuItem_id=baseItem.id)
             children = {}
 
@@ -124,7 +124,7 @@ def cuisine(cuisine_id):
                 if item.price > mostExpensiveRestaurantMenuItem.price:
                     mostExpensiveRestaurantMenuItem = item
 
-                itemRestaurant = RestaurantManager.\
+                itemRestaurant = DataManager.\
                                  getRestaurant(item.restaurant_id)
                 itemUserID = itemRestaurant.user_id
                 child = {}
@@ -180,7 +180,7 @@ def editCuisine(cuisine_id):
     
     client_login_session = getClientLoginSession()
 
-    cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
+    cuisine = DataManager.getCuisine(cuisine_id=cuisine_id)
 
     if request.method == 'POST':
 
@@ -193,7 +193,7 @@ def editCuisine(cuisine_id):
             'name', 'edit', 'cuisine', maxlength=80, unique=True, 
             oldInput=oldName, tableName='Cuisine')
 
-        RestaurantManager.editCuisine(cuisine_id, newName=newName)
+        DataManager.editCuisine(cuisine_id, newName=newName)
         
         if newName is not None:
             
@@ -219,7 +219,7 @@ def deleteCuisine(cuisine_id):
     
     client_login_session = getClientLoginSession()
 
-    cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
+    cuisine = DataManager.getCuisine(cuisine_id=cuisine_id)
 
     if request.method == 'POST':
 
@@ -229,23 +229,23 @@ def deleteCuisine(cuisine_id):
         # all of this is for flash messaging
         cuisineName = cuisine.name
         cuisineID = cuisine.id
-        restaurantMenuItems = RestaurantManager.\
+        restaurantMenuItems = DataManager.\
                               getRestaurantMenuItems(cuisine_id=cuisine_id)
         numItemsReassigned = len(restaurantMenuItems)
-        restaurants = RestaurantManager.\
+        restaurants = DataManager.\
                       getRestaurants(cuisine_id=cuisine_id)
         numRestaurantsReassigned = len(restaurants)
-        baseMenuItems = RestaurantManager.\
+        baseMenuItems = DataManager.\
                         getBaseMenuItems(cuisine_id=cuisine_id)
         numItemsDeleted = len(baseMenuItems)
-        itemBaseForNoCuisine = RestaurantManager.\
+        itemBaseForNoCuisine = DataManager.\
             getBaseMenuItem(baseMenuItem_id=-1)
 
         # here is the logic
-        restaurantBaseForNoCuisine = RestaurantManager.\
+        restaurantBaseForNoCuisine = DataManager.\
                                      getCuisine(cuisine_id=-1)
 
-        RestaurantManager.deleteCuisine(cuisine_id)
+        DataManager.deleteCuisine(cuisine_id)
 
         flash("reassigned " + str(numItemsReassigned) + \
             " restaurant menu items' base item to '" + \
@@ -279,8 +279,8 @@ def addBaseMenuItem(cuisine_id):
     
     client_login_session = getClientLoginSession()
 
-    cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
-    menuSections = RestaurantManager.getMenuSections()
+    cuisine = DataManager.getCuisine(cuisine_id=cuisine_id)
+    menuSections = DataManager.getMenuSections()
 
     if request.method == 'POST':
 
@@ -329,10 +329,10 @@ def addBaseMenuItem(cuisine_id):
         if providedPic is None:
             return redirect(url_for('cuisine', cuisine_id=cuisine.id))
         
-        picture_id = RestaurantManager.addPicture(text=providedPic['text'], 
+        picture_id = DataManager.addPicture(text=providedPic['text'], 
             serve_type=providedPic['serve_type'])
 
-        baseMenuItem_id = RestaurantManager.\
+        baseMenuItem_id = DataManager.\
             addBaseMenuItem(name, cuisine_id, description=description, 
             price=price, menuSection_id=menuSection_id, 
             picture_id=picture_id)
@@ -343,7 +343,7 @@ def addBaseMenuItem(cuisine_id):
             picfilename = 'baseMenuItem' + str(baseMenuItem_id)
             request.files['pictureFile'].save(os.path.\
                 join(app.config['UPLOAD_FOLDER'], picfilename))
-            RestaurantManager.editPicture(picture_id=picture_id,
+            DataManager.editPicture(picture_id=picture_id,
                                           newText=picfilename)
 
         flash("added '" + name + "' to " + cuisine.name + \
@@ -363,16 +363,16 @@ def baseMenuItem(cuisine_id, baseMenuItem_id):
     '''
     client_login_session = getClientLoginSession()
 
-    baseMenuItem = RestaurantManager.\
+    baseMenuItem = DataManager.\
         getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
     baseMenuItem.price = Decimal(baseMenuItem.price).\
         quantize(Decimal('0.01'))
-    cuisine = RestaurantManager.\
+    cuisine = DataManager.\
         getCuisine(cuisine_id=baseMenuItem.cuisine_id)
-    restaurantMenuItems = RestaurantManager.\
+    restaurantMenuItems = DataManager.\
         getRestaurantMenuItems(baseMenuItem_id=baseMenuItem.id)
-    picture = RestaurantManager.getPicture(baseMenuItem.picture_id)
-    menuSection = RestaurantManager.\
+    picture = DataManager.getPicture(baseMenuItem.picture_id)
+    menuSection = DataManager.\
         getMenuSection(menuSection_id=baseMenuItem.menuSection_id)
     timesOrdered = 0
 
@@ -397,15 +397,15 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
     
     client_login_session = getClientLoginSession()
 
-    baseMenuItem = RestaurantManager.\
+    baseMenuItem = DataManager.\
                    getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
-    cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
+    cuisine = DataManager.getCuisine(cuisine_id=cuisine_id)
 
     baseMenuItem.price = Decimal(baseMenuItem.price).quantize(Decimal('0.01'))
 
-    picture = RestaurantManager.getPicture(baseMenuItem.picture_id)
+    picture = DataManager.getPicture(baseMenuItem.picture_id)
 
-    menuSections = RestaurantManager.getMenuSections()
+    menuSections = DataManager.getMenuSections()
 
     if request.method == 'POST':
 
@@ -467,14 +467,14 @@ def editBaseMenuItem(cuisine_id, baseMenuItem_id):
                 providedPic['text'] = picfilename
 
             # edit the pic
-            RestaurantManager.editPicture(baseMenuItem.picture_id,
+            DataManager.editPicture(baseMenuItem.picture_id,
                 newText=providedPic['text'], 
                 newServe_Type=providedPic['serve_type'])
 
             flash("updated base menu item picture")
 
         # we edited the pic directly, no need to include here
-        RestaurantManager.editBaseMenuItem(baseMenuItem.id,
+        DataManager.editBaseMenuItem(baseMenuItem.id,
             newName=newName, newDescription=newDescription, 
             newPrice=newPrice, newMenuSection_id=newMenuSection_id)
 
@@ -516,7 +516,7 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
     
     client_login_session = getClientLoginSession()
 
-    baseMenuItem = RestaurantManager.\
+    baseMenuItem = DataManager.\
                    getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
 
     if request.method == 'POST':
@@ -524,13 +524,13 @@ def deleteBaseMenuItem(cuisine_id, baseMenuItem_id):
         checkCSRFAttack(request.form['hiddenToken'],
                         "url_for('restaurantManagerIndex')")
 
-        cuisine = RestaurantManager.getCuisine(cuisine_id=cuisine_id)
-        restaurantMenuItems = RestaurantManager.\
+        cuisine = DataManager.getCuisine(cuisine_id=cuisine_id)
+        restaurantMenuItems = DataManager.\
             getRestaurantMenuItems(baseMenuItem_id=baseMenuItem_id)
-        baseForNoCuisine = RestaurantManager.\
+        baseForNoCuisine = DataManager.\
             getBaseMenuItem(baseMenuItem_id=-1)
 
-        RestaurantManager.deleteBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
+        DataManager.deleteBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
 
         flash("reassigned " + str(len(restaurantMenuItems)) + \
             " restaurant menu items' base to '" +\
