@@ -43,8 +43,8 @@ Most of the information displayed for most pages is available in JSON format.  T
 # Technologies Used
 
 - Database:			SQLite
-- Server Scripting: Python
-- Web Framework: 	Flask
+- Server Scripting: Python 2.7
+- Web Framework: 	Flask 0.9
 - Browser:			HTML
 - Styling:			CSS
-- Interactivity:	JavaScript (with some jQuery)
+- Interactivity:	JavaScript (and jQuery)
