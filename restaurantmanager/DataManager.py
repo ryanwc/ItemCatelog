@@ -11,8 +11,8 @@ from database_setup import (Base, Restaurant, BaseMenuItem, RestaurantMenuItem,
 
 
 def populateMenuWithBaseItems(restaurant_id):
-    """Add all of a restaurant's base items base on its cuisine
-    """
+    '''Add all of a restaurant's base items base on its cuisine
+    '''
     session = getRestaurantDBSession()
 
     restaurant = getRestaurant(restaurant_id)
@@ -32,13 +32,13 @@ def populateMenuWithBaseItems(restaurant_id):
     session.close()
 
 def getUserThings(user_id):
-    """Currently, return structure with the form: 
+    '''Currently, return structure with the form: 
         {'<restaurant_id>':{'restaurant':'<restaurant Object>',
             'items':{'<menuSection>':<list of restaurantMenuItem Objects>}}}
 
     Args:
         user_id: the id of the user whose things to get
-    """
+    '''
     userThings = {}
 
     restaurants = getRestaurants(user_id=user_id)
@@ -53,13 +53,13 @@ def getUserThings(user_id):
     return userThings
 
 def addPicture(text, serve_type):
-    """Add a picture to the database
+    '''Add a picture to the database
 
     serve_type is a binary that takes the value "upload" or "link"
     to indicate whether the picture was provided via upload or link
 
     Returns the user id
-    """
+    '''
     session = getRestaurantDBSession()
 
     picture = Picture(text=text, serve_type=serve_type)
@@ -73,10 +73,10 @@ def addPicture(text, serve_type):
     return picture_id
 
 def addUser(name, email, picture_id):
-    """Add a user to the database
+    '''Add a user to the database
 
     Returns the user id
-    """
+    '''
     session = getRestaurantDBSession()
 
     user = User(name=name, email=email, picture_id=picture_id)
@@ -90,10 +90,10 @@ def addUser(name, email, picture_id):
     return user_id
 
 def addMenuSection(name):
-    """Add a menu section to the database
+    '''Add a menu section to the database
 
     Returns the menu section id
-    """
+    '''
     session = getRestaurantDBSession()
 
     menuSection = MenuSection(name=name)
@@ -109,10 +109,10 @@ def addMenuSection(name):
 def addRestaurantMenuItem(restaurant_id, baseMenuItem_id,
                           name=None, description=None, price=None, 
                           picture_id=None, menuSection_id=None):
-    """Add an item to a restaurant's menu
+    '''Add an item to a restaurant's menu
 
     Returns the id of the restaurant menu item
-    """
+    '''
     session = getRestaurantDBSession()
 
     baseMenuItem = getBaseMenuItem(baseMenuItem_id=baseMenuItem_id)
@@ -152,10 +152,10 @@ def addRestaurantMenuItem(restaurant_id, baseMenuItem_id,
 
 def addBaseMenuItem(name, cuisine_id, description, 
                     price, menuSection_id, picture_id):
-    """Add an item to a cuisine's base item list
+    '''Add an item to a cuisine's base item list
 
     Returns the id of the base menu item
-    """
+    '''
     session = getRestaurantDBSession()
 
     baseMenuItem = BaseMenuItem(
@@ -176,10 +176,10 @@ def addBaseMenuItem(name, cuisine_id, description,
     return baseMenuItem_id
 
 def addCuisine(name):
-    """Add a cuisine to the database
+    '''Add a cuisine to the database
 
     Returns the id of the cuisine
-    """
+    '''
     session = getRestaurantDBSession()
 
     cuisine = Cuisine(name=name)
@@ -193,10 +193,10 @@ def addCuisine(name):
     return cuisine_id
 
 def addRestaurant(name, cuisine_id, user_id, picture_id):
-    """Add a restaurant to the database
+    '''Add a restaurant to the database
 
     Returns the id of the restaurant
-    """
+    '''
     session = getRestaurantDBSession()
 
     restaurant = Restaurant(name=name, cuisine_id=cuisine_id, 
@@ -210,8 +210,8 @@ def addRestaurant(name, cuisine_id, user_id, picture_id):
     return restaurant_id
 
 def getRestaurantDBSession():
-    """Return an interactive session with the restaurant menu database
-    """
+    '''Return an interactive session with the restaurant menu database
+    '''
     engine = create_engine('sqlite:///restaurants.db')
     Base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
@@ -219,11 +219,11 @@ def getRestaurantDBSession():
     return session
 
 def getPicture(picture_id):
-    """Return the picture with the given ID
+    '''Return the picture with the given ID
 
     Args:
       picture_id: the id of the picture to get
-    """
+    '''
     session = getRestaurantDBSession()
 
     picture = session.query(Picture).filter_by(id=picture_id).first()
@@ -232,8 +232,8 @@ def getPicture(picture_id):
     return picture
 
 def getPictures():
-    """Return all the pictures in the database ordered by id
-    """
+    '''Return all the pictures in the database ordered by id
+    '''
     session = getRestaurantDBSession()
 
     pictures = session.query(Picture).order_by(Picture.id).all()
@@ -242,12 +242,12 @@ def getPictures():
     return pictures
 
 def getUser(user_id=None, email=None):
-    """Return the user with the given ID or email
+    '''Return the user with the given ID or email
 
     Args:
       user_id: the id of the user to get
       email: the email of the user to get
-    """
+    '''
     session = getRestaurantDBSession()
 
     if user_id is not None:
@@ -259,8 +259,8 @@ def getUser(user_id=None, email=None):
     return user
 
 def getUsers():
-    """Return a list of all users ordered by id
-    """
+    '''Return a list of all users ordered by id
+    '''
     session = getRestaurantDBSession()
 
     users = session.query(User).order_by(User.id).all()
@@ -269,12 +269,12 @@ def getUsers():
     return users
 
 def getMenuSection(menuSection_id=None, name=None):
-    """Return the menu section with the given ID or name
+    '''Return the menu section with the given ID or name
 
     Args:
       menuSection_id: the id of the menu section to get
       name: the name of the menu section to get
-    """
+    '''
     session = getRestaurantDBSession()
 
     if menuSection_id is not None:
@@ -288,8 +288,8 @@ def getMenuSection(menuSection_id=None, name=None):
     return menuSection
 
 def getMenuSections():
-    """Return a list of all menu sections ordered by id
-    """
+    '''Return a list of all menu sections ordered by id
+    '''
     session = getRestaurantDBSession()
 
     menuSections = session.query(MenuSection).\
@@ -299,14 +299,14 @@ def getMenuSections():
     return menuSections
 
 def getRestaurants(cuisine_id=None, user_id=None):
-    """If no arguments are given, return a list of all restaurants 
+    '''If no arguments are given, return a list of all restaurants 
     ordered by ID.  Otherwise, return a list of all restaurants that 
     match the given argument.
 
     Args:
         cuisine_id: the id of the cuisine to match
         user_id: the id of the user to match
-    """
+    '''
     session = getRestaurantDBSession()
     
     if cuisine_id is not None:
@@ -323,11 +323,11 @@ def getRestaurants(cuisine_id=None, user_id=None):
     return restaurants
 
 def getRestaurant(rest_id):
-    """Return the restaurant with the given ID
+    '''Return the restaurant with the given ID
 
     Args:
       rest_id: the id of the restaurant to get
-    """
+    '''
     session = getRestaurantDBSession()
 
     restaurant = session.query(Restaurant).\
@@ -338,7 +338,7 @@ def getRestaurant(rest_id):
 
 def getRestaurantMenuItems(restaurant_id=None, baseMenuItem_id=None,
                            cuisine_id=None, byMenuSection=False):
-    """Return restaurant menu items matching the id given, either in a dictionary
+    '''Return restaurant menu items matching the id given, either in a dictionary
     by menu section or in one list.
 
     NOTE: only one of restaurant_id, baseMenuItem_id, and cuisine_id
@@ -353,7 +353,7 @@ def getRestaurantMenuItems(restaurant_id=None, baseMenuItem_id=None,
             Pass None to match by another id.
         bySection: true if results should be returned in a diction like
             {'menuS'}
-    """
+    '''
     session = getRestaurantDBSession()
 
     # get the relevant items
@@ -395,11 +395,11 @@ def getRestaurantMenuItems(restaurant_id=None, baseMenuItem_id=None,
     return restaurantMenuItems
 
 def getRestaurantMenuItem(restaurantMenuItem_id):
-    """Return a restaurant menu item with the given id
+    '''Return a restaurant menu item with the given id
 
     Args:
         restaurantMenuItem_id: the id of the restaurant menu item to get
-    """
+    '''
     session = getRestaurantDBSession()
 
     restaurantMenuItem = session.query(RestaurantMenuItem).\
@@ -410,11 +410,11 @@ def getRestaurantMenuItem(restaurantMenuItem_id):
 
 def getBaseMenuItem(baseMenuItem_id=None,
                     baseMenuItemName=None):
-    """Return the base menu item with the given id
+    '''Return the base menu item with the given id
 
     Args:
         baseMenuItem_id: the id of the base menu item to get
-    """
+    '''
     session = getRestaurantDBSession()
 
     baseMenuItem = None
@@ -430,7 +430,7 @@ def getBaseMenuItem(baseMenuItem_id=None,
     return baseMenuItem
 
 def getBaseMenuItems(cuisine_id=None, byMenuSection=False):
-    """If cuisie_id is none and byMenuSection is false, 
+    '''If cuisie_id is none and byMenuSection is false, 
         return all base menu items ordered by id.
     If cuisine_id is none and byMenuSection is true, 
         return a dictionary of 'menu section':[list of all items].
@@ -441,7 +441,7 @@ def getBaseMenuItems(cuisine_id=None, byMenuSection=False):
 
     Args:
         cuisine_id: the id of the cuisine to match
-    """
+    '''
     session = getRestaurantDBSession()
 
     if cuisine_id is not None:
@@ -485,14 +485,14 @@ def getBaseMenuItems(cuisine_id=None, byMenuSection=False):
     return baseMenuItems
 
 def getCuisines(onlyPopular=False):
-    """If onlyPopular is false, return a list of all cuisines offered by at 
+    '''If onlyPopular is false, return a list of all cuisines offered by at 
     least one restaurant ordered by cuisine id.  Otherwise, return a list
     of all cuisines offered by more than three restaurants.
 
     Args:
         onlyPopular: boolean indicating whether to return all or a subset
         of restaurants.
-    """
+    '''
     session = getRestaurantDBSession()
 
     if onlyPopular:
@@ -511,13 +511,13 @@ def getCuisines(onlyPopular=False):
     return cuisines
 
 def getCuisine(cuisine_id=None, name=None):
-    """Return the cuisine with the given id
+    '''Return the cuisine with the given id
 
     Args:
         cuisine_id: the id of the cuisine to get.
             Pass None to get by name instead.
         name: the name of the cuisine to get.  Pass None to get by id instead.
-    """
+    '''
     session = getRestaurantDBSession()
 
     if cuisine_id is not None:
@@ -529,7 +529,7 @@ def getCuisine(cuisine_id=None, name=None):
     return cuisine
 
 def editPicture(picture_id, newText=None, newServe_Type=None):
-    """Edit a picture
+    '''Edit a picture
 
     Pass none for any attribute to leave it unchanged.
 
@@ -538,7 +538,7 @@ def editPicture(picture_id, newText=None, newServe_Type=None):
         newText: the new text that describes a link or a file name
         newServe_Type: the new serve style for the picture on this server.
             Must be 'link' or 'upload'.
-    """
+    '''
     session = getRestaurantDBSession()
 
     if newText is not None:
@@ -554,7 +554,7 @@ def editPicture(picture_id, newText=None, newServe_Type=None):
 
 def editRestaurant(restaurant_id, newName=None, 
                    newCuisine_id=None, newPicture_id=None):
-    """Edit a restaurant
+    '''Edit a restaurant
 
     Pass none for any attribute to leave it unchanged.
 
@@ -563,7 +563,7 @@ def editRestaurant(restaurant_id, newName=None,
         newName: a new name of the restaurant to edit
         newCuisine_id: the id of the restaurant's new cuisine
         newPicture_id: the id of the new picture for the restaurant
-    """
+    '''
     session = getRestaurantDBSession()
 
     if newName is not None:
@@ -585,7 +585,7 @@ def editRestaurantMenuItem(restaurantMenuItem_id, newName=None,
                            newDescription=None, newPrice=None,
                            newMenuSection_id=None, newBaseMenuItem_id=None,
                            newPicture_id=None):
-    """Edit a restaurant menu item.
+    '''Edit a restaurant menu item.
 
     Pass none for any attribute to leave it unchanged.
 
@@ -597,7 +597,7 @@ def editRestaurantMenuItem(restaurantMenuItem_id, newName=None,
         newMenuSection_id: the id of the restaurant menu item's new menu section.
         newBaseMenuItem_id: the id of the restaurant menu item's new
         newPicture_id: the id of the restaurant menu item's new picture.
-    """
+    '''
     session = getRestaurantDBSession()
 
     if newName is not None:
@@ -628,13 +628,13 @@ def editRestaurantMenuItem(restaurantMenuItem_id, newName=None,
     session.close()
 
 def editCuisine(cuisine_id, newName=None):
-    """Edit a cuisine
+    '''Edit a cuisine
 
     Pass none for an attribute to leave it unchanged.
     Args:
         cuisine_id: the id of the cuisine to edit
         newName: the new name of the cuisine to edit.
-    """
+    '''
     session = getRestaurantDBSession()
 
     if newName is not None:
@@ -645,7 +645,7 @@ def editCuisine(cuisine_id, newName=None):
     session.close()
 
 def editUser(user_id, newName=None, newPicture_id=None):
-    """Edit a user
+    '''Edit a user
 
     Pass none for an attribute to leave it unchanged.
 
@@ -653,7 +653,7 @@ def editUser(user_id, newName=None, newPicture_id=None):
         user_id: the id of the user to edit
         newName: a new username for the user
         newPicture_id: the id of user's new picture
-    """
+    '''
     session = getRestaurantDBSession()
 
     if newName is not None:
@@ -671,7 +671,7 @@ def editBaseMenuItem(baseMenuItem_id, newName=None,
                      newDescription=None, newPrice=None,
                      newCuisine_id=None, newMenuSection_id=None,
                      newPicture_id=None):
-    """Edit a base menu item
+    '''Edit a base menu item
 
     Pass none for an attribute to leave it unchanged.
 
@@ -683,7 +683,7 @@ def editBaseMenuItem(baseMenuItem_id, newName=None,
         newCuisine_id: the id of the base menu item's new cuisine
         newMenuSection_id: the id of the base menu item's new menu section
         newPicture_id: the id of the base menu item's new picture
-    """
+    '''
     session = getRestaurantDBSession()
 
     if newName is not None:
@@ -715,14 +715,14 @@ def editBaseMenuItem(baseMenuItem_id, newName=None,
     session.close()
 
 def deleteRestaurantMenuItem(restaurantMenuItem_id=None):
-    """Remove a restaurant menu item from the database.
+    '''Remove a restaurant menu item from the database.
 
     Also deletes the restaurant menu item's picture, but only if 
     that picture is different from its base menu item's picture.
 
     Args:
         restaurantMenuItem_id: the id of the restaurant menu item to remove
-    """
+    '''
     session = getRestaurantDBSession()
 
     if restaurantMenuItem_id is not None:
@@ -748,14 +748,14 @@ def deleteRestaurantMenuItem(restaurantMenuItem_id=None):
     session.close()
 
 def deletePicture(picture_id=None):
-    """Remove a picture from the database.
+    '''Remove a picture from the database.
 
     Also deletes the picture from the file system, if it was 
     uploaded by a user.
 
     Args:
         picture_id: the id of the picture to remove
-    """
+    '''
     session = getRestaurantDBSession()
 
     picture = getPicture(picture_id=picture_id)
@@ -774,14 +774,14 @@ def deletePicture(picture_id=None):
     session.close()
 
 def deleteUser(user_id=None):
-    """Remove a user from the database.
+    '''Remove a user from the database.
 
     NOTE: This also deletes the user's restaurants, menu items,
     and picture.
 
     Args:
         user_id: the id of the user to remove
-    """
+    '''
     session = getRestaurantDBSession()
 
     if user_id is not None:
@@ -804,14 +804,14 @@ def deleteUser(user_id=None):
     session.close()
 
 def deleteRestaurant(restaurant_id=None):
-    """Remove a restaurant from the database.
+    '''Remove a restaurant from the database.
 
     NOTE: This also deletes all the restaurant's restaurant menu items
     and the restaurant's picture.
 
     Args:
         restaurant_id: the id of the restaurant to remove
-    """
+    '''
     session = getRestaurantDBSession()
 
     if restaurant_id is not None:
@@ -837,7 +837,7 @@ def deleteRestaurant(restaurant_id=None):
     session.close()
 
 def deleteBaseMenuItem(baseMenuItem_id=None):
-    """Remove a base menu item from the database.
+    '''Remove a base menu item from the database.
 
     NOTE: This also reassigns all restaurant menu items with the given 
     item as its base to the default base item for restaurant menu
@@ -848,7 +848,7 @@ def deleteBaseMenuItem(baseMenuItem_id=None):
 
     Args:
         baseMenuItem_id: the id of the base menu item to remove
-    """
+    '''
     session = getRestaurantDBSession()
 
     if baseMenuItem_id is not None:
@@ -881,7 +881,7 @@ def deleteBaseMenuItem(baseMenuItem_id=None):
     session.close()
 
 def deleteCuisine(cuisine_id=None):
-    """Remove a cuisine from the database.
+    '''Remove a cuisine from the database.
 
     NOTE: This also reassigns all restaurants with this cuisine to "No
         specific cuisine" and reassigns all restaurant menu items with a base
@@ -890,7 +890,7 @@ def deleteCuisine(cuisine_id=None):
 
     Args:
         cuisine_id: the id of the cuisine to remove
-    """
+    '''
     session = getRestaurantDBSession()
 
     if cuisine_id is not None:
@@ -933,8 +933,8 @@ def addRowsFromJSON(jsonRows, tableConstructor):
     session.close()
 
 def dropAllRecords():
-    """Drop all records from the database
-    """
+    '''Drop all records from the database
+    '''
     engine = create_engine('sqlite:///restaurants.db')
     Base.metadata.bind = engine
 

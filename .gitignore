@@ -1,6 +1,7 @@
+*.pyc
 .DS_Store
-/pics/*
-/old_unused_files/*
-/My Notes/*
+pics/
+old_unused_files/
+My Notes/
 client_secrets.json
 fb_client_secrets.json
