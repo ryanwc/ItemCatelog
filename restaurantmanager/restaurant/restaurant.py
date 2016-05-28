@@ -4,10 +4,10 @@ from flask import (Blueprint, render_template, request, redirect,
 import os, requests
 from decimal import Decimal
 
-from restaurantmanager import DataManager
+from restaurantmanager import DataManager, app
 from restaurantmanager.utils import (getClientLoginSession, isLoggedIn, 
     isCSRFAttack, validateUserInput, validateUserPicture)
-from restaurantmanager import app
+from restaurantmanager.home.home import login_required
 
 restaurant_bp = Blueprint('restaurant', __name__, 
     template_folder='templates', static_folder='static')
@@ -57,14 +57,10 @@ def restaurants():
                     client_login_session=client_login_session)
 
 @app.route('/restaurants/add/', methods=['GET','POST'])
+@login_required
 def addRestaurant():
     '''Serve form to add a restaurant
     '''
-    if not isLoggedIn():
-
-        flash("You must log in to add a restaurant")
-        return redirect(url_for('restaurantManagerIndex'))
-    
     client_login_session = getClientLoginSession()
 
     cuisines = DataManager.getCuisines()
@@ -172,15 +168,11 @@ def restaurant(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/edit/',
            methods=['GET','POST'])
+@login_required
 def editRestaurant(restaurant_id):
     '''Serve form to add a restaurant menu item to a restaurant's menu
     '''
     restaurant = DataManager.getRestaurant(restaurant_id)
-    
-    if not isLoggedIn():
-
-        flash("You must log in to edit a restaurant")
-        return redirect(url_for('restaurantManagerIndex'))
 
     if restaurant.user_id != login_session['user_id']:
 
@@ -275,15 +267,11 @@ def editRestaurant(restaurant_id):
                                client_login_session=client_login_session)
 
 @app.route('/restaurants/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
+@login_required
 def deleteRestaurant(restaurant_id):
     '''Serve form to delete a restaurant
     '''
     restaurant = DataManager.getRestaurant(restaurant_id)
-    
-    if not isLoggedIn():
-
-        flash("You must log in to delete a restaurant")
-        return redirect(url_for('restaurantManagerIndex'))
 
     if restaurant.user_id != login_session['user_id']:
 
@@ -346,15 +334,11 @@ def restaurantMenu(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/menu/add/',
            methods=['GET','POST'])
+@login_required
 def addRestaurantMenuItem(restaurant_id):
     '''Serve form to add a restaurant menu item to a restaurant's menu
     '''
     restaurant = DataManager.getRestaurant(restaurant_id)
-    
-    if not isLoggedIn():
-
-        flash("You must log in to add a restaurant menu item")
-        return redirect(url_for('restaurantManagerIndex'))
 
     if restaurant.user_id != login_session['user_id']:
 
@@ -499,15 +483,11 @@ def addRestaurantMenuItem(restaurant_id):
                                client_login_session=client_login_session)
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/')
+@login_required
 def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
     '''Serve a restaurant menu item
     '''
     restaurant = DataManager.getRestaurant(restaurant_id)
-
-    if not isLoggedIn():
-
-        flash("You must log in to view this item's details")
-        return redirect(url_for('restaurantManagerIndex'))
 
     if restaurant.user_id != login_session['user_id']:
 
@@ -556,15 +536,11 @@ def restaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/edit/',
            methods=['GET','POST'])
+@login_required
 def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
     '''Serve a form to edit a restaurant menu item
     '''
     restaurant = DataManager.getRestaurant(restaurant_id)
-
-    if not isLoggedIn():
-
-        flash("You must log in to edit this item")
-        return redirect(url_for('restaurantManagerIndex'))
 
     if restaurant.user_id != login_session['user_id']:
 
@@ -690,15 +666,11 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
 @app.route('/restaurants/<int:restaurant_id>/menu/<int:restaurantMenuItem_id>/delete/',
            methods=['GET','POST'])
+@login_required
 def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
     '''Serve a form to delete a restaurant menu item
     '''
     restaurant = DataManager.getRestaurant(restaurant_id)
-
-    if not isLoggedIn():
-
-        flash("You must log in to delete this item")
-        return redirect(url_for('restaurantManagerIndex'))
 
     if restaurant.user_id != login_session['user_id']:
 

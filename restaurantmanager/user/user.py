@@ -4,10 +4,10 @@ from flask import (Blueprint, render_template, request, redirect,
 import os, requests
 from decimal import Decimal
 
-from restaurantmanager import DataManager
+from restaurantmanager import DataManager, app
 from restaurantmanager.utils import (getClientLoginSession, isLoggedIn, 
     isCSRFAttack, validateUserInput, validateUserPicture)
-from restaurantmanager import app
+from restaurantmanager.home.home import login_required
 
 
 user_bp = Blueprint('user', __name__, 
@@ -140,15 +140,11 @@ def user(user_id):
             client_login_session=client_login_session)
 
 @app.route('/users/<int:user_id>/edit/', methods=['GET','POST'])
+@login_required
 def editUser(user_id):
     '''Serve a form to edit a user
     '''
     user = DataManager.getUser(user_id)
-
-    if not isLoggedIn():
-
-        flash("You must log in to edit this profile")
-        return redirect(url_for('restaurantManagerIndex'))
 
     if user.id != login_session['user_id']:
 
@@ -221,15 +217,11 @@ def editUser(user_id):
                            client_login_session=client_login_session)
 
 @app.route('/users/<int:user_id>/delete/', methods=['GET','POST'])
+@login_required
 def deleteUser(user_id):
     '''Serve a form to delete a user
     '''
     user = DataManager.getUser(user_id)
-
-    if not isLoggedIn():
-
-        flash("You must log in to delete this profile")
-        return redirect(url_for('restaurantManagerIndex'))
 
     if user.id != login_session['user_id']:
 

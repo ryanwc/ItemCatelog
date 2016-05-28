@@ -1,23 +1,34 @@
 from flask import (Blueprint, render_template, request, redirect, url_for, 
-    flash, send_from_directory, session as login_session, make_response)
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+    flash, session as login_session, make_response)
+from functools import wraps
 
 from oauth2client.client import FlowExchangeError
 
 import json, httplib2, requests, traceback, random, string
 
-import restaurantmanager.DataManager
+from restaurantmanager import DataManager, app
 from restaurantmanager.utils import (getClientLoginSession, setProfile, 
     getSignInAlert, isLoggedIn)
-from restaurantmanager import app
+
 
 home_bp = Blueprint('home', __name__, 
     template_folder='templates', static_folder='static')
 
 ###
-### Homepage view
+### Custom permissions decorators
+### (maybe this should be in utils?)
+
+def login_required(function):
+    @wraps(function)
+    def decorated_function(*args, **kwargs):
+        if not isLoggedIn():
+            flash("You must be logged in to view that page")
+            return redirect(url_for('restaurantManagerIndex'))
+        return function(*args, **kwargs)
+    return decorated_function
+
+###
+### Homepage/index views
 ###
 
 @app.route('/')
@@ -275,13 +286,3 @@ def fbdisconnect():
                         'message':'Disconnected from Facebook'}
 
     return disconnectResult
-
-###
-### picture serve endpoint
-### (does this belong in another module? utils?)
-
-@app.route(app.config['UPLOAD_FOLDER']+'/<filename>/')
-def uploaded_picture(filename):
-    '''Serve an uploaded picture
-    '''
-    return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 

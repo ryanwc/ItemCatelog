@@ -1,8 +1,21 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, send_from_directory
 from restaurantmanager import DataManager, app
 
-
 api_bp = Blueprint('api', __name__)
+
+###
+### picture serve endpoint
+### 
+
+@app.route(app.config['UPLOAD_FOLDER']+'/<filename>/')
+def uploaded_picture(filename):
+    '''Serve an uploaded picture
+    '''
+    return send_from_directory(app.config['UPLOAD_FOLDER'],filename) 
+
+###
+### json endpoints
+### 
 
 @app.route('/menu_sections/JSON/')
 def menuSectionsJSON():
