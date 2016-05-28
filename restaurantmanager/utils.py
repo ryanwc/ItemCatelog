@@ -8,6 +8,7 @@ from restaurantmanager.api.api import (usersJSON, picturesJSON, cuisinesJSON,
 from . import app, DataManager
 
 import bleach, json, re
+from decimal import Decimal
 
 
 def writeTablesToJSON(path):

@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
-from restaurantmanager import app
+from restaurantmanager import DataManager, app
+
 
 api_bp = Blueprint('api', __name__)
 

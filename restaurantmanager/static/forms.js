@@ -3,7 +3,9 @@
     // to placehold as a class named 'elementsToPlacehold')
 function placeholdWithBaseMenuItem(baseMenuItemID, photoElementId) {
 
-    var baseMenuItemJSONpath = '/baseMenuItems/' + baseMenuItemID + '/JSON/';
+    // would be best to figure out a relative path from javascript to
+    // the flask template instead of hardcoding
+    var baseMenuItemJSONpath = '/base_menu_items/' + baseMenuItemID + '/JSON/';
     // [ajax call to get the info];
     var setPlaceholders = function(itemJSONformat) {
 

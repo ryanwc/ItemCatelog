@@ -232,8 +232,8 @@ def editRestaurant(restaurant_id):
             if (providedPic['serve_type'] == 'link' and
                 oldPicture.serve_type == 'upload'):
 
-                relPath = 'pics/'+oldPicture.text
-                os.remove(relPath)
+                path = app.config['UPLOAD_FOLDER']+'/'+oldPicture.text
+                os.remove(path)
                 flash("deleted old uploaded pic")
             elif providedPic['serve_type'] == 'upload':
                 picfilename = 'restaurant' + str(restaurant_id)
@@ -633,8 +633,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
             if (providedPic['serve_type'] == 'link' and
                 oldPicture.serve_type == 'upload'):
             
-                relPath = 'pics/'+oldPicture.text
-                os.remove(relPath)
+                path = app.config['UPLOAD_FOLDER']+'/'+oldPicture.text
+                os.remove(path)
                 flash("deleted old uploaded pic")
             elif providedPic['serve_type'] == 'upload':
 
