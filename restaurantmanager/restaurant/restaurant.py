@@ -1,15 +1,12 @@
 from flask import (Blueprint, render_template, request, redirect, 
     url_for, flash, session as login_session)
 
-import os
-import requests
+import os, requests
 from decimal import Decimal
 
-from restaurantmanager.database_setup import (Base, Restaurant, BaseMenuItem, 
-    Cuisine, RestaurantMenuItem, User, Picture)
-
-import restaurantmanager.DataManager
-from restaurantmanager.utils import getClientLoginSession
+from restaurantmanager import DataManager
+from restaurantmanager.utils import (getClientLoginSession, isLoggedIn, 
+    isCSRFAttack, validateUserInput, validateUserPicture)
 from restaurantmanager import app
 
 restaurant_bp = Blueprint('restaurant', __name__, 
@@ -74,8 +71,8 @@ def addRestaurant():
 
     if request.method == 'POST':
 
-        checkCSRFAttack(request.form['hiddenToken'],
-                        "url_for('restaurantManagerIndex')")
+        if isCSRFAttack(request.form['hiddenToken']):
+            return redirect(url_for('restaurantManagerIndex'))
 
         validCuisineIDs = {}
         for cuisine in cuisines:
@@ -199,8 +196,8 @@ def editRestaurant(restaurant_id):
     
     if request.method == 'POST':
 
-        checkCSRFAttack(request.form['hiddenToken'],
-                        "url_for('restaurantManagerIndex')")
+        if isCSRFAttack(request.form['hiddenToken']):
+            return redirect(url_for('restaurantManagerIndex'))
 
         oldName = restaurant.name
         oldCuisine = DataManager.\
@@ -298,8 +295,8 @@ def deleteRestaurant(restaurant_id):
 
     if request.method == 'POST':
 
-        checkCSRFAttack(request.form['hiddenToken'],
-                        "url_for('restaurantManagerIndex')")
+        if isCSRFAttack(request.form['hiddenToken']):
+            return redirect(url_for('restaurantManagerIndex'))
 
         restaurantMenuItems = DataManager.\
                     getRestaurantMenuItems(restaurant_id=restaurant_id)
@@ -383,8 +380,8 @@ def addRestaurantMenuItem(restaurant_id):
 
     if request.method == 'POST':
 
-        checkCSRFAttack(request.form['hiddenToken'],
-                        "url_for('restaurantManagerIndex')")
+        if isCSRFAttack(request.form['hiddenToken']):
+            return redirect(url_for('restaurantManagerIndex'))
 
         validBaseMenuItemIDs = {}
         for item in baseMenuItems:
@@ -590,8 +587,8 @@ def editRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
     if request.method == 'POST':
 
-        checkCSRFAttack(request.form['hiddenToken'],
-                        "url_for('restaurantManagerIndex')")
+        if isCSRFAttack(request.form['hiddenToken']):
+            return redirect(url_for('restaurantManagerIndex'))
 
         oldName = restaurantMenuItem.name
         oldDescription = restaurantMenuItem.description
@@ -716,8 +713,8 @@ def deleteRestaurantMenuItem(restaurant_id, restaurantMenuItem_id):
 
     if request.method == 'POST':
 
-        checkCSRFAttack(request.form['hiddenToken'],
-                        "url_for('restaurantManagerIndex')")
+        if isCSRFAttack(request.form['hiddenToken']):
+            return redirect(url_for('restaurantManagerIndex'))
 
         restaurantMenuItemName = restaurantMenuItem.name
 

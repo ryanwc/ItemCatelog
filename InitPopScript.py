@@ -1,5 +1,8 @@
 ### WARNING: Running this script clears and repopulates
 ### the database 'sqlite:///restaurants.db'
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 from RestaurantManager import dropAllRecords, addRowsFromJSON
 
 from database_setup import (Cuisine, Restaurant, BaseMenuItem, 

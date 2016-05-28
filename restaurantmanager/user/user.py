@@ -1,15 +1,12 @@
 from flask import (Blueprint, render_template, request, redirect, 
     url_for, flash, session as login_session)
 
-import os
-import requests
+import os, requests
 from decimal import Decimal
 
-from restaurantmanager.database_setup import (Base, Restaurant, BaseMenuItem, 
-    Cuisine, RestaurantMenuItem, User, Picture)
-
-import restaurantmanager.DataManager
-from restaurantmanager.utils import getClientLoginSession
+from restaurantmanager import DataManager
+from restaurantmanager.utils import (getClientLoginSession, isLoggedIn, 
+    isCSRFAttack, validateUserInput, validateUserPicture)
 from restaurantmanager import app
 
 
@@ -164,8 +161,8 @@ def editUser(user_id):
 
     if request.method == 'POST':
 
-        checkCSRFAttack(request.form['hiddenToken'],
-                        "url_for('restaurantManagerIndex')")
+        if isCSRFAttack(request.form['hiddenToken']):
+            return redirect(url_for('restaurantManagerIndex'))
 
         oldName = user.name
         oldPicture = picture
@@ -243,8 +240,8 @@ def deleteUser(user_id):
 
     if request.method == 'POST':
 
-        checkCSRFAttack(request.form['hiddenToken'],
-                        "url_for('restaurantManagerIndex')")
+        if isCSRFAttack(request.form['hiddenToken']):
+            return redirect(url_for('restaurantManagerIndex'))
 
         DataManager.deleteUser(user.id)
 

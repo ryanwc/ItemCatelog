@@ -5,9 +5,9 @@ from restaurantmanager.api.api import (usersJSON, picturesJSON, cuisinesJSON,
     baseMenuItemsJSON,restaurantsJSON, allRestaurantMenuItemsJSON, 
     menuSectionsJSON)
 
-from . import DataManager
+from . import app, DataManager
 
-import bleach, json
+import bleach, json, re
 
 
 def writeTablesToJSON(path):
@@ -39,7 +39,7 @@ def allowed_pic(filename):
     '''Return true if the file name is a valid pic filename
     '''
     return ('.' in filename and 
-            filename.rsplit('.', 1)[1] in ALLOWED_PIC_EXTENSIONS)
+            filename.rsplit('.', 1)[1] in app.config['ALLOWED_EXTENSIONS'])
 
 def isLoggedIn():
     '''Return true if the user is logged in

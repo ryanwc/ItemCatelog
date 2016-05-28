@@ -1,14 +1,13 @@
 from sqlalchemy import create_engine, select, func
 from sqlalchemy.orm import sessionmaker
 
-import traceback
-import requests
 import os
 from decimal import Decimal
 
 from database_setup import (Base, Restaurant, BaseMenuItem, RestaurantMenuItem, 
     Cuisine, User, MenuSection, Picture)
 
+from . import app
 
 def populateMenuWithBaseItems(restaurant_id):
     '''Add all of a restaurant's base items base on its cuisine
@@ -750,8 +749,7 @@ def deleteRestaurantMenuItem(restaurantMenuItem_id=None):
 def deletePicture(picture_id=None):
     '''Remove a picture from the database.
 
-    Also deletes the picture from the file system, if it was 
-    uploaded by a user.
+    Also deletes the picture from the file system, if it is an upload 
 
     Args:
         picture_id: the id of the picture to remove
@@ -761,8 +759,8 @@ def deletePicture(picture_id=None):
     picture = getPicture(picture_id=picture_id)
 
     if picture.serve_type == 'upload':
-        relPath = 'pics/'+picture.text
-        os.remove(relPath)
+        path = app.config['UPLOAD_FOLDER']+'/'+picture.text
+        os.remove(path)
 
     if picture_id is not None:
         session.query(Picture).\
