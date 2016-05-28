@@ -3,10 +3,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from RestaurantManager import dropAllRecords, addRowsFromJSON
+from restaurantmanager.DataManager import dropAllRecords, addRowsFromJSON
 
-from database_setup import (Cuisine, Restaurant, BaseMenuItem, 
-  RestaurantMenuItem, User, MenuSection, Picture)
+from restaurantmanager.database_setup import (Cuisine, Restaurant, 
+    BaseMenuItem, RestaurantMenuItem, User, MenuSection, Picture)
 
 import json
 

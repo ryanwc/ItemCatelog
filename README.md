@@ -34,10 +34,11 @@ Most of the information displayed for most pages is available in JSON format.  T
 1. Download all of the files in this repo into the same directory on your computer.
 2. If not already installed, download and install Python on your computer.  This was created using Python 2.7, so for best compatibility ensure you are using Python 2.7+.  I am unsure if Python 3.0+ is completely supported.
 3. If not already installed, install Flask (the Python web framework) on your computer.  This app was made and tested with Flask version 0.9.  You can install the latest version by typing `pip install Flask` at the command line, or you can read further instructions [here](http://flask.pocoo.org/).
-4. From the command line, navigate to the directory into which you downloaded all the files.
-5. Optional (but recommended for testing): To pre-populate the database with sample restaurants, cuisines, base menu items, restaurant menu items, and users, run the command-line command `python InitPopScript.py`.  This may take 10-20 seconds to complete.
-6. From the command line, run the command `python RMServer.py`.
-7. In your browser, navigate to "localhost:5000/", "localhost:5000/index", or "localhost:5000/login".  You can now sign-in with Google or Facebook to create a profile, or you can navigate the site without signing in.
+4. If not already installed, install SQLAlchemy (a database toolkit for Python).  This app was made and tested with SQLAlchemy 0.8.4.  You can view instructions for downloading and installing SQLAlchemy [here](http://www.sqlalchemy.org/download.html).
+5. From the command line, navigate to the directory into which you downloaded all the files.
+6. Optional (but recommended for testing): To pre-populate the database with sample restaurants, cuisines, base menu items, restaurant menu items, and users, run the command-line command `python InitPopScript.py`.  This may take 10-20 seconds to complete.
+7. From the command line, run the command `python run.py`.
+8. In your browser, navigate to "localhost:5000/", "localhost:5000/index", or "localhost:5000/login".  You can now sign-in with Google or Facebook to create a profile, or you can navigate the site without signing in.
 
 # Technologies Used
 
